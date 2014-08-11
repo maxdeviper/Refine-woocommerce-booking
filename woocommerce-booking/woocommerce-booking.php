@@ -336,7 +336,7 @@ function bkap_woocommerce_booking_delete(){
 			* want to do something custom
 			*************************************/
 				
-			function edd_sample_check_license() {
+			function bkap_edd_sample_check_license() {
 					
 				global $wp_version;
 					
@@ -3914,7 +3914,7 @@ All Reminders
                         /*********************************************
                          * This function returns the number of bookings done for a date.
                          *********************************************/
-			function get_date_lockout($start_date)
+			function bkap_get_date_lockout($start_date)
 			{
 				global $wpdb,$post;
 				$duplicate_of = get_post_meta($post->ID, '_icl_lang_duplicate_of', true);
