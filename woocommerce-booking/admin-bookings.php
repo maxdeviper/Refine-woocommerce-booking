@@ -341,7 +341,7 @@
 				
 				return count($results);
 			}
-			function date_lockout($start_date,$post_id)
+			function get_date_lockout($start_date,$post_id)
 			{
 				global $wpdb,$post;
 				$duplicate_of = get_post_meta($post_id, '_icl_lang_duplicate_of', true);
@@ -643,7 +643,7 @@
 					foreach($results_lock as $key => $value)
 					{
 						$start_date = $value->start_date;
-						$bookings_done = $this->date_lockout($start_date,$prod_id);
+						$bookings_done = $this->get_date_lockout($start_date,$prod_id);
 						if($bookings_done >= $product_settings['booking_date_lockout'])
 						{
 							$lockout = explode("-",$start_date);
@@ -1932,11 +1932,11 @@
 				$order_query = "SELECT * FROM `".$wpdb->prefix."booking_order_history`
 				WHERE order_id = '".$order_id."' ";
 				$existing_order_result = $wpdb->get_results( $order_query );
-				$new_order = false;
-				$edit_order = true;
+				$new_order = 'No';
+				$edit_order = 'Yes';
 				if (count($existing_order_result) == 0) { 
-					$new_order = true;
-					$edit_order = false; 
+					$new_order = 'Yes';
+					$edit_order = 'No'; 
 				}
 				if ( isset( $_POST['save'] ) && $_POST['save'] )
 				{
@@ -2207,7 +2207,7 @@
 								//echo $quantity;
 								$order_item_qty[$cart_item_key] = $quantity;
 								$_POST['order_item_qty'] = $order_item_qty;
-								if ($new_order == false && $edit_order == true) 
+								if ($new_order == 'No' && $edit_order == 'Yes') 
 								{
 									if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on')
 									{

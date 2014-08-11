@@ -20,9 +20,9 @@
 				// used to add new settings on the product page booking box
 				add_action('bkap_after_listing_enabled', array(&$this, 'show_field_settings'));
 				add_action('init', array(&$this, 'load_ajax'));
-				add_filter('bkap_save_product_settings', array(&$this, 'product_settings_save'), 10, 2);
+				add_filter('bkap_save_product_settings', array(&$this, 'get_product_settings_save'), 10, 2);
 				add_action('bkap_display_block_updated_price', array(&$this, 'show_updated_price'),10,5);
-				add_filter('bkap_add_cart_item_data', array(&$this, 'add_cart_item_data'), 10, 2);
+				add_filter('bkap_add_cart_item_data', array(&$this, 'get_add_cart_item_data'), 10, 2);
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'get_cart_item_from_session'),11,2);
 				//add_action( 'woocommerce_before_add_to_cart_form', array(&$this, 'before_add_to_cart'));
 				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'booking_after_add_to_cart'));	
@@ -699,7 +699,7 @@
 			<?php
 			}
 
-			function product_settings_save($booking_settings, $product_id)
+			function get_product_settings_save($booking_settings, $product_id)
 			{
 				if(isset($_POST['booking_block_price_enable']) )
 				{
@@ -708,7 +708,7 @@
 				return $booking_settings;
 			}
 			
-			function add_cart_item_data($cart_arr, $product_id)
+			function get_add_cart_item_data($cart_arr, $product_id)
 			{
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
@@ -928,7 +928,7 @@
 					{
 						if(isset($booking_settings['booking_fixed_block_enable']))
 						{
-							$cart_item = $this->add_cart_item( $cart_item );
+							$cart_item = $this->get_add_cart_item( $cart_item );
 							
 						}
 					}	
@@ -938,7 +938,7 @@
 				return $cart_item;
 			}
 			
-			function add_cart_item( $cart_item ) 
+			function get_add_cart_item( $cart_item ) 
 			{
 				// Adjust price if addons are set
 

@@ -53,7 +53,7 @@ $book_translations = array(
 	
 global $book_translations, $book_lang;
 
-function book_t($str)
+function get_book_t($str)
 {
 	global $book_translations, $book_lang;
 	

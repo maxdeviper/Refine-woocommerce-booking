@@ -136,7 +136,7 @@ $days = array('0' => 'Sunday',
 
 	global $calendar_themes, $time_formats, $date_formats, $languages, $days, $weekdays;
 
-	function book_arrays($str)
+	function get_book_arrays($str)
 	{
 		global $calendar_themes, $time_formats, $date_formats, $languages, $days, $weekdays;
 	

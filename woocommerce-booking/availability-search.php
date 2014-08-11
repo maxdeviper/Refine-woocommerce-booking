@@ -10,7 +10,7 @@ function bkap_widgets_init()
 /*
 Modify current search by adding where clause to cquery fetching posts
 */
-function custom_posts($where, $query){
+function get_custom_posts($where, $query){
 	global $wpdb;
 	$booking_table = $wpdb->prefix . "booking_history";
 	$meta_table = $wpdb->prefix . "postmeta";
@@ -45,4 +45,4 @@ $where = " AND($wpdb->posts.post_type = 'product'and $wpdb->posts.post_status = 
 	return $where;
 
 }
-add_filter( 'posts_where','custom_posts', 10, 2 );
+add_filter( 'posts_where','get_custom_posts', 10, 2 );
