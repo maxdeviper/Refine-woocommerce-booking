@@ -150,8 +150,7 @@ function bkap_woocommerce_booking_delete(){
 				add_filter( 'woocommerce_get_item_data', array(&$this, 'bkap_get_item_data'), 10, 2 );
 				
 				//$show_checkout_date_calendar = 1;
-				if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on')
-				{
+				if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 					add_filter( 'woocommerce_add_cart_item', array(&$this, 'bkap_get_add_cart_item'), 10, 1 );
 				}
 				add_action( 'woocommerce_checkout_update_order_meta', array(&$this, 'bkap_order_item_meta'), 10, 2);
@@ -165,14 +164,12 @@ function bkap_woocommerce_booking_delete(){
 				
 				//Export date to ics file from order received page
 				$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-				if (isset($saved_settings->booking_export) && $saved_settings->booking_export == 'on')
-				{
+				if (isset($saved_settings->booking_export) && $saved_settings->booking_export == 'on') {
 					add_filter('woocommerce_order_details_after_order_table', array(&$this, 'bkap_export_to_ics'), 10, 3 );
 				}
 				
 				//Add order details as an attachment
-				if (isset($saved_settings->booking_attachment) && $saved_settings->booking_attachment == 'on')
-				{
+				if (isset($saved_settings->booking_attachment) && $saved_settings->booking_attachment == 'on') {
 					add_filter('woocommerce_email_attachments', array(&$this, 'bkap_email_attachment'), 10, 3 );
 				}
 				
@@ -198,8 +195,7 @@ function bkap_woocommerce_booking_delete(){
 					$myaccount_page_url = get_permalink( $myaccount_page_id );
 				}
 			
-				if (isset($_GET['order_id']) &&  $_GET['order_id'] == $action->id && $_GET['cancel_order'] == "yes")
-				{
+				if (isset($_GET['order_id']) &&  $_GET['order_id'] == $action->id && $_GET['cancel_order'] == "yes") {
 					$order_obj = new WC_Order( $action->id );
 					$order_obj->update_status( "cancelled" );
 					print('<script type="text/javascript">
@@ -211,8 +207,7 @@ function bkap_woocommerce_booking_delete(){
 			
 				//apply_filters('woocommerce_get_cancel_order_url', add_query_arg('order_id', $action->id)."&cancel_order=yes");
 			
-				if ($action->status != "cancelled")
-				{
+				if ($action->status != "cancelled") {
 					$order['cancel'] = array(
 							"url" => apply_filters('woocommerce_get_cancel_order_url', add_query_arg('order_id', $action->id)."&cancel_order=yes"),//plugins_url("/cancel-order.php", __FILE__ )."?order_id=".$action->id,
 							"name" => "Cancel");
@@ -522,8 +517,7 @@ function bkap_woocommerce_booking_delete(){
 						<?php 
 										}
 									}
-								}
-								elseif (isset($booking_settings['booking_enable_date']) && $booking_settings['booking_enable_date'] == 'on' && isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
+								} elseif (isset($booking_settings['booking_enable_date']) && $booking_settings['booking_enable_date'] == 'on' && isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
                                                                     
 									$book_global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
 										
@@ -657,8 +651,7 @@ END:VCALENDAR";
 								//$c++;
 							}
 						}
-					}
-					elseif ((isset($booking_settings['booking_enable_date']) && $booking_settings['booking_enable_date'] == 'on') && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on')) {
+					} elseif ((isset($booking_settings['booking_enable_date']) && $booking_settings['booking_enable_date'] == 'on') && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on')) {
 						
                                             $book_global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
 						
@@ -730,7 +723,10 @@ END:VCALENDAR";
 					$wpdb->query( $query_insert );
 				}
 			}
-			
+			/************************************
+                         * This function is used to disply the total  when new product is added to cart.
+                         * 
+                         ************************************/
 			function bkap_get_woo_cart_widget_subtotal( $fragments )
 			{
 				global $woocommerce;
@@ -753,8 +749,7 @@ END:VCALENDAR";
 							} else {
 								$price += $sale_price * $values['quantity'];
 							}
-						}
-						elseif($product_type == 'simple') {
+						} elseif($product_type == 'simple') {
 							$sale_price = get_post_meta( $values['product_id'], '_sale_price', true);
 			
 							if(!isset($sale_price) || $sale_price == '' || $sale_price == 0) {
@@ -849,8 +844,7 @@ END:VCALENDAR";
 							$to_time = '';
 							$from_time = '';
 						}
-						if($to_time != '')
-						{
+						if($to_time != '') {
 							$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
 								WHERE post_id = '".$post_id."'
 								AND start_date = '".$date_check."'
@@ -1039,8 +1033,7 @@ END:VCALENDAR";
 							$quantity_check_pass = 'no';
 						}
 					}
-					if ($quantity_check_pass == "yes")
-					{
+					if ($quantity_check_pass == "yes") {
 						foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values )
 						{
 							if(array_key_exists('booking',$values)) {
@@ -1316,8 +1309,7 @@ END:VCALENDAR";
 								} else {
 									$var_details = array();
 								}
-								if (count($booking_time) > 0)
-								{
+								if (count($booking_time) > 0) {
 								foreach ($booking_time as $time_key => $time_value)
 								{	
 									if(array_key_exists('ticket_id',$var_details) && array_key_exists('security_code',$var_details)) {
@@ -1685,8 +1677,7 @@ END:VCALENDAR";
 				} else {
 					$action = '';
 				}
-				if ($action == 'settings' || $action == '')
-				{
+				if ($action == 'settings' || $action == '') {
 					$active_settings = "nav-tab-active";
 				} else {
 					$active_settings = '';
@@ -2057,28 +2048,33 @@ END:VCALENDAR";
 						$booking_settings->booking_time_format = $_POST['booking_time_format'];
 						$booking_settings->booking_months = $_POST['booking_months'];	
 						$booking_settings->booking_calendar_day = $_POST['booking_calendar_day'];	
-						if (isset($_POST['booking_enable_rounding']))
+						if (isset($_POST['booking_enable_rounding'])){
 							$booking_settings->enable_rounding = $_POST['booking_enable_rounding'];
-						else
+                                                }else{
 							$booking_settings->enable_rounding = '';
-						if(isset($_POST['booking_add_to_calendar']))
+                                                }
+						if(isset($_POST['booking_add_to_calendar'])){
 							$booking_settings->booking_export = $_POST['booking_add_to_calendar'];													
-						else						
+                                                }else{						
 							$booking_settings->booking_export = '';
-						if(isset($_POST['booking_add_to_email']))
+                                                }
+						if(isset($_POST['booking_add_to_email'])){
 							$booking_settings->booking_attachment = $_POST['booking_add_to_email'];
-						else
+                                                }else{
 							$booking_settings->booking_attachment = '';
+                                                }
 						$booking_settings->booking_themes = $calendar_theme;
 						$booking_settings->booking_global_holidays = $_POST['booking_global_holidays'];
-						if(isset($_POST['booking_global_timeslot']))
+						if(isset($_POST['booking_global_timeslot'])){
 							$booking_settings->booking_global_timeslot = $_POST['booking_global_timeslot'];
-						else
+                                                }else{
 							$booking_settings->booking_global_timeslot = '';
-						if(isset($_POST['booking_global_selection']))
+                                                }
+						if(isset($_POST['booking_global_selection'])){
 							$booking_settings->booking_global_selection = $_POST['booking_global_selection'];
-						else
+                                                }else{
 							$booking_settings->booking_global_selection = '';
+                                                }
 						$booking_settings = apply_filters( 'bkap_save_global_settings', $booking_settings);
 						$woocommerce_booking_settings = json_encode($booking_settings);
 							
@@ -3597,10 +3593,10 @@ All Reminders
 				
 				$enable_inline_calendar = $enable_date = $enable_multiple_day = $specific_booking_chk = $recurring_booking = "";
 				
-				if(isset($_POST['enable_inline_calendar']))
+				if(isset($_POST['enable_inline_calendar'])) {
 				
 					$enable_inline_calendar = $_POST['enable_inline_calendar'];
-				
+                                }
 				if (isset($_POST['booking_enable_date'])) {
 					$enable_date = $_POST['booking_enable_date'];
 				}
@@ -3663,25 +3659,27 @@ All Reminders
 				if (isset($_POST['booking_specific_date_booking'])) {
 					$specific_booking = $_POST['booking_specific_date_booking'];
 				}
-				if($specific_booking != '')
+				if($specific_booking != '') {
 					$specific_booking_dates = explode(",",$specific_booking);
-				else
+                                }else{
 					$specific_booking_dates = array();
-				
+                                }
 				$specific_stored_days = array();
 				if( isset($woo_booking_dates['booking_specific_date']) && count($woo_booking_dates['booking_specific_date']) > 0) $specific_stored_days = $woo_booking_dates['booking_specific_date'];
 			
 				foreach ( $specific_booking_dates as $key => $value ) {
 					if (trim($value != "")) $specific_stored_days[] = $value;
 				}
-				if(isset($_POST['booking_minimum_number_days']))
+				if(isset($_POST['booking_minimum_number_days'])) {
 			 		$minimum_number_days = $_POST['booking_minimum_number_days'];
-				else 
+                                }else {
 					$minimum_number_days = '';
-				if(isset($_POST['booking_maximum_number_days']))
+                                }
+				if(isset($_POST['booking_maximum_number_days'])){
 					$maximum_number_days = $_POST['booking_maximum_number_days'];
-				else 
+                                }else {
 					$maximum_number_days = '';
+                                }
 				$without_date="";
 				if (isset($_POST['booking_purchase_without_date'])) {
 					$without_date = $_POST['booking_purchase_without_date'];
@@ -3884,8 +3882,11 @@ All Reminders
 				$booking_settings['booking_date_lockout'] = $lockout_date;
 				$booking_settings['booking_product_holiday'] = $product_holiday;
 				$booking_settings['booking_enable_time'] = $enable_time;
-				if (isset($new_time_settings['booking_time_settings'])) $booking_settings['booking_time_settings'] = $new_time_settings['booking_time_settings'];
-				else $booking_settings['booking_time_settings'] = '';
+				if (isset($new_time_settings['booking_time_settings'])) {
+                                    $booking_settings['booking_time_settings'] = $new_time_settings['booking_time_settings'];
+                                }else{ 
+                                    $booking_settings['booking_time_settings'] = '';
+                                }
 				$booking_settings = (array) apply_filters( 'bkap_save_product_settings', $booking_settings, $duplicate_of );
 				//echo "<pre>"; print_r($booking_settings); echo "</pre>"; exit;
 				update_post_meta($duplicate_of, 'woocommerce_booking_settings', $booking_settings);
@@ -3980,20 +3981,27 @@ All Reminders
 				}
 				//rounding settings
 				$rounding = "";
-				if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on") $rounding = "yes";
-				else $rounding = "no";
+				if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on") {
+                                    $rounding = "yes";
+                                }else {
+                                    $rounding = "no";
+                                }
 				print('<input type="hidden" id="wapbk_round_price" name="wapbk_round_price" value="'.$rounding.'">');
 
-				if (isset($global_settings->booking_global_selection) && $global_settings->booking_global_selection == "on") $selection = "yes";
-				else $selection = "no";
+				if (isset($global_settings->booking_global_selection) && $global_settings->booking_global_selection == "on"){
+                                    $selection = "yes";
+                                } else {
+                                    $selection = "no";
+                                }
 				print('<input type="hidden" id="wapbk_global_selection" name="wapbk_global_selection" value="'.$selection.'">');
 				
 				if ( $booking_settings != '' ) :
 				// fetch specific booking dates
-				if(isset($booking_settings['booking_specific_date']))
+				if(isset($booking_settings['booking_specific_date'])){
 					$booking_dates_arr = $booking_settings['booking_specific_date'];
-				else 
+                                }else{ 
 					$booking_dates_arr = array();
+                                }
 				$booking_dates_str = "";
 				if ($booking_settings['booking_specific_booking'] == "on"){
                                     if(!empty($booking_dates_arr)){
@@ -4052,8 +4060,7 @@ All Reminders
 				}else {
 					print('<input type="hidden" name="wapbk_number_of_dates" id="wapbk_number_of_dates" value="">');
 				}
-				if (isset($booking_settings['booking_enable_time']))
-				{
+				if (isset($booking_settings['booking_enable_time'])) {
 		 			print('<input type="hidden" name="wapbk_bookingEnableTime" id="wapbk_bookingEnableTime" value="'.$booking_settings['booking_enable_time'].'">');
 				} else {
 					print('<input type="hidden" name="wapbk_bookingEnableTime" id="wapbk_bookingEnableTime" value="">');
@@ -4196,17 +4203,20 @@ All Reminders
 						
 				print("<input type='hidden' id='wapbk_hidden_booked_dates_checkout' name='wapbk_hidden_booked_dates_checkout' value='".$booked_dates_str."'/>");
 				
-				if(isset($booking_settings['booking_recurring']))
+				if(isset($booking_settings['booking_recurring'])) {
 					$recurring_date = $booking_settings['booking_recurring'];
-				else 
+                                }else {
 					$recurring_date = array();
-				if(isset($booking_settings['booking_specific_date']))
+                                }
+				if(isset($booking_settings['booking_specific_date'])) {
 					$specific_date = $booking_settings['booking_specific_date'];
-				else
+                                }else {
 					$specific_date = array();
+                                }
 				//print_r($specific_date);
-				if(isset($booking_settings['booking_product_holiday']))
-				$holiday_array = explode(',',$booking_settings['booking_product_holiday']);
+				if(isset($booking_settings['booking_product_holiday'])){
+                                    $holiday_array = explode(',',$booking_settings['booking_product_holiday']);
+                                }
 				if(isset($global_settings->booking_global_holidays)) {
 					$global_holidays = explode(',',$global_settings->booking_global_holidays);
 				} else {
@@ -4214,10 +4224,11 @@ All Reminders
 				}
 				$current_date = date('d-m-Y');
 				$current_day = date('N',strtotime($current_date)); 
-				if(isset($booking_settings['booking_minimum_number_days']))
+				if(isset($booking_settings['booking_minimum_number_days'])){
 					$min_date = date('j-n-Y', strtotime('+'.$booking_settings['booking_minimum_number_days'].' day',strtotime($current_date)));
-				else
+                                }else{
 					$min_date = '';
+                                }
 				//var_dump($min_date);
 				//echo $min_date;exit;
 				$i = 0;
@@ -4548,8 +4559,11 @@ All Reminders
 						$same_day = '';
 						$date_label = '';
 						foreach ($block_dates as $bkey => $bvalue) {
-							if (isset($bvalue['dates']) && count($bvalue['dates']) > 0) $blocked_dates_str = '"'.implode('","', $bvalue['dates']).'"';
-							else $blocked_dates_str = "";
+							if (isset($bvalue['dates']) && count($bvalue['dates']) > 0){
+                                                            $blocked_dates_str = '"'.implode('","', $bvalue['dates']).'"';
+                                                        } else{
+                                                            $blocked_dates_str = "";
+                                                        }
 						/*	if ( ( isset($bvalue['field_name']) && $bvalue['field_name'] == '' )  || !isset($bvalue['field_name']) )	$bvalue['field_name'] = $i;
 							$fld_name = 'woobkap_'.str_replace(' ','_', $bvalue['field_name']);*/
 							$field_name = $i;
@@ -4558,24 +4572,26 @@ All Reminders
 							//echo $fld_name;
 							$blocked_dates_hidden_var .= "<input type='hidden' id='".$fld_name."' name='".$fld_name."' value='".$blocked_dates_str."'/>";
 							$i++;
-							if(isset($bvalue['add_days_to_charge_booking']))
+							if(isset($bvalue['add_days_to_charge_booking'])){
 								$add_day = $bvalue['add_days_to_charge_booking'];
+                                                        }
 							if($add_day == '') {
 								$add_day = 0;
 							}
-							if(isset($bvalue['same_day_booking']))
+							if(isset($bvalue['same_day_booking'])){
 								$same_day = $bvalue['same_day_booking'];
-							else
+                                                        }else {
 								$same_day = '';
+                                                        }
 							print("<input type='hidden' id='wapbk_same_day' name='wapbk_same_day' value='".$same_day."'/>");
 						}
 					
 					//	if (!isset($bvalue['date_label'])) $bvalue['date_label'] = 'Unavailable for Booking';
-						if (isset($bvalue['date_label']) && $bvalue['date_label'] != '') 
+						if (isset($bvalue['date_label']) && $bvalue['date_label'] != '') {
 							$date_label = $bvalue['date_label'];
-						else
+                                                }else{
 							$date_label = 'Unavailable for Booking';
-						
+                                                }
 						//if (isset($bvalue['add_days_to_charge_booking']) && $bvalue['add_days_to_charge_booking'] == '') $add_day = 0;
 						
 						$js_code = '
@@ -4784,12 +4800,9 @@ All Reminders
 							global $bkap_block_booking;
 								$number_of_fixed_price_blocks = $bkap_block_booking->get_fixed_blocks_count($post->ID);
 								if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] =='yes' && $booking_settings['booking_partial_payment_radio'] == 'value' && is_plugin_active('bkap-deposits/deposits.php') && !isset($booking_settings['booking_fixed_block_enable']) && !isset($booking_settings['booking_block_price_enable']))
-									$price_value = 'if(sold_individually == "yes")
-													{
+									$price_value = 'if(sold_individually == "yes") {
 														var total_price = parseFloat(response);
-													}
-													else
-													{
+													} else {
 														var total_price = parseFloat(response) * parseInt(quantity);
 													}';
 								elseif (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] =='yes' && $booking_settings['booking_partial_payment_radio']=='percent' && is_plugin_active('bkap-deposits/deposits.php') && !isset($booking_settings['booking_fixed_block_enable']) && !isset($booking_settings['booking_block_price_enable']))
@@ -5284,7 +5297,9 @@ All Reminders
                                                     
                                             bkap_set_partial_payment_deposit(monthValue,dayValue,yearValue);
 					}
-                                        
+                     //************************************************
+                     //This function called when Full payment option of partial deposits is enabled
+                     //************************************************
                     function bkap_set_partial_payment_deposit(monthValue,dayValue,yearValue)
                     {
 						//alert(monthValue);
@@ -5704,9 +5719,11 @@ All Reminders
 				$post_id = $_POST['post_id'];
 				$product = get_product($post_id);
 				$product_type = $product->product_type;
-				if ( $product_type == 'variable')
+				if ( $product_type == 'variable') {
 					$variation_id = $this->bkap_get_selected_variation_id($post_id, $_POST);
-				else $variation_id = "";
+                                }else { 
+                                    $variation_id = "";
+                                }
 
 				$check_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
 								WHERE start_date='".$date_to_check."'
@@ -5790,8 +5807,12 @@ All Reminders
 								if ($v->from_time != '' && $v->to_time != '') {
 									$from_time_chk = date($time_format_value, strtotime($v->from_time));
 									if ($value->from_time == $from_time_chk) {
-										if ($v->to_time != '') $to_time_chk = date($time_format_value, strtotime($v->to_time));
-										if ($value->to_time == $to_time_chk) unset($results_day_check[$k]);
+										if ($v->to_time != ''){
+                                                                                    $to_time_chk = date($time_format_value, strtotime($v->to_time));
+                                                                                }
+										if ($value->to_time == $to_time_chk){
+                                                                                    unset($results_day_check[$k]);
+                                                                                }
 									}
 								} else {
 									if($v->from_time == $value->from_time) {
@@ -5992,9 +6013,11 @@ All Reminders
 				$product = get_product($product_id);
 				$product_type = $product->product_type;
 					
-				if ( $product_type == 'variable')
+				if ( $product_type == 'variable'){
 					$variation_id = $this->bkap_get_selected_variation_id($product_id, $_POST);
-				else $variation_id = "0";
+                                }else{
+                                    $variation_id = "0";
+                                }
 				//	echo "Variation ID: " . $variation_id;
 				$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 				if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_radio']!='' &&  is_plugin_active('bkap-deposits/deposits.php')){
@@ -6013,9 +6036,11 @@ All Reminders
 				$product_id = $_POST['post_id'];
 				$check_in_date = $_POST['checkin_date'];
 				$check_out_date = $_POST['current_date'];
-				if ($product_type == 'variable')
+				if ($product_type == 'variable'){
 					$variation_id_to_fetch = $this->bkap_get_selected_variation_id($product_id, $_POST);
-				else $variation_id_to_fetch = 0;
+                                }else{
+                                    $variation_id_to_fetch = 0;
+                                }
 				
 				$checkin_date = date('Y-m-d',strtotime($check_in_date));
 				$checkout_date = date('Y-m-d',strtotime($check_out_date));
@@ -6035,9 +6060,11 @@ All Reminders
 					do_action('bkap_deposits_display_updated_price',$product_id,$variation_id_to_fetch,$price);
 					exit;
 				}
-				if ($product_type == 'variable')
+				if ($product_type == 'variable'){
 					$variation_id_to_fetch = $this->bkap_get_selected_variation_id($product_id, $_POST);
-				else $variation_id_to_fetch = 0;
+                                }else{
+                                    $variation_id_to_fetch = 0;
+                                }
 				
 				if ($product_type == 'variable') {
 				//	print_r($_POST);
@@ -6215,8 +6242,7 @@ All Reminders
 		
 				$product_type = $product->product_type;
 				if(isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
-					if(isset($_POST['booking_calender_checkout']))
-					{
+					if(isset($_POST['booking_calender_checkout'])) {
 						$date_disp_checkout = $_POST['booking_calender_checkout'];
 					}
 					if(isset($_POST['wapbk_hidden_date_checkout'])) {
@@ -6598,19 +6624,24 @@ All Reminders
 							}
 							$time_slot_to_display = '';
 							$from_time = trim($time_exploded[0]);
-							if(isset($time_exploded[1]))$to_time = trim($time_exploded[1]);
-							else $to_time = '';
+							if(isset($time_exploded[1])){
+                                                            $to_time = trim($time_exploded[1]);
+                                                        }else{
+                                                            $to_time = '';
+                                                        }
 							if ($time_format == '12') {
 								$from_time = date('h:i A', strtotime($time_exploded[0]));
 								if(isset($time_exploded[1]))$to_time = date('h:i A', strtotime($time_exploded[1]));
 							}
 							$query_from_time = date('G:i', strtotime($time_exploded[0]));
-							if(isset($time_exploded[1]))$query_to_time = date('G:i', strtotime($time_exploded[1]));
-							else $query_to_time = '';
+							if(isset($time_exploded[1])){
+                                                            $query_to_time = date('G:i', strtotime($time_exploded[1]));
+                                                        }else{
+                                                            $query_to_time = '';
+                                                        }
 							if($to_time != '') {
 								$time_slot_to_display = $from_time.' - '.$to_time;
-							}else
-							{
+							}else {
 								$time_slot_to_display = $from_time;
 							}
 							woocommerce_add_order_item_meta( $results[0]->order_item_id,  get_option('book.item-meta-time'), $time_slot_to_display, true );
@@ -6757,8 +6788,11 @@ All Reminders
 					}
  					foreach($lockout_settings as $l_key => $l_value) {
 						if($l_value['from_slot_hrs'] == $from_hours && $l_value['from_slot_min'] == $from_minute && $l_value['to_slot_hrs'] == $to_hours && $l_value['to_slot_min'] == $to_minute) {
-							if (isset($l_value['global_time_check'])) $global_timeslot_lockout = $l_value['global_time_check'];
-							else $global_timeslot_lockout = '';
+							if (isset($l_value['global_time_check'])){
+                                                            $global_timeslot_lockout = $l_value['global_time_check'];
+                                                        } else{
+                                                            $global_timeslot_lockout = '';
+                                                        }
 						}
 					}
 					}
@@ -6960,8 +6994,11 @@ All Reminders
 					$booking_settings = get_post_meta($duplicate_of , 'woocommerce_booking_settings' , true);
 					$post_title = get_post($value['product_id']);
 					$date_check = '';
-					if (isset($value['booking'][0]['hidden_date'])) $date_check = date('Y-m-d', strtotime($value['booking'][0]['hidden_date']));
-					else $date_check = '';
+					if (isset($value['booking'][0]['hidden_date'])){
+                                            $date_check = date('Y-m-d', strtotime($value['booking'][0]['hidden_date']));
+                                        } else{
+                                            $date_check = '';
+                                        }
 					
 					$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
 					if (isset($saved_settings)){
@@ -6975,19 +7012,20 @@ All Reminders
 					}else {
 						$variation_id = '';
 					}
-					if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on')
-					{
+					if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on') {
 						
 						$type_of_slot = apply_filters('bkap_slot_type',$duplicate_of);
 						if($type_of_slot == 'multiple') {
 							do_action('bkap_validate_cart_items',$value);
-						} else
-						{	
+						} else {	
 							if (isset($value['booking'][0]['time_slot'])) {
 								$time_range = explode("-", $value['booking'][0]['time_slot']);
 								$from_time = date('G:i', strtotime($time_range[0]));
-								if(isset($time_range[1])) $to_time = date('G:i', strtotime($time_range[1]));
-								else $to_time = '';
+								if(isset($time_range[1])){
+                                                                    $to_time = date('G:i', strtotime($time_range[1]));
+                                                                } else{
+                                                                    $to_time = '';
+                                                                }
 							}else {
 								$to_time = '';
 								$from_time = '';
@@ -7014,8 +7052,11 @@ All Reminders
 									if ($time_format == '12') {
 										$time_exploded = explode("-", $value['booking'][0]['time_slot']);
 										$from_time = date('h:i A', strtotime($time_exploded[0]));
-										if(isset($time_range[1])) $to_time = date('h:i A', strtotime($time_exploded[1]));
-										else $to_time = '';
+										if(isset($time_range[1])){
+                                                                                    $to_time = date('h:i A', strtotime($time_exploded[1]));
+                                                                                } else{
+                                                                                    $to_time = '';
+                                                                                }
 										if($to_time != '') {
 											$time_slot_to_display = $from_time.' - '.$to_time;
 										}else {
@@ -7163,9 +7204,12 @@ All Reminders
 					//echo $delete_query;
 					$wpdb->query($delete_query);
 					
-					if ($details[3] != "") $from_time = date('h:i A', strtotime($details[3]));
-					if ($details[4] != "") $to_time = date('h:i A', strtotime($details[4]));
-					
+					if ($details[3] != ""){
+                                            $from_time = date('h:i A', strtotime($details[3]));
+                                        }
+					if ($details[4] != "") {
+                                            $to_time = date('h:i A', strtotime($details[4]));
+                                        }
 					$delete_query = "DELETE FROM `".$wpdb->prefix."booking_history`
 								WHERE
 								post_id = '".$details[1]."' AND
@@ -7418,27 +7462,35 @@ All Reminders
 					//$date = str_replace("-","/",$item_value[$label]);
 					$hidden_date = date('d-n-Y',strtotime($start_date));
 					//print_r($hidden_date);
-					if (isset($booking_settings['booking_time_settings'][$hidden_date])) $lockout_settings = $booking_settings['booking_time_settings'][$hidden_date];
-					else $lockout_settings = array();
+					if (isset($booking_settings['booking_time_settings'][$hidden_date])){
+                                            $lockout_settings = $booking_settings['booking_time_settings'][$hidden_date];
+                                        } else{
+                                            $lockout_settings = array();
+                                        }
 					if(count($lockout_settings) > 0) {
 						$week_day = date('l',strtotime($hidden_date));
 						//print_r($week_day);
 						$weekdays = get_book_arrays('weekdays');
 						//print_r($weekdays);
 						$weekday = array_search($week_day,$weekdays);
-						if (isset($booking_settings['booking_time_settings'][$weekday])) $lockout_settings = $booking_settings['booking_time_settings'][$weekday];
-						else $lockout_settings = array();
+						if (isset($booking_settings['booking_time_settings'][$weekday])){
+                                                    $lockout_settings = $booking_settings['booking_time_settings'][$weekday];
+                                                } else{
+                                                    $lockout_settings = array();
+                                                }
 						//print_r($lockout_settings);
 					}
 					$from_lockout_time = explode(":",$from_time);
-					if(isset($from_lockout_time[0]))
+					if(isset($from_lockout_time[0])){
 						$from_hours = $from_lockout_time[0];
-					else
+                                        }else{
 						$from_hours = '';
-					if(isset($from_lockout_time[1]))
+                                        }
+					if(isset($from_lockout_time[1])){
 						$from_minute = $from_lockout_time[1];
-					else 
+                                        }else {
 						$from_minute = '';
+                                        }
 					if($to_time != ''){
 						$to_lockout_time = explode(":",$to_time);
 						$to_hours = $to_lockout_time[0];
@@ -7450,8 +7502,11 @@ All Reminders
 					if(count($lockout_settings) > 0) {
 						foreach($lockout_settings as $l_key => $l_value) {
 							if($l_value['from_slot_hrs'] == $from_hours && $l_value['from_slot_min'] == $from_minute && $l_value['to_slot_hrs'] == $to_hours && $l_value['to_slot_min'] == $to_minute) {
-								if (isset($l_value['global_time_check'])) $global_timeslot_lockout = $l_value['global_time_check'];
-								else $global_timeslot_lockout = '';
+								if (isset($l_value['global_time_check'])){
+                                                                    $global_timeslot_lockout = $l_value['global_time_check'];
+                                                                }else{
+                                                                    $global_timeslot_lockout = '';
+                                                                }
 								//print_r($global_timeslot_lockout);
 							}
 						}
