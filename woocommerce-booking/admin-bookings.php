@@ -38,22 +38,20 @@
                         /***************************************************************** 
                          * This function is used to load ajax functions required by manual booking.
                          *******************************************************************/
-			function bkap_admin_load_ajax()
-			{
+			function bkap_admin_load_ajax() {
 				if ( !is_user_logged_in() ) {
-					add_action('wp_ajax_nopriv_bkap_check_for_time_slot_admin', array(&$this, 'bkap_check_for_time_slot_admin'));
+					add_action('wp_ajax_nopriv_bkap_bkap_check_for_time_slot_admin', array(&$this, 'bkap_check_for_time_slot_admin'));
 					add_action('wp_ajax_nopriv_bkap_insert_admin_date', array(&$this, 'bkap_insert_admin_date'));
 				} else {
-					add_action('wp_ajax_bkap_check_for_time_slot_admin', array(&$this, 'bkap_check_for_time_slot_admin'));
-					add_action('wp_ajax_bkap_insert_admin_date', array(&$this, 'bkap_insert_admin_date'));
+					add_action('wp_ajax_bkap_check_bkap_for_time_slot_admin', array(&$this, 'bkap_check_for_time_slot_admin'));
+					add_action('wp_ajax_bkap_bkap_insert_admin_date', array(&$this, 'bkap_insert_admin_date'));
 				}
 			}
                          /***************************************************************** 
-                         *Detects when the booking plugin is activated and creates the wp_booking_history  table in database
+                         *This function detects when the booking plugin is activated and creates the table necessary in database,if they do not exists. 
                          *******************************************************************/
                         
-			function bkap_admin_bookings_activate()
-			{
+			function bkap_admin_bookings_activate() {
 			
 				global $wpdb;
 				
@@ -67,7 +65,7 @@
 			}
                         /***********************************
                          *  This function is used to get the product from the typed name in the admin side.
-                         *****************************/
+                         ***********************************/
 			
 			function bkap_get_post_by_title($post_title, $output = OBJECT) {
 				
@@ -79,8 +77,8 @@
 				return null;
 			}
                         
-                        /**************************************
-                         * This function fetch the regular and sale price of the product.
+                        /******************************************
+                         * This function displays the price calculated on the product meta box for Multiple day booking feature.
                          ******************************************/
 			function bkap_get_per_night_price($post_id, $days, $booking_settings, $variation_id) {
 			
@@ -226,10 +224,9 @@
 				return $price;
 			}
                         /************************************
-                         * This function will insert the selected date for recurring week day method.
+                         *This function adds the booking date selected on the order page for recurring booking method when the date is selected.
                          ***********************************/
-			function bkap_insert_admin_date() 
-			{
+			function bkap_insert_admin_date() {
 				global $wpdb;
 			
 				$current_date = $_POST['current_date'];
@@ -285,10 +282,9 @@
 				die();
 			}
                         /********************************
-                         * This function will fixed block added in the admin side.
+                         * This function will get the fixed block added in the admin side.
                          ***********************************/
-			function bkap_get_fixed_blocks($post_id)
-			{
+			function bkap_get_fixed_blocks($post_id) {
 				global $wpdb;
 				$query = "SELECT * FROM `".$wpdb->prefix."booking_fixed_blocks` WHERE post_id = '".$post_id."'";
 				$results = $wpdb->get_results($query);
@@ -296,22 +292,19 @@
 				return $results;
 			}
                         /**********************************************
-                         * this function return the count of the fixed block created from the admin side.
-                         * 
+                         * This function return the count of the fixed block created from the admin side.
                          *********************************************/
-			function bkap_get_fixed_blocks_count($post_id)
-			{
+			function bkap_get_fixed_blocks_count($post_id){
 				global $wpdb;
 				$query = "SELECT * FROM `".$wpdb->prefix."booking_fixed_blocks` WHERE post_id = '".$post_id."'";
 				$results = $wpdb->get_results($query);
 				
 				return count($results);
 			}
-                        /********************
+                        /***********************************
                          * This function returns the number of bookings done for a date.
-                         ********************/
-			function bkap_get_date_lockout($start_date,$post_id)
-			{
+                         ************************************/
+			function bkap_get_date_lockout($start_date,$post_id){
 				global $wpdb,$post;
 				$duplicate_of = get_post_meta($post_id, '_icl_lang_duplicate_of', true);
 				if($duplicate_of == '' && $duplicate_of == null) {
@@ -334,10 +327,9 @@
 				return $bookings_done;
 			}
                         /******************************
-                         * 
+                         * This function will add booking fields to the product when Add Meta button is clicked on edit order page.
                          *******************************/
-			function bkap_booking_order_box()
-			{
+			function bkap_booking_order_box() {
 
 				global $woocommerce, $wpdb;
 				
@@ -399,8 +391,7 @@
 						?>
 						<script type="text/javascript">	
 						var order_item_id = jQuery("#order_item_ids").val();
-						jQuery("#admin_block_option_"+order_item_id).change(function()
-						{
+						jQuery("#admin_block_option_"+order_item_id).change(function() {
 							//alert();
 							if ( jQuery("#admin_block_option_"+order_item_id).val() != "" ) {
 								var passed_id = jQuery(this).children(":selected").attr("id");
@@ -768,8 +759,7 @@
 						if(jQuery("#admin_block_option_enabled_'.$_POST['order_item_id'].'").val() == "on") {
 							///alert();
 							//jQuery("#show_time_slot").show();
-							var nod= parseInt(jQuery("#admin_block_option_number_of_day_'.$_POST['order_item_id'].'").val(),10);										if(jQuery("#wapbk_admin_hidden_date_'.$_POST['order_item_id'].'").val() != "")
-							{
+							var nod= parseInt(jQuery("#admin_block_option_number_of_day_'.$_POST['order_item_id'].'").val(),10);										if(jQuery("#wapbk_admin_hidden_date_'.$_POST['order_item_id'].'").val() != "") {
 								var num_of_day= jQuery("#admin_block_option_number_of_day_'.$_POST['order_item_id'].'").val();
 								var split = jQuery("#wapbk_admin_hidden_date_'.$_POST['order_item_id'].'").val().split("-");
 								split[1] = split[1] - 1;		
@@ -999,11 +989,9 @@
 						return [true];
 					}
                                         //********************************************
-                                        //this function is called before displaying the date picker on the Booking date field. This function shows the holidays set for a product, 
-                                        //global holidays and booked days if lockout orders are completed on the datepicker.
+                                        //This function disables the dates in the calendar for holidays, global holidays set and for which lockout is reached for Single day booking feature.
                                         //*********************************************
-					function bkap_show_book(date)
-					{
+					function bkap_show_book(date) {
 						//var date = new Date();
 						var m = date.getMonth(), d = date.getDate(), y = date.getFullYear();
 						// .html() is used when we have zip code groups enabled
@@ -1059,11 +1047,9 @@
 						return [false];
 					}
 					//***************************
-                                        // this function is called after selecting a date in the Booking date field. 
-                                        //This function displays the time slots if there are any time slots exist for that date and product.
+                                        //This function calls an ajax when a date is selected which displays the time slots on frontend product page.
                                         //**********************
-					function bkap_show_times(date,inst)
-					{
+					function bkap_show_times(date,inst) {
 						var monthValue = inst.selectedMonth+1;
 						var dayValue = inst.selectedDay;
 						var yearValue = inst.selectedYear;
@@ -1081,8 +1067,7 @@
 								
 								};
 										
-								jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(response)
-								{
+								jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(response) {
 								jQuery( "tr[data-meta_id=\"'.$meta_id_next.'\"]" ).show();
 							
 								var select = jQuery("<select style=\"width:100%;\">");
@@ -1142,12 +1127,10 @@
 							}
 						}
 					}
-					//*****************************************
-                                        // this function checkin the date selected , it will set hidden field for date field. 
-                                        //And look for if ckeckin date is not collaps with global holiday , and product holiday dates.
+					//**********************************************************
+                                        //This functions checks if the selected date range does not have product holidays or global holidays and sets the hidden date field.
                                         //**********************************************************
-					function bkap_set_checkin_date(date,inst)
-					{
+					function bkap_set_checkin_date(date,inst) {
 						var monthValue = inst.selectedMonth+1;
 						var dayValue = inst.selectedDay;
 						var yearValue = inst.selectedYear;
@@ -1222,11 +1205,9 @@
 						}
 					}
                                         //**************************************************
-                                        // function will set the hidden date field with the check in date selected , 
-                                        // this function calls the calculate price function.
+                                        // This function sets the hidden checkout date for Multiple day booking feature.
                                         //***************************************************
-					function bkap_get_per_night_price(date,inst)
-					{
+					function bkap_get_per_night_price(date,inst) {
 						var monthValue = inst.selectedMonth+1;
 						var dayValue = inst.selectedDay;
 						var yearValue = inst.selectedYear;
@@ -1251,7 +1232,7 @@
 				
 			}
 			/***********************************************
-                         * It check selected product on admin side have the time slots or not.
+                         * This function displays the timeslots for the selected date on the admin order page.
                          *************************************************/
 			function bkap_check_for_time_slot_admin() {
 			
@@ -1407,8 +1388,7 @@
 							$wpdb->query( $insert_date );
 						}
 					}
-				}
-				else {
+				} else {
 					$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
 					WHERE weekday='".$day_check."'
 					AND post_id='".$post_id."'
@@ -1435,8 +1415,7 @@
 							if ($value->from_time != '') {
 								$from_time = date($time_format_to_show, strtotime($value->from_time));
 								$from_time_value = date($time_format_value, strtotime($value->from_time));
-							}
-							else $from_time = $from_time_value = "";
+							} else $from_time = $from_time_value = "";
 			
 							$to_time = $value->to_time;
 								
@@ -1504,7 +1483,7 @@
 			}
 			/******************************
                          * It delete the item(Product) from the item meta box from the orders page
-                         * it calls the cancel order function., and cancel booking is done for same.
+                         * it calls the cancel order function, and cancel booking is done for same.
                          **********************************/
 			function bkap_woocommerce_ajax_remove_order_item_meta_admin(){
 				
@@ -1528,7 +1507,7 @@
 			}
                         /******************************
                          * It delete the item(Product) from the item List from the orders page
-                         * it calls the cancel order function., and cancel booking is done for same.
+                         * it calls the cancel order function, and cancel booking is done for same.
                          **********************************/
 			function bkap_woocommerce_ajax_remove_order_item_admin() {
 				global $woocommerce, $wpdb;
@@ -1548,10 +1527,9 @@
 				//die();
 			}
                         /********************************************
-                         * This function cancel the order from the database.
+                         * This function deletes booking for the products in order when the order is cancelled or refunded and when item is deleted from the meta.
                          *******************************************/
-			function bkap_woocommerce_cancel_order($order_id,$order_item_id)
-			{
+			function bkap_woocommerce_cancel_order($order_id,$order_item_id){
 				global $wpdb,$post;
 				$array = array();
 				$order_obj = new WC_order($order_id);
@@ -1700,10 +1678,9 @@
 				echo $this_a;
 			}
                         /******************************************
-                         * This function will create a Booking for product, when save order button is clicked on the admin side.
+                         * This function will add bookings for the product, when save order button is clicked on the admin edit order page.
                          *****************************************/
-			function bkap_update_order_details($order_id, $post)
-			{	
+			function bkap_update_order_details($order_id, $post) {	
 				global $wpdb, $woocommerce;
 				$order_query = "SELECT * FROM `".$wpdb->prefix."booking_order_history`
 				WHERE order_id = '".$order_id."' ";
@@ -2188,8 +2165,7 @@
 															}
 														}
 													}
-												}
-												else if ($order_key_exists == 'N') {
+												} else if ($order_key_exists == 'N') {
 													if($quantity <= $booking_available) {
 														if($to_time != "") {
 															$query = "UPDATE `".$wpdb->prefix."booking_history`
@@ -2531,15 +2507,13 @@
 				}
 				//exit;
 			}
-			function bkap_seasonal_pricing_page()
-			{
+			function bkap_seasonal_pricing_page(){
 				
 			}
 			/******************************************
-                         * include css files required for admin side.
+                         * This function include css files required for admin side.
                          *****************************************/
-			function bkap_admin_booking_enqueue_scripts_css() 
-			{		
+			function bkap_admin_booking_enqueue_scripts_css(){		
 				//if ( (isset($_GET['post_type']) && $_GET['post_type'] == 'shop_order' ) )
 				if(get_post_type() == 'shop_order') {
 					//wp_enqueue_style( 'datepick', plugins_url('/css/jquery.datepick.css', __FILE__ ) , '', '', false);
@@ -2558,7 +2532,7 @@
 				}
 			}
 			/**********************************************
-                         * include JS files required for admin side.
+                         * This function include JS files required for admin side.
                          * 
                          *********************************************/
 			function bkap_admin_booking_enqueue_scripts_js() {
