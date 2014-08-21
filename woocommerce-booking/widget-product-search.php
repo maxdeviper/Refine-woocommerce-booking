@@ -1,6 +1,9 @@
 <?php 
 class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
  
+    /***************************
+     * This function will set the basic information for widget.
+     ***************************/
  function Custom_WooCommerce_Widget_Product_Search() {
 
 		/* Widget variable settings. */
@@ -17,7 +20,7 @@ class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
 	}
 
 	/**
-	 * widget function.
+	 * This function return the custom page url for widget.
 	 *
 	 * @see WP_Widget
 	 * @access public
@@ -25,13 +28,15 @@ class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
 	 * @param array $instance
 	 * @return void
 	 */
-	 function get_custom_page_url($page_name)
-{
-    global $wpdb;
-    $page_name_id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '".$page_name."'  AND post_status = 'publish' AND post_type = 'page' ");
-    $page_permalink = get_permalink($page_name_id);
-    return $page_permalink;
-}
+	 function get_custom_page_url($page_name) {
+                global $wpdb;
+                $page_name_id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '".$page_name."'  AND post_status = 'publish' AND post_type = 'page' ");
+                $page_permalink = get_permalink($page_name_id);
+                return $page_permalink;
+        }
+        /*******************
+         * This function display the widget on the front end.
+         ***************/
 	function widget( $args, $instance ) {
 		extract($args);
 
@@ -39,12 +44,9 @@ class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
 		$end_date = $instance['end_date_label'];
 		$search_label = $instance['search_label'];
 		$text_label = $instance['text_label'];
-		if(isset($instance['title_label']))
-		{
+		if(isset($instance['title_label'])) {
 			$title = $instance['title_label'];
-		}
-		else 
-		{
+		} else {
 			$title = '';
 		}
 		$title = apply_filters('widget_title', $title, $instance, $this->id_base);
@@ -57,17 +59,15 @@ class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
 $url = plugins_url();
 $action = get_permalink( woocommerce_get_page_id( 'shop' ) );
 $calendar_theme = json_decode(get_option('woocommerce_booking_global_settings'));
-if (isset($calendar_theme))
-	{
+        if (isset($calendar_theme)) {
 		$calendar_theme_sel = $calendar_theme->booking_themes;
 		$booking_language = $calendar_theme->booking_language;
 		$date_format = $calendar_theme->booking_date_format;
+	} else {        
+            $calendar_theme_sel = "smoothness";
+            $booking_language = "en-GB";
+            $date_format = "yy-mm-dd";
 	}
-	else 
-			{$calendar_theme_sel = "smoothness";
-			$booking_language = "en-GB";
-			$date_format = "yy-mm-dd";
-		}
 
 wp_enqueue_style('jquery-ui',"$url/woocommerce-booking/css/themes/$calendar_theme_sel/jquery-ui.css");
 wp_enqueue_script('jquery-ui');
@@ -127,7 +127,7 @@ echo $abc;
 	}
 
 	/**
-	 * update function.
+	 * This function will chnage the value when save buutton click on admin widgets page..
 	 *
 	 * @see WP_Widget->update
 	 * @access public
@@ -145,7 +145,7 @@ echo $abc;
 	}
 
 	/**
-	 * form function.
+	 * This function display the setting field on the admin side.
 	 *
 	 * @see WP_Widget->form
 	 * @access public
