@@ -1,16 +1,18 @@
 <?php
 add_action( 'widgets_init', 'bkap_widgets_init');
 
-function bkap_widgets_init()
-{
+/****************************
+ * This function initialize the wideget , and register the same.
+ *****************************/
+function bkap_widgets_init() {
 	include_once("widget-product-search.php");
 	register_widget( 'Custom_WooCommerce_Widget_Product_Search' );
 }
 
-/*
-Modify current search by adding where clause to cquery fetching posts
-*/
-function get_custom_posts($where, $query){
+/***********************************
+*Modify current search by adding where clause to cquery fetching posts
+************************************/
+function bkap_get_custom_posts($where, $query){
 	global $wpdb;
 	$booking_table = $wpdb->prefix . "booking_history";
 	$meta_table = $wpdb->prefix . "postmeta";
@@ -45,4 +47,4 @@ $where = " AND($wpdb->posts.post_type = 'product'and $wpdb->posts.post_status = 
 	return $where;
 
 }
-add_filter( 'posts_where','get_custom_posts', 10, 2 );
+add_filter( 'posts_where','bkap_get_custom_posts', 10, 2 );
