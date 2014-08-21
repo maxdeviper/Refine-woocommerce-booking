@@ -106,7 +106,7 @@ $days = array('0' => 'Sunday',
 										  'D, MM d, yy' => 'D, F j, Y');
 										
 				$time_formats = array('12' => '12 hour',
-											'24' => '24 hour');
+						      '24' => '24 hour');
 										  
 				$calendar_themes = array('smoothness' => 'Smoothness',
 						'ui-lightness' => 'UI lightness',
@@ -136,8 +136,10 @@ $days = array('0' => 'Sunday',
 
 	global $calendar_themes, $time_formats, $date_formats, $languages, $days, $weekdays;
 
-	function get_book_arrays($str)
-	{
+        /****************************
+         * This function return the array based on string passed for it.
+         *************************/
+	function bkap_get_book_arrays($str){
 		global $calendar_themes, $time_formats, $date_formats, $languages, $days, $weekdays;
 	
 		return $$str;
