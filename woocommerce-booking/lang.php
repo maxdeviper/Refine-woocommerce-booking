@@ -53,12 +53,13 @@ $book_translations = array(
 	
 global $book_translations, $book_lang;
 
-function get_book_t($str)
-{
+/************************
+ * This function is used to call the string defined for translation.
+ ************************/
+function bkap_get_book_t($str) {
 	global $book_translations, $book_lang;
 	
 	return $book_translations[$book_lang][$str];
 }
-
 
 ?>
