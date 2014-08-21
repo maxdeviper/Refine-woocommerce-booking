@@ -34,18 +34,21 @@ header('Content-type: text/calendar; charset=utf-8');
 header('Content-Disposition: attachment; filename=' . 'MyCal.ics');
  
 // 2. Define helper functions
- 
-// Converts a unix timestamp to an ics-friendly format
-// NOTE: "Z" means that this timestamp is a UTC timestamp. If you need
-// to set a locale, remove the "\Z" and modify DTEND, DTSTAMP and DTSTART
-// with TZID properties (see RFC 5545 section 3.3.5 for info)
-function get_dateToCal($timestamp) {
+/********************************************
+ *   Converts a unix timestamp to an ics-friendly format
+ *   NOTE: "Z" means that this timestamp is a UTC timestamp. If you need
+ *   to set a locale, remove the "\Z" and modify DTEND, DTSTAMP and DTSTART
+ *  with TZID properties (see RFC 5545 section 3.3.5 for info)
+*************************************/
+function bkap_get_dateToCal($timestamp) {
 	date_default_timezone_set("UTC");
   return date('Ymd\THis\Z', $timestamp);
 }
  
-// Escapes a string of characters
-function get_escapeString($string) {
+/***************************
+ * Escapes a string of characters
+ **************************/
+function bkap_get_escapeString($string) {
   return preg_replace('/([\,;])/','\\\$1', $string);
 }
 
@@ -56,12 +59,12 @@ PRODID:-//Events Calendar//iCal4j 1.0//EN
 VERSION:2.0
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
-DTSTART:<?php echo (get_dateToCal($_POST['book_date_start']))."\n"; ?>
-DTEND:<?php echo (get_dateToCal($_POST['book_date_end']))."\n"; ?>
-DTSTAMP:<?php echo (get_dateToCal($_POST['current_time']))."\n"; ?>
+DTSTART:<?php echo (bkap_get_dateToCal($_POST['book_date_start']))."\n"; ?>
+DTEND:<?php echo (bkap_get_dateToCal($_POST['book_date_end']))."\n"; ?>
+DTSTAMP:<?php echo (bkap_get_dateToCal($_POST['current_time']))."\n"; ?>
 UID:<?php echo (uniqid())."\n"; ?>
-LOCATION:<?php echo (get_escapeString('Mumbai'))."\n"; ?>
-DESCRIPTION:<?php echo (get_escapeString($_POST['book_name']))."\n"; ?>
-SUMMARY:<?php echo (get_escapeString($_POST['book_name']))."\n"; ?>
+LOCATION:<?php echo (bkap_get_escapeString('Mumbai'))."\n"; ?>
+DESCRIPTION:<?php echo (bkap_get_escapeString($_POST['book_name']))."\n"; ?>
+SUMMARY:<?php echo (bkap_get_escapeString($_POST['book_name']))."\n"; ?>
 END:VEVENT
 END:VCALENDAR
