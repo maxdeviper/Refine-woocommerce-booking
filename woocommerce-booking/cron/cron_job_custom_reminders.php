@@ -107,8 +107,7 @@ foreach ( $postslist as $post ) :
 				$reminders_array = json_decode(get_post_meta( $order_id, "_emailreminders_send_id", true ));
 				
 				$emailreminders_send_id = array();
-				if ($reminders_array != null && count($reminders_array) > 0)
-				{
+				if ($reminders_array != null && count($reminders_array) > 0) {
 					$emailreminders_send_id = array_values($reminders_array);
 				}
 
