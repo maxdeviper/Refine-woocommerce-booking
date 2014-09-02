@@ -859,12 +859,12 @@ END:VCALENDAR";
 								
 								if( $results[0]->available_booking > 0 && $results[0]->available_booking < $_POST['quantity'] ) {
 									
-                                                                        $message = $post_title->post_title.get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
+                                                                        $message = $post_title->post_title.bkap_get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.bkap_get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
 									wc_add_notice( $message, $notice_type = 'error');
 									$quantity_check_pass = 'no';
 								} elseif ( $results[0]->total_booking > 0 && $results[0]->available_booking == 0 ) {
 									
-                                                                        $message = get_book_t('book.no-booking-msg1').$post_title->post_title.get_book_t('book.no-booking-msg2').$time_slot_to_display.get_book_t('book.no-booking-msg3');
+                                                                        $message = bkap_get_book_t('book.no-booking-msg1').$post_title->post_title.bkap_get_book_t('book.no-booking-msg2').$time_slot_to_display.bkap_get_book_t('book.no-booking-msg3');
 									wc_add_notice( $message, $notice_type = 'error');
 									$quantity_check_pass = 'no';
 								}
@@ -884,7 +884,7 @@ END:VCALENDAR";
                                                                             
 										if ($results[0]->available_booking > 0 && $results[0]->available_booking < $total_quantity) {
 											
-                                                                                        $message = $post_title->post_title.get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
+                                                                                        $message = $post_title->post_title.bkap_get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.bkap_get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
 											wc_add_notice( $message, $notice_type = 'error');
 											$quantity_check_pass = 'no';
 										}
@@ -925,7 +925,7 @@ END:VCALENDAR";
 						if (array_key_exists($v,$dates_new_arr)) {
 							if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $_POST['quantity']) {
 								$available_tickets = $lockout - $dates_new_arr[$v];
-								$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+								$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 								wc_add_notice( $message, $notice_type = 'error');
 								$quantity_check_pass = 'no';
 							}
@@ -933,7 +933,7 @@ END:VCALENDAR";
 							
                                                         if ($lockout != 0 && $lockout < $_POST['quantity']) {
 								$available_tickets = $lockout;
-								$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+								$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 								wc_add_notice( $message, $notice_type = 'error');
 								$quantity_check_pass = 'no';
 							}
@@ -957,14 +957,14 @@ END:VCALENDAR";
 										if (in_array($v,$dates)) {
 											if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $_POST['quantity'] + $quantity) {
 												$available_tickets = $lockout - $dates_new_arr[$v];
-												$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+												$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 												wc_add_notice( $message, $notice_type = 'error');
 												$quantity_check_pass = 'no';
 											}
 										} else {
 											if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $_POST['quantity']) {
 												$available_tickets = $lockout - $dates_new_arr[$v];
-												$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+												$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 												wc_add_notice( $message, $notice_type = 'error');
 												$quantity_check_pass = 'no';
 											}
@@ -973,14 +973,14 @@ END:VCALENDAR";
 										if (in_array($v,$dates)) {
 											if ($lockout != 0 && $lockout < $_POST['quantity'] + $quantity) {
 												$available_tickets = $lockout;
-												$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+												$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 												wc_add_notice( $message, $notice_type = 'error');
 												$quantity_check_pass = 'no';
 											}
 										} else {
 											if ($lockout != 0 && $lockout < $_POST['quantity']) {
 												$available_tickets = $lockout;
-												$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+												$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 												wc_add_notice( $message, $notice_type = 'error');
 												$quantity_check_pass = 'no';
 											}
@@ -999,11 +999,11 @@ END:VCALENDAR";
 
 					if (isset($results) && count($results) > 0) {
 						if( $results[0]->available_booking > 0 && $results[0]->available_booking < $_POST['quantity'] ) {
-							$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
+							$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.bkap_get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
 							wc_add_notice( $message, $notice_type = 'error');
 							$quantity_check_pass = 'no';
 						} elseif ( $results[0]->total_booking > 0 && $results[0]->available_booking == 0 ) {
-							$message = get_book_t('book.no-booking-date-msg1').$post_title->post_title.get_book_t('book.no-booking-date-msg2').$results[0]->start_date.get_book_t('book.no-booking-date-msg3');
+							$message = bkap_get_book_t('book.no-booking-date-msg1').$post_title->post_title.bkap_get_book_t('book.no-booking-date-msg2').$results[0]->start_date.bkap_get_book_t('book.no-booking-date-msg3');
 							wc_add_notice( $message, $notice_type = 'error');
 							$quantity_check_pass = 'no';
 						}
@@ -1021,7 +1021,7 @@ END:VCALENDAR";
 								$total_quantity = $_POST['quantity'] + $quantity;
 								if (isset($results) && count($results) > 0) {
 									if( $results[0]->available_booking > 0 && $results[0]->available_booking < $total_quantity ) {
-										$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
+										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.bkap_get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
 										wc_add_notice( $message, $notice_type = 'error');
 										$quantity_check_pass = 'no';
 									}
@@ -2008,7 +2008,7 @@ END:VCALENDAR";
 					// Save the field values
 					if ( isset( $_POST['wapbk_booking_settings_frm'] ) && $_POST['wapbk_booking_settings_frm'] == 'save' ) {
 						$calendar_theme = trim($_POST['wapbk_calendar_theme']);
-						$calendar_themes = get_book_arrays('calendar_themes');
+						$calendar_themes = bkap_get_book_arrays('calendar_themes');
 						$calendar_theme_name = $calendar_themes[$calendar_theme];
 						
 						$booking_settings = new stdClass();
@@ -2082,7 +2082,7 @@ END:VCALENDAR";
 										  			}
 										  			
 										  			if ( $language_selected == "" ) $language_selected = "en-GB";
-													$languages = get_book_arrays('languages');
+													$languages = bkap_get_book_arrays('languages');
 										  			
 										  			foreach ( $languages as $key => $value ) {
 										  				$sel = "";
@@ -2109,7 +2109,7 @@ END:VCALENDAR";
 										  			} else {
 										  				$date_format = "";
 										  			}
-													$date_formats = get_book_arrays('date_formats');
+													$date_formats = bkap_get_book_arrays('date_formats');
 										  			foreach ($date_formats as $k => $format) {
 										  				printf( "<option %s value='%s'>%s</option>\n",
 										  						selected( $k, $date_format, false ),
@@ -2134,7 +2134,7 @@ END:VCALENDAR";
 										  			if (isset($saved_settings)) {
 										  				$time_format = $saved_settings->booking_time_format;
 										  			}
-													$time_formats = get_book_arrays('time_formats');
+													$time_formats = bkap_get_book_arrays('time_formats');
 										  			foreach ($time_formats as $k => $format) {
 										  				printf( "<option %s value='%s'>%s</option>\n",
 										  						selected( $k, $time_format, false ),
@@ -2186,7 +2186,7 @@ END:VCALENDAR";
 										  			}
 										  			
 										  			if ( $day_selected == "" ) $day_selected = get_option('start_of_week');
-										  			$days = get_book_arrays('days');
+										  			$days = bkap_get_book_arrays('days');
 										  			foreach ( $days as $key => $value ) {
 										  				$sel = "";
 										  				if ($key == $day_selected) {
@@ -3083,7 +3083,7 @@ All Reminders
 					<fieldset class="days-fieldset">
 							<legend><b>Days:</b></legend>
 							<?php 
-							$weekdays = get_book_arrays('weekdays');
+							$weekdays = bkap_get_book_arrays('weekdays');
 							foreach ( $weekdays as $n => $day_name) {
 								print('<input type="checkbox" name="'.$n.'" id="'.$n.'" />
 								<label for="'.$day_name.'">'.$day_name.'</label>
@@ -3394,7 +3394,7 @@ All Reminders
 							
 						} elseif ( substr($key,0,7) == "booking" ) {
 							$date_pass = $key;
-							$weekdays = get_book_arrays('weekdays');
+							$weekdays = bkap_get_book_arrays('weekdays');
 							$date_disp = $weekdays[$key];
 							//$price = $prices[$key."_price"];
 							foreach( $value as $date_key => $date_value ) {
@@ -3432,7 +3432,7 @@ All Reminders
 								print('<td> <a href="javascript:void(0);" id="'.$date_key.'&'.$duplicate_of.'" class="remove_day_data"> <img src="'.plugins_url().'/woocommerce-booking/images/delete.png" alt="Remove Date" title="Remove Date"></a> </td>');
 								print('</tr>');	
 							} elseif (substr($value->weekday, 0, 7) == "booking" && $value->start_date == "0000-00-00") {
-								$weekdays = get_book_arrays('weekdays');
+								$weekdays = bkap_get_book_arrays('weekdays');
 								//$price = $prices[$value->weekday."_price"];
 								$date_disp = $weekdays[$value->weekday];
 								$var .= '<tr id="row_'.$value->weekday.'" >
@@ -3568,7 +3568,7 @@ All Reminders
 				 
 				$booking_days = array();
 				$new_day_arr = array();
-				$weekdays = get_book_arrays('weekdays');
+				$weekdays = bkap_get_book_arrays('weekdays');
 				foreach ($weekdays as $n => $day_name) {
 					if ( isset($woo_booking_dates['booking_recurring']) && count($woo_booking_dates['booking_recurring']) > 1 ) {
 						if ( isset($_POST[$n]) && $_POST[$n] == 'on' || isset($_POST[$n]) && $_POST[$n] == '') {
@@ -3908,7 +3908,7 @@ All Reminders
 				}
 				do_action('bkap_print_hidden_fields',$duplicate_of);
 				$method_to_show = 'bkap_check_for_time_slot';
-				$get_method = ajax_on_select_date();
+				$get_method = bkap_ajax_on_select_date();
 				//echo $get_method;exit;
 				if(isset($get_method) && $get_method == 'multiple_time') {
 					$method_to_show = apply_filters('bkap_function_slot','');
@@ -6664,7 +6664,7 @@ All Reminders
 					else $lockout_settings = array();
 					if(count($lockout_settings) == 0){
 						$week_day = date('l',strtotime($hidden_date));
-						$weekdays = get_book_arrays('weekdays');
+						$weekdays = bkap_get_book_arrays('weekdays');
 						$weekday = array_search($week_day,$weekdays);
 						if (isset($booking_settings['booking_time_settings'][$weekday])) $lockout_settings = $booking_settings['booking_time_settings'][$weekday];
 						else $lockout_settings = array();
@@ -6730,7 +6730,7 @@ All Reminders
 											if($updated == 0) {
 												if($val->weekday == '') {
 													$week_day = date('l',strtotime($date_query));
-													$weekdays = get_book_arrays('weekdays');
+													$weekdays = bkap_get_book_arrays('weekdays');
 													$weekday = array_search($week_day,$weekdays);
 													//echo $weekday;exit;
 												} else {
@@ -6801,7 +6801,7 @@ All Reminders
 											if($updated == 0) {
 												if($val->weekday == '') {
 													$week_day = date('l',strtotime($date_query));
-													$weekdays = get_book_arrays('weekdays');
+													$weekdays = bkap_get_book_arrays('weekdays');
 													$weekday = array_search($week_day,$weekdays);
 													//echo $weekday;exit;
 												} else {
@@ -6962,10 +6962,10 @@ All Reminders
 										}
 									}
 									if( $results[0]->available_booking > 0 && $results[0]->available_booking < $value['quantity'] ) {
-										$message = $post_title->post_title.get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
+										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.bkap_get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
 										wc_add_notice( $message, $notice_type = 'error');
 									} elseif ( $results[0]->total_booking > 0 && $results[0]->available_booking == 0 ) {	
-										$message = get_book_t('book.no-booking-msg1').$post_title->post_title.get_book_t('book.no-booking-msg2').$time_slot_to_display.get_book_t('book.no-booking-msg3');
+										$message = bkap_get_book_t('book.no-booking-msg1').$post_title->post_title.bkap_get_book_t('book.no-booking-msg2').$time_slot_to_display.bkap_get_book_t('book.no-booking-msg3');
 										wc_add_notice( $message, $notice_type = 'error');
 									}
 								}
@@ -7002,13 +7002,13 @@ All Reminders
 							if (array_key_exists($v,$dates_new_arr)) {
 								if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $value['quantity']){
 									$available_tickets = $lockout - $dates_new_arr[$v];
-									$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+									$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 									wc_add_notice( $message, $notice_type = 'error');
 								}
 							}else{
 								if ($lockout != 0 && $lockout < $value['quantity']) {
 									$available_tickets = $lockout;
-									$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$available_tickets.get_book_t('book.limited-booking-date-msg2').$v.'.';
+									$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 									wc_add_notice( $message, $notice_type = 'error');
 								}
 							}
@@ -7022,11 +7022,11 @@ All Reminders
 						if(!$results) break;
 						else {
 							if( $results[0]->available_booking > 0 && $results[0]->available_booking < $value['quantity'] ) {
-								$message = $post_title->post_title.get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
+								$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.bkap_get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
 								wc_add_notice( $message, $notice_type = 'error');
 								
 							} elseif ( $results[0]->total_booking > 0 && $results[0]->available_booking == 0 ) {
-								$message = get_book_t('book.no-booking-date-msg1').$post_title->post_title.get_book_t('book.no-booking-date-msg2').$results[0]->start_date.get_book_t('book.no-booking-date-msg3');
+								$message = bkap_get_book_t('book.no-booking-date-msg1').$post_title->post_title.bkap_get_book_t('book.no-booking-date-msg2').$results[0]->start_date.bkap_get_book_t('book.no-booking-date-msg3');
 								wc_add_notice( $message, $notice_type = 'error');
 								
 							}
@@ -7188,7 +7188,7 @@ All Reminders
 				if(isset($_POST['details'])) {
 				$details = $_POST['details'];
 				$book_details = get_post_meta($details, 'woocommerce_booking_settings', true);
-				$weekdays = get_book_arrays('weekdays');
+				$weekdays = bkap_get_book_arrays('weekdays');
 				foreach ($weekdays as $n => $day_name) {
 					if (array_key_exists($n,$book_details[booking_time_settings])) unset($book_details[booking_time_settings][$n]);
 					$book_details[booking_recurring][$n] = '';
@@ -7365,7 +7365,7 @@ All Reminders
 					if(count($lockout_settings) > 0) {
 						$week_day = date('l',strtotime($hidden_date));
 						//print_r($week_day);
-						$weekdays = get_book_arrays('weekdays');
+						$weekdays = bkap_get_book_arrays('weekdays');
 						//print_r($weekdays);
 						$weekday = array_search($week_day,$weekdays);
 						if (isset($booking_settings['booking_time_settings'][$weekday])){
