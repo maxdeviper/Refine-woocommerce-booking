@@ -3148,7 +3148,7 @@ All Reminders
 						$min_days = $booking_settings['booking_minimum_number_days'];
 					}
 					?>
-					<input type="text" name="booking_minimum_number_days" id="booking_minimum_number_days" value="<?php echo sanitize_text_field( $lockout_date, true );?>" >
+					<input type="text" name="booking_minimum_number_days" id="booking_minimum_number_days" value="<?php echo sanitize_text_field( $min_days, true );?>" >
 					<img class="help_tip" width="16" height="16" data-tip="<?php _e('Enable Booking after X number of days from current date. The customer can select a booking date that is available only after the minimum days that are entered here. For example, if you need 3 days advance notice for a booking, enter 3 here.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
 					</td>
 				</tr>
@@ -3168,7 +3168,7 @@ All Reminders
 						$max_date = "30";
 					}		
 					?>
-					<input type="text" name="booking_maximum_number_days" id="booking_maximum_number_days" value="<?php echo sanitize_text_field( $lockout_date, true );?>" >
+					<input type="text" name="booking_maximum_number_days" id="booking_maximum_number_days" value="<?php echo sanitize_text_field( $max_date, true );?>" >
 					<img class="help_tip" width="16" height="16" data-tip="<?php _e('The maximum number of booking dates you want to be available for your customers to choose from. For example, if you take only 2 months booking in advance, enter 60 here.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
 					</td>
 				</tr>
@@ -4742,7 +4742,7 @@ All Reminders
 							$hidden_date = '';
 							$hidden_date_checkout = '';
 							global $bkap_block_booking;
-								$number_of_fixed_price_blocks = $bkap_block_booking->get_fixed_blocks_count($post->ID);
+								$number_of_fixed_price_blocks = $bkap_block_booking->bkap_get_fixed_blocks_count($post->ID);
 								if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] =='yes' && $booking_settings['booking_partial_payment_radio'] == 'value' && is_plugin_active('bkap-deposits/deposits.php') && !isset($booking_settings['booking_fixed_block_enable']) && !isset($booking_settings['booking_block_price_enable']))
 									$price_value = 'if(sold_individually == "yes") {
 														var total_price = parseFloat(response);
@@ -4836,7 +4836,7 @@ All Reminders
                             } else {
 								
 								global $bkap_block_booking;
-								$number_of_fixed_price_blocks = $bkap_block_booking->get_fixed_blocks_count($post->ID);
+								$number_of_fixed_price_blocks = $bkap_block_booking->bkap_get_fixed_blocks_count($post->ID);
 								if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] =='yes' && $booking_settings['booking_partial_payment_radio'] == 'value' && is_plugin_active('bkap-deposits/deposits.php') && !isset($booking_settings['booking_fixed_block_enable']) && !isset($booking_settings['booking_block_price_enable']))
 									$price_value = 'if(sold_individually == "yes"){
 														var total_price = parseFloat(response);
@@ -5024,7 +5024,7 @@ All Reminders
 								}
 							}
 						}
-							
+						
 						if (id_booking == "booking_calender_checkout" || id_booking == "inline_calendar_checkout") {
 							for (iii = 0; iii < bookedDatesCheckout.length; iii++) {
 								//alert(bookedDates);

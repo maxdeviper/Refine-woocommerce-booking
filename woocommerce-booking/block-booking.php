@@ -422,8 +422,8 @@
 
 						if (exploded_id[6] == "amount"){ 
                                                     jQuery("input[id=booking_seasonal_pricing_amount]").attr("checked",true);
-                                                }else if{ 
-                                                    (exploded_id[6] == "percent") jQuery("input[id=booking_seasonal_pricing_percent]").attr("checked",true);
+                                                } else if (exploded_id[6] == "percent"){ 
+                                                     jQuery("input[id=booking_seasonal_pricing_percent]").attr("checked",true);
                                                 }
 
 						document.getElementById("add_block").style.display = "block";
