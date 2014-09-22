@@ -156,12 +156,12 @@ function bkap_woocommerce_booking_delete(){
 				}
 				add_action( 'woocommerce_checkout_update_order_meta', array(&$this, 'bkap_order_item_meta'), 10, 2);
 				add_action( 'woocommerce_order_item_meta', array(&$this, 'bkap_add_order_item_meta'), 10, 2 );
-				add_action('woocommerce_before_checkout_process', array(&$this, 'bkap_quantity_check'));
+				add_action('woocommerce_before_checkout_process', array(bkap_validation, 'bkap_quantity_check'));
 				add_filter( 'woocommerce_add_to_cart_validation', array(bkap_validation, 'bkap_get_validate_add_cart_item'), 10, 3 );
 				add_action('woocommerce_order_status_cancelled' , array(&$this,'bkap_woocommerce_cancel_order'),10,1);
 				add_action('woocommerce_order_status_refunded' , array(&$this,'bkap_woocommerce_cancel_order'),10,1);
 				add_action('woocommerce_duplicate_product' , array(&$this,'bkap_product_duplicate'),10,2);
-				add_action('woocommerce_check_cart_items', array(&$this,'bkap_quantity_check'));
+				add_action('woocommerce_check_cart_items', array(bkap_validation,'bkap_quantity_check'));
 				
 				//Export date to ics file from order received page
 				$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
@@ -6575,179 +6575,7 @@ All Reminders
 				//exit;//print_r($ticket_content);exit;
 				do_action('bkap_send_email',$ticket_content);
 			}
-			/******************************************
-                         * This function checks availability for date and time slot on the cart page when quantity on cart page is changed.
-                         *******************************************/
-			function bkap_quantity_check(){
-				global $woocommerce, $wpdb;
-
-				foreach ( $woocommerce->cart->cart_contents as $key => $value ) {
-					$duplicate_of = get_post_meta($value['product_id'], '_icl_lang_duplicate_of', true);
-					if($duplicate_of == '' && $duplicate_of == null) {
-						$post_time = get_post($value['product_id']);
-						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-						$results_post_id = $wpdb->get_results ( $id_query );
-						if( isset($results_post_id) ) {
-							$duplicate_of = $results_post_id[0]->ID;
-						}else {
-							$duplicate_of = $value['product_id'];
-						}
-						//$duplicate_of = $item_value['product_id'];
-					}
- 
-					$booking_settings = get_post_meta($duplicate_of , 'woocommerce_booking_settings' , true);
-					$post_title = get_post($value['product_id']);
-					$date_check = '';
-					if (isset($value['booking'][0]['hidden_date'])){
-                                            $date_check = date('Y-m-d', strtotime($value['booking'][0]['hidden_date']));
-                                        } else{
-                                            $date_check = '';
-                                        }
-					
-					$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-					if (isset($saved_settings)){
-						$time_format = $saved_settings->booking_time_format;
-					} else {
-						$time_format = "12";
-					}
-					if(isset($value['variation_id']))
-					{
-						$variation_id = $value['variation_id'];
-					}else {
-						$variation_id = '';
-					}
-					if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on') {
-						
-						$type_of_slot = apply_filters('bkap_slot_type',$duplicate_of);
-						if($type_of_slot == 'multiple') {
-							do_action('bkap_validate_cart_items',$value);
-						} else {	
-							if (isset($value['booking'][0]['time_slot'])) {
-								$time_range = explode("-", $value['booking'][0]['time_slot']);
-								$from_time = date('G:i', strtotime($time_range[0]));
-								if(isset($time_range[1])){
-                                                                    $to_time = date('G:i', strtotime($time_range[1]));
-                                                                } else{
-                                                                    $to_time = '';
-                                                                }
-							}else {
-								$to_time = '';
-								$from_time = '';
-							}
-							
-							if($to_time != '') {
-								$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-										WHERE post_id = '".$duplicate_of."'
-										AND start_date = '".$date_check."'
-										AND from_time = '".$from_time."'
-										AND to_time = '".$to_time."' ";
-								$results = $wpdb->get_results( $query );
-							}else {
-								$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-									WHERE post_id = '".$duplicate_of."'
-									AND start_date = '".$date_check."'
-									AND from_time = '".$from_time."'";
-								$results = $wpdb->get_results( $query );
-							}
-							if (!$results) break;
-							else{
-								if ($value['booking'][0]['time_slot'] != "") {
-									// if current format is 12 hour format, then convert the times to 24 hour format to check in database
-									if ($time_format == '12') {
-										$time_exploded = explode("-", $value['booking'][0]['time_slot']);
-										$from_time = date('h:i A', strtotime($time_exploded[0]));
-										if(isset($time_range[1])){
-                                                                                    $to_time = date('h:i A', strtotime($time_exploded[1]));
-                                                                                } else{
-                                                                                    $to_time = '';
-                                                                                }
-										if($to_time != '') {
-											$time_slot_to_display = $from_time.' - '.$to_time;
-										}else {
-											$time_slot_to_display = $from_time;
-										}
-									} else {
-										if($to_time != '') {
-											$time_slot_to_display = $from_time.' - '.$to_time;
-										} else {
-											$time_slot_to_display = $from_time;
-										}
-									}
-									if( $results[0]->available_booking > 0 && $results[0]->available_booking < $value['quantity'] ) {
-										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.bkap_get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
-										wc_add_notice( $message, $notice_type = 'error');
-									} elseif ( $results[0]->total_booking > 0 && $results[0]->available_booking == 0 ) {	
-										$message = bkap_get_book_t('book.no-booking-msg1').$post_title->post_title.bkap_get_book_t('book.no-booking-msg2').$time_slot_to_display.bkap_get_book_t('book.no-booking-msg3');
-										wc_add_notice( $message, $notice_type = 'error');
-									}
-								}
-							}
-						}
-					} else if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
-						$date_checkout = date('d-n-Y', strtotime($value['booking'][0]['hidden_date_checkout']));
-						$date_cheeckin = date('d-n-Y', strtotime($value['booking'][0]['hidden_date']));
-						$order_dates = bkap_common::bkap_get_betweendays($date_cheeckin, $date_checkout);
-						$todays_date = date('Y-m-d');
-
-						$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history
-							WHERE start_date >='".$todays_date."' AND post_id = '".$duplicate_of."'";
-						$results_date = $wpdb->get_results($query_date);	
-
-						//print_r($results_date);
-						$dates_new = array();
-							
-						foreach($results_date as $k => $v) {
-							$start_date = $v->start_date;
-							$end_date = $v->end_date;
-							$dates = bkap-common::bkap_get_betweendays($start_date, $end_date);
-							//print_r($dates);
-							$dates_new = array_merge($dates,$dates_new);
-						}
-						$dates_new_arr = array_count_values($dates_new);
-							
-						$lockout = "";
-						if (isset($booking_settings['booking_date_lockout'])) {
-							$lockout = $booking_settings['booking_date_lockout'];
-						}
-
-						foreach ($order_dates as $k => $v){
-							if (array_key_exists($v,$dates_new_arr)) {
-								if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $value['quantity']){
-									$available_tickets = $lockout - $dates_new_arr[$v];
-									$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
-									wc_add_notice( $message, $notice_type = 'error');
-								}
-							}else{
-								if ($lockout != 0 && $lockout < $value['quantity']) {
-									$available_tickets = $lockout;
-									$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
-									wc_add_notice( $message, $notice_type = 'error');
-								}
-							}
-						}
-					}else {	
-						$query = "SELECT total_booking,available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-									WHERE post_id = '".$duplicate_of."'
-									AND start_date = '".$date_check."' ";
-						$results = $wpdb->get_results( $query );
-
-						if(!$results) break;
-						else {
-							if( $results[0]->available_booking > 0 && $results[0]->available_booking < $value['quantity'] ) {
-								$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.bkap_get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
-								wc_add_notice( $message, $notice_type = 'error');
-								
-							} elseif ( $results[0]->total_booking > 0 && $results[0]->available_booking == 0 ) {
-								$message = bkap_get_book_t('book.no-booking-date-msg1').$post_title->post_title.bkap_get_book_t('book.no-booking-date-msg2').$results[0]->start_date.bkap_get_book_t('book.no-booking-date-msg3');
-								wc_add_notice( $message, $notice_type = 'error');
-								
-							}
-						}
-					}
-				}
-			}
-
-                        /*****************************************************
+		                        /*****************************************************
                          * This function deletes a single time slot from View/Delete Booking date, Timeslots.
                          ******************************************************/
 			function bkap_remove_time_slot() {
