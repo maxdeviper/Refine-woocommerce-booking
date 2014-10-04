@@ -47,8 +47,8 @@ include_once('lang.php');
 include_once('bkap-config.php');
 include_once('bkap-common.php');
 include_once('availability-search.php');
-include_once('block-price-booking.php');
-include_once('block-booking.php');
+include_once('price-by-range.php');
+include_once('fixed-block.php');
 include_once('admin-bookings.php');
 include_once('validation.php');
 include_once('checkout.php');
@@ -185,7 +185,7 @@ function bkap_woocommerce_booking_delete(){
 				add_action('admin_init', array('bkap_license', 'bkap_edd_sample_deactivate_license'));
 				add_action('admin_init', array('bkap_license', 'bkap_edd_sample_activate_license'));	
 				add_filter('woocommerce_my_account_my_orders_actions', array('bkap_cancel_order', 'bkap_get_add_cancel_button'), 10, 3 );
-				add_filter('add_to_cart_fragments', array(&$this, 'bkap_get_woo_cart_widget_subtotal'));
+				add_filter('add_to_cart_fragments', array('bkap-cart', 'bkap_woo_cart_widget_subtotal'));
 			}
 			
                         
@@ -233,62 +233,7 @@ function bkap_woocommerce_booking_delete(){
 					$wpdb->query( $query_insert );
 				}
 			}
-			/************************************
-                         *This function displays the updated price in the cart widget.
-                         * 
-                         ************************************/
-			function bkap_get_woo_cart_widget_subtotal( $fragments ) {
-				global $woocommerce;
-					
-				$price = 0;
-				foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values ) {
-					if (isset($values['booking'])) $booking = $values['booking'];
-					if (isset($booking[0]['price']) && $booking[0]['price'] != '') $price += ($booking[0]['price']) * $values['quantity'];
-					else {
-						if ($values['variation_id'] == '') $product_type = $values['data']->product_type;
-						else $product_type = $values['data']->parent->product_type;
-					
-						if ($product_type == 'variable') {
-							
-                                                    $sale_price = get_post_meta( $values['variation_id'], '_sale_price', true);
-							if($sale_price == '') {
-								$regular_price = get_post_meta( $values['variation_id'], '_regular_price',true);
-								$price += $regular_price * $values['quantity'];
-							} else {
-								$price += $sale_price * $values['quantity'];
-							}
-						} elseif($product_type == 'simple') {
-							$sale_price = get_post_meta( $values['product_id'], '_sale_price', true);
-			
-							if(!isset($sale_price) || $sale_price == '' || $sale_price == 0) {
-                                                            
-								$regular_price = get_post_meta($values['product_id'], '_regular_price',true);
-			
-								$price += $regular_price * $values['quantity'];
-							} else {
-								$price += $sale_price * $values['quantity'];
-							}
-						}
-					}
-				}
-			
-				$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-				if (isset($saved_settings->enable_rounding) && $saved_settings->enable_rounding == "on")
-					$total_price = round($price);
-				else $total_price = number_format($price,2);
-				
-				ob_start();
-				$currency_symbol = get_woocommerce_currency_symbol();
-				print('<p class="total"><strong>Subtotal:</strong> <span class="amount">'.$currency_symbol.$total_price.'</span></p>');
-					
-				$fragments['p.total'] = ob_get_clean();
-					
-				return $fragments;
-			}
-			
-                            
-			
-                        /****************************************************
+			            /****************************************************
                          *  This function is executed when the plugin is updated using the Automatic Updater. 
                          *  The function then calls the bookings_activate function which will check the table structures for the plugin and make any changes if necessary.
                          ******************************************************/

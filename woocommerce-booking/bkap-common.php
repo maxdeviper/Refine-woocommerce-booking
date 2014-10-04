@@ -34,5 +34,45 @@ class bkap_common{
 		}
 		return $Days;
 	}
+	
+	public static function bkap_get_product_id($product_id)
+	{
+		global $wpdb;
+		$duplicate_of = get_post_meta($product_id, '_icl_lang_duplicate_of', true);
+	
+		if($duplicate_of == '' && $duplicate_of == null){
+			//	$duplicate_of = $cart_item['product_id'];
+			$post_time = get_post($product_id);
+			$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
+			$results_post_id = $wpdb->get_results ( $id_query );
+			if( isset($results_post_id) ) {
+				$duplicate_of = $results_post_id[0]->ID;
+			}else {
+				$duplicate_of = $cart_item['product_id'];
+			}
+		}
+		return $duplicate_of;
+	}
+	
+	public static function bkap_get_price($product_id,$variation_id,$product_type) {
+		if ( $product_type == 'variable'){
+			$sale_price = get_post_meta( $variation_id, '_sale_price', true);
+			if(!isset($sale_price) || $sale_price == '' || $sale_price == 0) {
+				$regular_price = get_post_meta( $variation_id, '_regular_price', true);
+				$price = $regular_price;
+			}else {
+				$price = $sale_price;
+			}
+		}elseif($product_type == 'simple') {
+			$sale_price = get_post_meta( $product_id, '_sale_price', true);
+			if(!isset($sale_price) || $sale_price == '' || $sale_price == 0) {
+				$regular_price = get_post_meta( $product_id, '_regular_price', true);
+				$price = $regular_price;
+			}else {
+				$price = $sale_price;
+			}
+		}
+		return $price;
+	}
 }
 ?>

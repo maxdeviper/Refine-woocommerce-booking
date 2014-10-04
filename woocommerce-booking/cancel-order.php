@@ -3,7 +3,7 @@
 }*/
 include_once('bkap-common.php');
 include_once('lang.php');
-//exit;
+
 class bkap_cancel_order{
 
 	/**********************************************************************
@@ -25,15 +25,16 @@ class bkap_cancel_order{
 		}
 		if ($action->status != "cancelled") {
 			$order['cancel'] = array(
-				"url" => apply_filters('woocommerce_get_cancel_order_url', add_query_arg('order_id', $action->id)."&cancel_order=yes"),//plugins_url("/cancel-order.php", __FILE__ )."?order_id=".$action->id,
+				"url" => apply_filters('woocommerce_get_cancel_order_url', add_query_arg('order_id', $action->id)."&cancel_order=yes"),
 				"name" => "Cancel");
 		}
 		return $order;
 	}
 	
-	/*************************************
-     * This function deletes booking for the products in order when the order is cancelled or refunded.
-     ************************************/
+	/*************************************************************
+     * This function deletes booking for the products in order 
+     * when the order is cancelled or refunded.
+     ************************************************************/
 	
 	public static function bkap_woocommerce_cancel_order($order_id) {
 		
@@ -57,17 +58,9 @@ class bkap_cancel_order{
 		}
 		$i = 0;
 		foreach($order_items as $item_key => $item_value) {
-			$product_id = get_post_meta($item_value['product_id'], '_icl_lang_duplicate_of', true);
-			if($product_id == '' && $product_id == null) {
-				$post_time = get_post($item_value['product_id']);
-				$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-				$results_post_id = $wpdb->get_results ( $id_query );
-				if( isset($results_post_id) ) {
-					$product_id = $results_post_id[0]->ID;
-				} else {
-					$product_id = $item_value['product_id'];
-				}
-			}
+			
+			$product_id = bkap_common::bkap_get_product_id($item_value['product_id']);
+			
 			if(array_key_exists("variation_id",$item_value)) {
 				$variation_id = $item_value['variation_id'];
 			} else {
@@ -231,17 +224,9 @@ class bkap_cancel_order{
 					$product_ids[] = $v->ID;
 				}
 				foreach($product_ids as $k => $v) {
-					$duplicate_of = get_post_meta($v, '_icl_lang_duplicate_of', true);
-					if($duplicate_of == '' && $duplicate_of == null) {
-						$post_time = get_post($v);
-						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-						$results_post_id = $wpdb->get_results ( $id_query );
-						if( isset($results_post_id) ) {
-							$duplicate_of = $results_post_id[0]->ID;
-						} else {
-							$duplicate_of = $v;
-						}
-					}
+					
+					$duplicate_of = bkap_common::bkap_get_product_id($v);
+					
 					$booking_settings = get_post_meta($v, 'woocommerce_booking_settings' , true);
 					if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on') {
 						if(count($details) > 0) {

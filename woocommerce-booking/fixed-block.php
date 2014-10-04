@@ -18,28 +18,20 @@
 				register_activation_hook( __FILE__, array(&$this, 'bkap_block_booking_activate'));
 				
 				// used to add new settings on the product page booking box
-				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_show_field_settings'));
-				add_action('init', array(&$this, 'bkap_load_ajax'));
-				add_filter('bkap_save_product_settings', array(&$this, 'bkap_get_product_settings_save'), 10, 2);
-				add_action('bkap_fixed_block_display_updated_price', array(&$this, 'bkap_show_updated_price'),10,3);
-				add_filter('bkap_add_cart_item_data', array(&$this, 'bkap_get_add_cart_item_data'), 10, 2);
-				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_get_cart_item_from_session'),11,2);
+				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_fixed_block_show_field_settings'));
+				add_action('init', array(&$this, 'bkap_load_ajax_fixed_block'));
+				add_filter('bkap_save_product_settings', array(&$this, 'bkap_fixed_block_product_settings_save'), 10, 2);
+				add_action('bkap_fixed_block_display_updated_price', array(&$this, 'bkap_fixed_block_show_updated_price'),10,3);
+				add_filter('bkap_add_cart_item_data', array(&$this, 'bkap_fixed_block_add_cart_item_data'), 10, 2);
+				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_fixed_block_get_cart_item_from_session'),11,2);
 
-				add_action( 'woocommerce_before_add_to_cart_form', array(&$this, 'bkap_before_add_to_cart'));
-				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_booking_after_add_to_cart'));
+				add_action( 'woocommerce_before_add_to_cart_form', array(&$this, 'bkap_fixed_block_before_add_to_cart'));
+				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_fixed_block_booking_after_add_to_cart'));
 
 			//	add_filter('bkap_get_item_data', array(&$this, 'bkap_get_item_data'), 10, 2 );
-				add_action('bkap_deposits_update_order', array(&$this, 'bkap_order_item_meta'), 10,2);
-				add_action('bkap_display_price_div', array(&$this, 'bkap_display_price'),10,1);
+				add_action('bkap_deposits_update_order', array(&$this, 'bkap_fixed_block_order_item_meta'), 10,2);
+				add_action('bkap_display_price_div', array(&$this, 'bkap_fixed_block_display_price'),10,1);
 				
-				$this->days = array('0' => 'Sunday',
-						'1' => 'Monday',
-						'2' => 'Tuesday',
-						'3' => 'Wednesday',
-						'4' => 'Thursday',
-						'5' => 'Friday',
-						'6' => 'Saturday'
-				);
 			}
 			
                         /*******************************
@@ -72,7 +64,7 @@
 			/******************************************
                          *  This function is used to load ajax functions required by fixed block booking.
                          ******************************************/
-			function bkap_load_ajax() {
+			function bkap_load_ajax_fixed_block() {
 				if ( !is_user_logged_in() ) {
 					add_action('wp_ajax_nopriv_bkap_save_booking_block',  array(&$this,'bkap_save_booking_block'));
 					add_action('wp_ajax_nopriv_bkap_booking_block_table',  array(&$this,'bkap_booking_block_table'));
@@ -92,13 +84,13 @@
 				}
 			}
 
-			function bkap_before_add_to_cart(){
+			function bkap_fixed_block_before_add_to_cart(){
 			
 			}
                         /*******************************************
                          *This function add the fixed block fields on the frontend product page as per the settings selected when Enable Fixed Block Booking is enabled.
                          *****************************************/
-			function bkap_booking_after_add_to_cart(){	
+			function bkap_fixed_block_booking_after_add_to_cart(){	
 				global $post, $wpdb, $woocommerce;
  				$booking_settings = get_post_meta($post->ID, 'woocommerce_booking_settings', true);
 
@@ -165,13 +157,10 @@
  				 }
 			}
 
-			// function booking_after_add_to_cart(){
-			// 	echo ' <input type="hidden" id="block_option_start_day"  name="block_option_start_day" value=""/> <input type="hidden" id="block_option_number_of_day"  name="block_option_number_of_day" value=""/>';
-			// }
                         /*********************************************
                         * This fumnction display the price after selecting the date on front end.
                          ****************************************************/
-			function bkap_display_price($product_id) {
+			function bkap_fixed_block_display_price($product_id) {
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 				if(isset($_POST['booking_fixed_block_enable']) && $_POST['booking_partial_payment_radio']!=''):
 					$currency_symbol = get_woocommerce_currency_symbol();
@@ -183,7 +172,7 @@
                          * This function add the fixed block table on the admin side.
                          * It allows to create blocks on the admin product page.
                          *************************************************/
-			function bkap_show_field_settings($product_id) {
+			function bkap_fixed_block_show_field_settings($product_id) {
 				global $post, $wpdb;
 				?>
 				<script type="text/javascript">
@@ -285,7 +274,8 @@
 						<td><input type="text" id="number_of_days" name="number_of_days" size="10"></input></td>
 						<td><select id="start_day" name="start_day">
 						<?php 
-						foreach ($this->days as $dkey => $dvalue) {
+						$days = bkap_get_book_arrays('days');
+						foreach ($days as $dkey => $dvalue) {
 							?>
 							<option value="<?php echo $dkey; ?>"><?php echo $dvalue; ?></option>
 							<?php 
@@ -294,7 +284,7 @@
 					</select></td>
 						<td><select id="end_day" name="end_day">
 						<?php 
-						foreach ($this->days as $dkey => $dvalue) {
+						foreach ($days as $dkey => $dvalue) {
 							?>
 							<option value="<?php echo $dkey; ?>"><?php echo $dvalue; ?></option>
 							<?php 
@@ -632,7 +622,7 @@
                         /****************************************
                          * This function will save the settings for the fixed block feature. 
                          ****************************************/
-			function bkap_get_product_settings_save($booking_settings, $product_id) {
+			function bkap_fixed_block_product_settings_save($booking_settings, $product_id) {
 				if(isset($_POST['booking_fixed_block_enable'])) {
 					$booking_settings['booking_fixed_block_enable'] = $_POST['booking_fixed_block_enable'];
 				}
@@ -642,7 +632,7 @@
                         /************************************
                          * This function return fixed block details when add to cart button click on front end.
                          *************************************/
-			function bkap_get_add_cart_item_data($cart_arr, $product_id)
+			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id)
 			{
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
@@ -815,7 +805,7 @@
                         /***********************************
                          * This function adjust the prices calculated from the plugin in the cart session.
                          ***********************************/
-			function bkap_get_cart_item_from_session( $cart_item, $values ) {
+			function bkap_fixed_block_get_cart_item_from_session( $cart_item, $values ) {
 				$booking_settings = get_post_meta($cart_item['product_id'], 'woocommerce_booking_settings', true);
 				if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == 'yes '&&is_plugin_active('bkap-deposits/deposits.php')) {
 					if (isset($values['booking'])) :
@@ -890,7 +880,7 @@
                          * This function updates the database for the fixed block details and add fixed block fields on the order received page,
                          *  and woocommerce edit order when order is placed for woocommerce version greater than 2.0.
                          **********************************************/
-			function bkap_order_item_meta( $values,$order) {
+			function bkap_fixed_block_order_item_meta( $values,$order) {
 				global $wpdb;
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$product_id = $values['product_id'];
@@ -916,7 +906,7 @@
                         /***********************************************************
                          * This function is used to show the price updation of the fixed block on the front end.
                          ************************************************************/
-			function bkap_show_updated_price($product_id,$variation_id,$oprice) {
+			function bkap_fixed_block_show_updated_price($product_id,$variation_id,$oprice) {
 				$product = get_product($product_id);
 				$product_type = $product->product_type;
 				

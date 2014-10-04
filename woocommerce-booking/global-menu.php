@@ -6,8 +6,9 @@ include_once('license.php');
 class global_menu{
     
     /**********************************************************
-    * This function adds the Booking settings  menu in the sidebar admin woocommerce.
-    **************************************************/
+    * This function adds the Booking settings  menu in the 
+    * sidebar admin woocommerce.
+    ***********************************************************/
     public static function bkap_woocommerce_booking_admin_menu(){
             
             add_menu_page( 'Booking','Booking','manage_woocommerce', 'booking_settings',array('global_menu', 'bkap_woocommerce_booking_page' ));
@@ -19,10 +20,10 @@ class global_menu{
     }
     
     
-/**************************************************************
- * This function displays the global settings for the booking products.
- *******************************************************************/
- Public static function bkap_woocommerce_booking_page() {
+	/********************************************************************
+	 * This function displays the global settings for the booking products.
+	 *******************************************************************/
+	 public static function bkap_woocommerce_booking_page() {
 
         if (isset($_GET['action'])) {
                 $action = $_GET['action'];
@@ -431,25 +432,9 @@ class global_menu{
 
                                                                                                 });
                                                                                                 jQuery(".ui-datepicker-inline").css("font-size","1.4em");
-                                                                                        //	jQuery( "#booking_language" ).change(function() {
-                                                                                        //	jQuery( "#booking_switcher" ).datepicker( "option",
-                                                                                        //	jQuery.datepicker.regional[ "en-GB" ] );
+                                                                                       
                                                                                                 });
-                                                                                        //	});
-
-                                                                                                /*function append_date(date,inst)
-                                                                                                {
-                                                                                                        var monthValue = inst.selectedMonth+1;
-                                                                                                        var dayValue = inst.selectedDay;
-                                                                                                        var yearValue = inst.selectedYear;
-
-                                                                                                        var current_dt = dayValue + "-" + monthValue + "-" + yearValue;
-
-                                                                                                        jQuery('#booking_global_holidays').append(current_dt+",");
-                                                                                                }*/
-
-                                                                                                //jQuery('#booking_global_holidays').multiDatesPicker();
-                                                                                  });
+                                                                                           });
                                                                                 </script>
 
                                                                                 <div id="booking_new_switcher" name="booking_new_switcher"></div>

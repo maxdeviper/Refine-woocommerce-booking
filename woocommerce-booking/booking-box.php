@@ -1,37 +1,26 @@
 <?php 
+include_once('bkap-common.php');
 
-    class bkap_booking_box_class{
+class bkap_booking_box_class{
         
-        /****************************************************
-        * This function updates the booking settings for each product in the wp_postmeta table in the database . 
-        * It will be called when update / publish button clicked on admin side.
-        *****************************************************/
+	/****************************************************
+    * This function updates the booking settings for each 
+    * product in the wp_postmeta table in the database . 
+    * It will be called when update / publish button clicked on admin side.
+    *****************************************************/
        public static function bkap_process_bookings_box( $post_id, $post ) {
 
                global $wpdb;
 
                // Save Bookings
                $product_bookings = array();
-               $duplicate_of = get_post_meta($post_id, '_icl_lang_duplicate_of', true);
-               if($duplicate_of == '' && $duplicate_of == null) {
-                       $post_time = get_post($post_id);
-                       $id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-                       $results_post_id = $wpdb->get_results ( $id_query );
-                       if( isset($results_post_id) ) {
-                               $duplicate_of = $results_post_id[0]->ID;
-                       } else {
-                               $duplicate_of = $post_id;
-                       }
-                       //$duplicate_of = $item_value['product_id'];
-               }
+               $duplicate_of = bkap_common::bkap_get_product_id($post_id);
+               
                $woo_booking_dates = get_post_meta($duplicate_of, 'woocommerce_booking_settings', true);
-               //$booking_settings = get_post_meta($post_id, 'woocommerce_booking_settings', true);
-               //print_r($woo_booking_dates);
-
-               $enable_inline_calendar = $enable_date = $enable_multiple_day = $specific_booking_chk = $recurring_booking = "";
+            
+               $enable_inline_calendar = $enable_date = $enable_multiple_day = $specific_booking_chk = $recurring_booking_chk = "";
 
                if(isset($_POST['enable_inline_calendar'])) {
-
                        $enable_inline_calendar = $_POST['enable_inline_calendar'];
                }
                if (isset($_POST['booking_enable_date'])) {
@@ -46,9 +35,8 @@
                        $specific_booking_chk = $_POST['booking_specific_booking'];
                }
 
-               $recurring_booking="";
                if (isset($_POST['booking_recurring_booking'])) {
-                       $recurring_booking = $_POST['booking_recurring_booking'];
+                       $recurring_booking_chk = $_POST['booking_recurring_booking'];
                }
 
                $booking_days = array();
@@ -64,15 +52,14 @@
                                } else {
                                        $booking_days[$n] = $woo_booking_dates['booking_recurring'][$n];
                                }
-                       } else {
+                       } 
+                       else {
                                if (isset($_POST[$n])) {
                                        $new_day_arr[$n] = $_POST[$n];
                                        $booking_days[$n] = $_POST[$n];
                                } else $new_day_arr[$n] = $booking_days[$n] = '';
-                           }
-                       
+                       }
                }
-
 
                $specific_booking = '';
                if (isset($_POST['booking_specific_date_booking'])) {
@@ -89,36 +76,30 @@
                foreach ( $specific_booking_dates as $key => $value ) {
                        if (trim($value != "")) $specific_stored_days[] = $value;
                }
+               $minimum_number_days = $maximum_number_days = $without_date = $lockout_date = $product_holiday = $enable_time = $slot_count_value = '';
                if(isset($_POST['booking_minimum_number_days'])) {
                        $minimum_number_days = $_POST['booking_minimum_number_days'];
-               }else {
-                       $minimum_number_days = '';
                }
                if(isset($_POST['booking_maximum_number_days'])){
                        $maximum_number_days = $_POST['booking_maximum_number_days'];
-               }else {
-                       $maximum_number_days = '';
                }
-               $without_date="";
                if (isset($_POST['booking_purchase_without_date'])) {
                        $without_date = $_POST['booking_purchase_without_date'];
                }
-               $lockout_date = '';
-               if(isset($_POST['booking_lockout_date']))
+               if(isset($_POST['booking_lockout_date'])) {
                        $lockout_date = $_POST['booking_lockout_date'];
-               $product_holiday = '';
-               if(isset($_POST['booking_product_holiday']))
+               }
+               if(isset($_POST['booking_product_holiday'])) {
                        $product_holiday = $_POST['booking_product_holiday'];
-
-               $enable_time = '';
+               }
                if (isset($_POST['booking_enable_time'])) {
                        $enable_time = $_POST['booking_enable_time'];
                }
-               $slot_count_value = '';
                if(isset($_POST['wapbk_slot_count'])) {
                        $slot_count = explode("[", $_POST['wapbk_slot_count']);
                        $slot_count_value = intval($slot_count[1]);
                }
+               
                $date_time_settings = array();
                $time_settings = array();
                if( $specific_booking != "" ) {
@@ -278,22 +259,18 @@
                        }
 
                        $new_time_settings = $woo_booking_dates;
-                       //if ( count($woo_booking_dates) > 1 )
-                       {
-                               foreach ( $date_time_settings as $dtkey => $dtvalue ) {
-                                       $new_time_settings['booking_time_settings'][$dtkey] = $dtvalue;
-                               }
+                       foreach ( $date_time_settings as $dtkey => $dtvalue ) {
+                   	  		$new_time_settings['booking_time_settings'][$dtkey] = $dtvalue;
                        }
 
-               //echo $enable_inline_calendar;exit;
+              
                $booking_settings = array();
                $booking_settings['booking_enable_date'] = $enable_date;
                $booking_settings['enable_inline_calendar'] = $enable_inline_calendar;
                $booking_settings['booking_enable_multiple_day'] = $enable_multiple_day;
                $booking_settings['booking_specific_booking'] = $specific_booking_chk;
-               $booking_settings['booking_recurring_booking'] = $recurring_booking;
+               $booking_settings['booking_recurring_booking'] = $recurring_booking_chk;
                $booking_settings['booking_recurring'] = $booking_days;
-               //$booking_settings['booking_recurring_prices'] = $new_day_arr_price;
                $booking_settings['booking_specific_date'] = $specific_stored_days;
                $booking_settings['booking_minimum_number_days'] = $minimum_number_days;
                $booking_settings['booking_maximum_number_days'] = $maximum_number_days;
@@ -307,7 +284,7 @@
                    $booking_settings['booking_time_settings'] = '';
                }
                $booking_settings = (array) apply_filters( 'bkap_save_product_settings', $booking_settings, $duplicate_of );
-               //echo "<pre>"; print_r($booking_settings); echo "</pre>"; exit;
+              
                update_post_meta($duplicate_of, 'woocommerce_booking_settings', $booking_settings);
        }
     
@@ -330,7 +307,7 @@
                // On Radio Button Selection
                jQuery(document).ready(function(){
                                     jQuery("table#list_bookings_specific a.remove_time_data, table#list_bookings_recurring a.remove_time_data").click(function() {
-                                               //alert('hello there');
+                                              
                                         var y=confirm('Are you sure you want to delete this time slot?');
                                         if(y==true) {
                                                 var passed_id = this.id;
@@ -342,7 +319,6 @@
 
                                                 jQuery.post('<?php echo get_admin_url();?>/admin-ajax.php', data, function(response)
                                                 {
-                                                        //alert('Got this from the server: ' + response);
                                                         jQuery("#row_" + exploded_id[0] + "_" + exploded_id[2] ).hide();
                                                 });
                                         }
@@ -350,7 +326,7 @@
                        });
 
                        jQuery("table#list_bookings_specific a.remove_day_data, table#list_bookings_recurring a.remove_day_data").click(function() {
-                                       //	alert('hello there');
+         
                                                var y=confirm('Are you sure you want to delete this day?');
                                                if(y==true) {
                                                        var passed_id = this.id;
@@ -359,9 +335,8 @@
                                                                        details: passed_id,
                                                                        action: 'bkap_remove_day'
                                                        };
-                                                       //alert('hello there');
+                                                   
                                                        jQuery.post('<?php echo get_admin_url();?>/admin-ajax.php', data, function(response) {
-                                                                               //alert('Got this from the server: ' + response);
                                                                jQuery("#row_" + exploded_id[0]).hide();
                                                        });
 
@@ -369,37 +344,35 @@
                                        });
 
                        jQuery("table#list_bookings_specific a.remove_specific_data").click(function() {
-                                       //	alert('hello there');
+                                     
                                                var y=confirm('Are you sure you want to delete all the specific date records?');
                                                if(y==true) {
                                                        var passed_id = this.id;
-                                               //	alert(passed_id);
-                                               //	var exploded_id = passed_id.split('&');
                                                        var data = {
                                                                        details: passed_id,
                                                                        action: 'bkap_remove_specific'
                                                        };
-                                               //	alert('hello there');
+                                     
                                                        jQuery.post('<?php echo get_admin_url();?>/admin-ajax.php', data, function(response) {
-                                                                               //alert('Got this from the server: ' + response);
+                                     
                                                                                jQuery("table#list_bookings_specific").hide();
                                                                        });
                                                }
                                        });
 
                        jQuery("table#list_bookings_recurring a.remove_recurring_data").click(function() {
-                                       //	alert('hello there');
+                                  
                                                var y=confirm('Are you sure you want to delete all the recurring weekday records?');
                                                if(y==true) {
                                                        var passed_id = this.id;
-                                               //	var exploded_id = passed_id.split('&');
+                                  
                                                        var data = {
                                                                        details: passed_id,
                                                                        action: 'bkap_remove_recurring'
                                                        };
-                                               //	alert('hello there');
+                                  
                                                        jQuery.post('<?php echo get_admin_url();?>/admin-ajax.php', data, function(response) {
-                                                                               //alert('Got this from the server: ' + response);
+                                  
                                                                                jQuery("table#list_bookings_recurring").hide();
                                                                        }); 
                                                }
@@ -495,18 +468,8 @@
                <table class="form-table">
                <?php 
                global $post, $wpdb;
-               $duplicate_of = get_post_meta($post->ID, '_icl_lang_duplicate_of', true);
-               if($duplicate_of == '' && $duplicate_of == null) {
-                       $post_time = get_post($post->ID);
-                       $id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-                       $results_post_id = $wpdb->get_results ( $id_query );
-                       if( isset($results_post_id) ) {
-                               $duplicate_of = $results_post_id[0]->ID;
-                       } else {
-                               $duplicate_of = $post->ID;
-                       }
-                       //$duplicate_of = $item_value['product_id'];
-               }
+               $duplicate_of = bkap_common::bkap_get_product_id($post->ID);
+               
                do_action('bkap_before_enable_booking', $duplicate_of);
                $booking_settings = get_post_meta($duplicate_of, 'woocommerce_booking_settings', true);
                $add_button_show = 'none';

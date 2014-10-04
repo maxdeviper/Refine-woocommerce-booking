@@ -13,53 +13,46 @@
 
 		class bkap_block_booking_price {
 
-			public function __construct() {
-				// Initialize settings
-				//register_activation_hook( __FILE__, array(&$this, 'block_booking_activate'));
-				
+			public function __construct() {				
 				// used to add new settings on the product page booking box
-				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_show_field_settings'));
-				add_action('init', array(&$this, 'bkap_load_ajax'));
-				add_filter('bkap_save_product_settings', array(&$this, 'bkap_get_product_settings_save'), 10, 2);
-				add_action('bkap_display_block_updated_price', array(&$this, 'bkap_show_updated_price'),10,5);
-				add_filter('bkap_add_cart_item_data', array(&$this, 'bkap_get_add_cart_item_data'), 10, 2);
-				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_get_cart_item_from_session'),11,2);
-				//add_action( 'woocommerce_before_add_to_cart_form', array(&$this, 'before_add_to_cart'));
-				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_booking_after_add_to_cart'));	
-			//	add_filter('bkap_get_item_data', array(&$this, 'bkap_get_item_data'), 10, 2 );
-				add_action('bkap_deposits_update_order', array(&$this, 'bkap_order_item_meta'), 10,2);
-				//add_action('bkap_display_price_div', array(&$this, 'display_price'),10,1);
+				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_price_range_show_field_settings'));
+				add_action('init', array(&$this, 'bkap_load_ajax_price_range'));
+				add_filter('bkap_save_product_settings', array(&$this, 'bkap_price_range_product_settings_save'), 10, 2);
+				add_action('bkap_display_block_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),10,5);
+				add_filter('bkap_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 10, 2);
+				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_price_range_get_cart_item_from_session'),11,2);
+				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_price_range_booking_after_add_to_cart'));	
+				add_action('bkap_deposits_update_order', array(&$this, 'bkap_price_range_order_item_meta'), 10,2);
+			
 			}
 			
-                        /******************************************
-                         *  This function is used to load ajax functions required by price by range of days booking.
-                         ******************************************/
-			function bkap_load_ajax() {
+            /***********************************************
+            *  This function is used to load ajax functions 
+            *  required by price by range of days booking.
+            ***********************************************/
+			function bkap_load_ajax_price_range() {
 				if ( !is_user_logged_in() ) {
 					add_action('wp_ajax_nopriv_bkap_save_booking_block_price',  array(&$this,'bkap_save_booking_block_price'));
 					add_action('wp_ajax_nopriv_bkap_show_price_div',  array(&$this,'bkap_show_price_div'));
 					add_action('wp_ajax_nopriv_bkap_booking_block_price_table',  array(&$this,'bkap_booking_block_price_table'));
 					add_action('wp_ajax_nopriv_bkap_delete_price_block',  array(&$this,'bkap_delete_price_block'));
 					add_action('wp_ajax_nopriv_bkap_delete_all_price_blocks',  array(&$this,'bkap_delete_all_price_blocks'));
-					//add_action('wp_ajax_nopriv_save_global_season',  array(&$this,'save_global_season'));
-					//add_action('wp_ajax_nopriv_delete_global_season',  array(&$this,'delete_global_season'));
-					//add_action('wp_ajax_nopriv_delete_all_global_seasons',  array(&$this,'delete_all_global_seasons'));
-				} else {
+				} 
+				else {
 					add_action('wp_ajax_bkap_save_booking_block_price',  array(&$this,'bkap_save_booking_block_price'));
 					add_action('wp_ajax_bkap_show_price_div',  array(&$this,'bkap_show_price_div'));
 					add_action('wp_ajax_bkap_booking_block_price_table',  array(&$this,'bkap_booking_block_price_table'));
 					add_action('wp_ajax_bkap_delete_price_block',  array(&$this,'bkap_delete_price_block'));
 					add_action('wp_ajax_bkap_delete_all_price_blocks',  array(&$this,'bkap_delete_all_price_blocks'));
-					//add_action('wp_ajax_save_global_season',  array(&$this,'save_global_season'));
-					//add_action('wp_ajax_delete_global_season',  array(&$this,'delete_global_season'));
-					//add_action('wp_ajax_delete_all_global_seasons',  array(&$this,'delete_all_global_seasons'));
 				}
 			}
                         
-                        /*******************************************
-                         *This function set the hidden fields on the frontend product page if the price by range of days is enabled from admin side. 
-                         *****************************************/
-			function bkap_booking_after_add_to_cart() {	
+          	/***************************************************
+            *This function set the hidden fields on the frontend
+            * product page if the price by range of days is 
+            * enabled from admin side. 
+            ****************************************************/
+			function bkap_price_range_booking_after_add_to_cart() {	
 				global $post, $wpdb;
  				$booking_settings = get_post_meta($post->ID, 'woocommerce_booking_settings', true);
 
@@ -72,19 +65,11 @@
 				}
 
 			}
-			/*function display_price($product_id)
-			{
-				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
-				if(isset($booking_settings['booking_block_price_enable']))
-				{
-					$currency_symbol = get_woocommerce_currency_symbol();
-					$show_price = 'show';
-					print('<div id="show_addon_price" name="show_addon_price" class="show_addon_price" style="display:'.$show_price.';">'.$currency_symbol.' 0</div>');
-				}
-			}*/
-                        /***************************************************
-                        * This function display the field settings of the price by range of the days on product admin page
-                         ****************************************************/
+			
+            /***************************************************
+            * This function display the field settings of the price 
+            * by range of the days on product admin page
+            ****************************************************/
 			function bkap_show_price_div() {
 				$div = ' 
 				<table class="form-table">
@@ -117,15 +102,15 @@
 						if(isset($_POST['attributes']) &&  $_POST['attributes'] != '') {
 							$attributes = explode("|",$_POST['attributes']);
 							array_pop($attributes);
-							//print_r($attributes);
+						
 							$div .= '<td><select name="attribute_'.$i.'" id="attribute_'.$i.'" value="">';
 							$value_array = explode('|',$value['value']);
-							//print_r($value_array);
+						
 							foreach($value_array as $k => $v) {	
-								//echo $v;
+						
 								if(substr($v,-1,1) === ' ') {
 									$result = rtrim($v," ");
-									//echo "here".$result;
+						
 								} else if (substr($v,0,1) === ' ') {
 									$result = preg_replace("/ /","",$v,1);
 								} else {
@@ -192,20 +177,20 @@
 				die();
 			}
                         
-                        /**********************************************
-                         * This function add the price by range of days table on the admin side.
-                         * It allows to create blocks on the admin product page.
-                         *************************************************/
-			function bkap_show_field_settings($product_id) {
+            /*************************************************************************
+            * This function add the price by range of days table on the admin side.
+            * It allows to create blocks on the admin product page.
+            *************************************************************************/
+			function bkap_price_range_show_field_settings($product_id) {
 				global $post, $wpdb;
 				?>
 				<script type="text/javascript">
 					jQuery(".woo-nav-tab-wrapper").append("<a href=\"javascript:void(0);\" class=\"nav-tab\" id=\"block_booking_price\" onclick=\"bkap_tab_pay_display_3('block_booking_price')\"> <?php _e( 'Price by range of days', 'woocommerce-booking' );?> </a>");
 					
-                                                /*********************************
-                                                 * This function displays the Price by range tab settings and hide other tab settings.
-                                                 *******************************/
-                                                function bkap_tab_pay_display_3(id){
+                        /*************************************************************************************
+                        * This function displays the Price by range tab settings and hide other tab settings.
+                        ****************************************************** *******************************/
+                        function bkap_tab_pay_display_3(id){
 						 
 						jQuery( "#block_booking_price_page").show();
 						jQuery( "#payments_page").hide();
@@ -242,7 +227,7 @@
 							} else {
 								$product_enable_block_price = '';
 							}
-							//echo $product_enable_block_price;exit;
+						
 							if($product_enable_block_price == 'yes') {
 								$enabled_s_pricing = "checked";
 								$add_season_button_show = 'block';	
@@ -326,7 +311,7 @@
 									jQuery("#fixed_price").val("");
                             },
                             error: function(xhr, textStatus, errorThrown) {
-                              // error status
+                        
                             }
                         });		
 				}
@@ -358,8 +343,6 @@
                                  * This function will hide the creating block div when close button is clicked on admin product page.
                                  ******************************************/
 				function bkap_close_booking_block() {
-					//document.getElementById("add_block_price").style.display = "none";
-					//jQuery("#add_block_price").closest("form").find("input[type=text], textarea").val("");
 					jQuery("#add_block_price").hide("");
 					jQuery("#table_id").val("");
 
@@ -395,7 +378,7 @@
 							action: "bkap_show_price_div"
 						};
 						jQuery.post('<?php echo get_admin_url();?>admin-ajax.php', data, function(response) {
-							//alert("Got this from the server: " + response);
+					
 							jQuery("#ajax_img" ).hide();
 							jQuery("#add_block_price").show();
 							jQuery("#add_block_price").html(response);
@@ -412,7 +395,7 @@
 							};
 								
 							jQuery.post('<?php echo get_admin_url();?>admin-ajax.php', data, function(response) {
-								// 	alert('Got this from the server: ' + response);
+						
 								jQuery("#row_" + passed_id ).hide();
 							});
 						}
@@ -420,30 +403,19 @@
 					jQuery("table#list_block_price a.bkap_delete_all_price_blocks").click(function() {
 						var y=confirm('Are you sure you want to delete all the blocks?');
 						if(y==true){
-							//var passed_id = this.id;
-							//	alert(exploded_id);
 							var data = {
-								//details: passed_id,
+						
 								action: "bkap_delete_all_price_blocks"
 							};
-
-							 
-								
-							/*jQuery.post('<?php echo get_admin_url();?>/admin-ajax.php', data, function(response)
-							{
-								//	alert('Got this from the server: ' + response);
-								console.log(response);
-								jQuery("table#list_seasons").hide();
-							});*/
 
 							jQuery.ajax({
                             url: '<?php echo get_admin_url();?>admin-ajax.php',
                             type: "POST",
                             data : data,
 
-                            // dataType: "html",
+                        
                             beforeSend: function() {
-                             //loading	
+                        	
 
                             },
                             success: function(data, textStatus, xhr) {
@@ -451,7 +423,7 @@
 								 console.log(data);
                             },
                             error: function(xhr, textStatus, errorThrown) {
-                              // error status
+                        
                             }
                         });
 
@@ -493,12 +465,7 @@
 				die();
 
 			}
-			/*function endKey($array)
-			{
-				end($array);
-				return key($array);
-			}*/
-                        
+			            
                         /********************************
                          * This function is used to register all settings of the block to the database.
                          *******************************/
@@ -542,7 +509,7 @@
 							'{$block_attribute_id}',
 							'{$attribute_id}',
 							'{$meta_value}')";
-						//echo $insert_booking_block_price_attribute;exit;
+				
 						$wpdb->query($insert_booking_block_price_attribute);
 						$i++;
 					}
@@ -568,13 +535,14 @@
 					}
 					$this->bkap_booking_block_price_table();
 				}
-				//echo $id;
+			
 				die();
 			}
 			
-			/*******************************************
-                         * This function are used to display the list of the created price by range of days block on admin product page
-                         *******************************************/
+			/**************************************************
+            * This function are used to display the list of the 
+            * created price by range of days block on admin product page
+            ***************************************************/
 			function bkap_booking_block_price_table() {
  				global $post,$wpdb;
  				if(isset($post)) {
@@ -582,7 +550,7 @@
 				} else {
 					$post_id = $_POST['post_id'];
 				}
-				//print_r($post_id);
+			
 				/* AJAX check  */
 				if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 					/* special ajax here */
@@ -596,7 +564,7 @@
 							WHERE post_id = '".$post_id."'";
 				 
 				$results = $wpdb->get_results($query);
-				//print_r($results);
+			
 				$var = "";
 				$i = 0;
 				foreach ($results as $key => $value) {
@@ -607,7 +575,7 @@
 					 
 					$results_attribute = $wpdb->get_results($query_attribute);
 					$j = 1;
-					//print_r($results_attribute);	
+				
 					$id = '';
 					foreach($results_attribute as $k => $v) {
 						$var .= '<td>'.$v->meta_value.'</td>';
@@ -659,7 +627,7 @@
                         /****************************************
                          * This function will save the settings for the price by range of days feature. 
                          ****************************************/
-			function bkap_get_product_settings_save($booking_settings, $product_id) {
+			function bkap_price_range_product_settings_save($booking_settings, $product_id) {
 				if(isset($_POST['booking_block_price_enable']) ) {
 						$booking_settings['booking_block_price_enable'] = $_POST['booking_block_price_enable'];
 				}
@@ -669,7 +637,7 @@
                         /************************************
                          * This function return price by range of days details when add to cart button click on front end.
                          *************************************/
-			function bkap_get_add_cart_item_data($cart_arr, $product_id) {
+			function bkap_price_range_add_cart_item_data($cart_arr, $product_id) {
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 				if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes"){
@@ -837,7 +805,7 @@
                         /***********************************
                          * This function adjust the prices calculated from the plugin in the cart session.
                          ***********************************/
-			function bkap_get_cart_item_from_session( $cart_item, $values ) {
+			function bkap_price_range_get_cart_item_from_session( $cart_item, $values ) {
 				$booking_settings = get_post_meta($cart_item['product_id'], 'woocommerce_booking_settings', true);
 				if(isset($booking_settings['booking_block_price_enable']) && is_plugin_active('bkap-deposits/deposits.php')) {
 					if (isset($values['booking'])) :
@@ -920,7 +888,7 @@
                          * This function updates the database for the price by range of days details and display the details,
                          *  and woocommerce edit order when order is placed for woocommerce version greater 2.0.
                          *******************************************/
-			function bkap_order_item_meta( $values,$order) {
+			function bkap_price_range_order_item_meta( $values,$order) {
 				global $wpdb;
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$product_id = $values['product_id'];
@@ -948,7 +916,7 @@
                          /***********************************************************
                          * This function is used to show the price updation of the price by range of days on the front end.
                          ************************************************************/
-			function bkap_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date) {
+			function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date) {
 				//echo "here";
 				global $wpdb;
 				$results_price = array();

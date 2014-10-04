@@ -1,20 +1,20 @@
 <?php
     
-    class view_bookings{
+class view_bookings{
     
     /*********************************************
     * This function adds a page on View Bookings submenu which displays the orders with the booking details. 
     * The orders which are cancelled or refunded are not displayed.
     ***********************************************************/
-   Public static function bkap_woocommerce_history_page() {
+   public static function bkap_woocommerce_history_page() {
 
         if (isset($_GET['action'])) {
-        $action = $_GET['action'];
+	        $action = $_GET['action'];
         } else {
-                $action = '';
+            $action = '';
         }
         if ($action == 'history' || $action == '') {
-                $active_settings = "nav-tab-active";
+            $active_settings = "nav-tab-active";
         }
 
         ?>
@@ -23,53 +23,38 @@
         <?php
 
         if ( $action == 'history' || $action == '' ) {
-                global $wpdb;
+        	global $wpdb;
 
-                $query_order = "SELECT DISTINCT order_id FROM `" . $wpdb->prefix . "woocommerce_order_items`  ";
-                $order_results = $wpdb->get_results( $query_order );
+            $query_order = "SELECT DISTINCT order_id FROM `" . $wpdb->prefix . "woocommerce_order_items`  ";
+            $order_results = $wpdb->get_results( $query_order );
 
-                $var = $today_checkin_var = $today_checkout_var = $booking_time = "";
+            $var = $today_checkin_var = $today_checkout_var = $booking_time = "";
 
-                $booking_time_label = get_option('book.item-meta-time');
-        //	echo $booking_time_label;
+            $booking_time_label = get_option('book.item-meta-time');
 
-                foreach ( $order_results as $id_key => $id_value ) {
-                        $order = new WC_Order( $id_value->order_id );
+            foreach ( $order_results as $id_key => $id_value ) {
+            	$order = new WC_Order( $id_value->order_id );
 
-                        $order_items = $order->get_items();
+                $order_items = $order->get_items();
 
-                        $terms = wp_get_object_terms( $id_value->order_id, 'shop_order_status', array('fields' => 'slugs') );
-                        if( (isset($terms[0]) && $terms[0] != 'cancelled') && (isset($terms[0]) && $terms[0] != 'refunded')) {
+                $terms = wp_get_object_terms( $id_value->order_id, 'shop_order_status', array('fields' => 'slugs') );
+                if( (isset($terms[0]) && $terms[0] != 'cancelled') && (isset($terms[0]) && $terms[0] != 'refunded')) {
 
-                        $today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = '".$id_value->order_id."'";
-                        $results_date = $wpdb->get_results ( $today_query );
+                $today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = '".$id_value->order_id."'";
+                $results_date = $wpdb->get_results ( $today_query );
 
-                        $c = 0;
-                        foreach ($order_items as $items_key => $items_value ) {
-                                $start_date = $end_date = $booking_time = "";
+                $c = 0;
+                	foreach ($order_items as $items_key => $items_value ) {
+                     	$start_date = $end_date = $booking_time = "";
 
-                                $booking_time = array();
-                                //print_r($items_value);
-                                if (isset($items_value[$booking_time_label])) {
-                                        $booking_time = explode(",",$items_value[$booking_time_label]);
-                                }
+                       	$booking_time = array();
+                        
+                        if (isset($items_value[$booking_time_label])) {
+         	               $booking_time = explode(",",$items_value[$booking_time_label]);
+                        }
 
-                                $duplicate_of = get_post_meta($items_value['product_id'], '_icl_lang_duplicate_of', true);
-                                if($duplicate_of == '' && $duplicate_of == null) {
-                                        $post_time = get_post($items_value['product_id']);
-                                        if (isset($post_time)) {
-                                                $id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-                                                $results_post_id = $wpdb->get_results ( $id_query );
-                                                if( isset($results_post_id) ) {
-                                                        $duplicate_of = $results_post_id[0]->ID;
-                                                } else {
-                                                        $duplicate_of = $items_value['product_id'];
-                                                }
-                                        } else {
-                                                $duplicate_of = $items_value['product_id'];
-                                        }
-                                }
-                        //	echo "<pre>";echo $id_value->order_id; print_r($booking_time);echo "</pre>";
+                        $duplicate_of = bkap_common::bkap_get_product_id($items_value['product_id']);
+                               
                                 if ( isset($results_date[$c]->start_date) ) {
 
                                         if (isset($results_date[$c]) && isset($results_date[$c]->start_date)) $start_date = $results_date[$c]->start_date;
@@ -133,7 +118,8 @@
                                                                         ".$var_details['security_code']."
                                                                         <td><a href=\"post.php?post=". $id_value->order_id."&action=edit\">View Order</a></td>
                                                                         </tr>";
-                                                                } else {
+                                                            }
+                                                                  else {
                                                                         $today_checkin_var .= "<tr>
                                                                         <td>".$id_value->order_id."</td>
                                                                         <td>".$order->billing_first_name." ".$order->billing_last_name."</td>
