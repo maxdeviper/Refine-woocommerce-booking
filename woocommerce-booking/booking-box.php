@@ -938,8 +938,8 @@ class bkap_booking_box_class{
                        endif;
                        if ( isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] != 'on' ) :
                                $query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-                               WHERE post_id='".$duplicate_of."' AND from_time='' AND to_time='' AND end_date='0000-00-00'";
-                               $results = $wpdb->get_results ( $query );
+                               WHERE post_id = %d AND from_time='' AND to_time='' AND end_date='0000-00-00'";
+                               $results = $wpdb->get_results ( $wpdb->prepare($query,$duplicate_of) );
 
                                foreach ( $results as $key => $value ) {
                                        if (substr($value->weekday, 0, 7) != "booking") {

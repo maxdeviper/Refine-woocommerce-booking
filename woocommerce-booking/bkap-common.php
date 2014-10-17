@@ -43,8 +43,8 @@ class bkap_common{
 		if($duplicate_of == '' && $duplicate_of == null){
 			//	$duplicate_of = $cart_item['product_id'];
 			$post_time = get_post($product_id);
-			$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-			$results_post_id = $wpdb->get_results ( $id_query );
+			$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date =  %s ORDER BY ID LIMIT 1";
+			$results_post_id = $wpdb->get_results ( $wpdb->prepare($id_query,$post_time->post_date) );
 			if( isset($results_post_id) ) {
 				$duplicate_of = $results_post_id[0]->ID;
 			}else {

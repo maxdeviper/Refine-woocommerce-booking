@@ -30,7 +30,7 @@ class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
 	 */
 	 function get_custom_page_url($page_name) {
                 global $wpdb;
-                $page_name_id = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '".$page_name."'  AND post_status = 'publish' AND post_type = 'page' ");
+                $page_name_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_name = %s  AND post_status = 'publish' AND post_type = 'page' ",$page_name));
                 $page_permalink = get_permalink($page_name_id);
                 return $page_permalink;
         }

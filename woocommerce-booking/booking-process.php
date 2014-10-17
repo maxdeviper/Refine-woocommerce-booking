@@ -34,17 +34,8 @@ class bkap_booking_process {
 			
 	public static function bkap_booking_after_add_to_cart() {
 		global $post, $wpdb,$woocommerce;
-		$duplicate_of = get_post_meta($post->ID, '_icl_lang_duplicate_of', true);
-		if($duplicate_of == '' && $duplicate_of == null) {
-			$post_time = get_post($post->ID);
-			$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post->post_date."' ORDER BY ID LIMIT 1";
-			$results_post_id = $wpdb->get_results ( $id_query );
-			if( isset($results_post_id) ) {
-				$duplicate_of = $results_post_id[0]->ID;
-			} else {
-				$duplicate_of = $post->ID;
-			}
-		}
+		$duplicate_of = bkap_common::bkap_get_product_id($post->ID);
+	
 		do_action('bkap_print_hidden_fields',$duplicate_of);
 		$method_to_show = 'bkap_check_for_time_slot';
 		$get_method = bkap_common::bkap_ajax_on_select_date();
@@ -167,34 +158,25 @@ class bkap_booking_process {
 		}
 		//Lockout Dates
 		$lockout_query = "SELECT DISTINCT start_date FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id='".$duplicate_of."'
+								WHERE post_id= %d
 								AND total_booking > 0
 								AND available_booking = 0";
-		$results_lockout = $wpdb->get_results ( $lockout_query );
+		$results_lockout = $wpdb->get_results ( $wpdb->prepare($lockout_query,$duplicate_of) );
 				
 		$lockout_query = "SELECT DISTINCT start_date FROM `".$wpdb->prefix."booking_history`
-				WHERE post_id='".$duplicate_of."'
+				WHERE post_id= %d
 				AND available_booking > 0";
-		$results_lock = $wpdb->get_results ( $lockout_query );
+		$results_lock = $wpdb->get_results ( $wpdb->prepare($lockout_query,$duplicate_of) );
 		$lockout_date = '';
-		//print_r($results_lock);exit;
-		/*foreach($results_lock as $key => $value) {
-			$start_date = $value->start_date;
-			$bookings_done = $this->get_date_lockout($start_date);
-			if($bookings_done >= $booking_settings['booking_date_lockout']) {
-				$lockout = explode("-",$start_date);
-				$lockout_date .= '"'.intval($lockout[2])."-".intval($lockout[1])."-".$lockout[0].'",';
-			}
-		}
-		$lockout_str = substr($lockout_date,0,strlen($lockout_date)-1);*/
+		
 		foreach ($results_lockout as $k => $v) {
 			foreach($results_lock as $key => $value) {
 				if ($v->start_date == $value->start_date) {
 					$date_lockout = "SELECT COUNT(start_date) FROM `".$wpdb->prefix."booking_history`
-												WHERE post_id='".$duplicate_of."'
-												AND start_date='".$v->start_date."'
+												WHERE post_id= %d
+												AND start_date= %s
 												AND available_booking = 0";
-					$results_date_lock = $wpdb->get_results($date_lockout);
+					$results_date_lock = $wpdb->get_results($wpdb->prepare($date_lockout,$duplicate_of,$v->start_date));
 					if ($booking_settings['booking_date_lockout'] > $results_date_lock[0]->{'COUNT(start_date)'}) {
 						unset($results_lockout[$k]);	
 					}
@@ -213,8 +195,9 @@ class bkap_booking_process {
 		print('<input type="hidden" name="wapbk_lockout_days" id="wapbk_lockout_days" value=\''.$lockout_dates.'\'>');
 
 		$todays_date = date('Y-m-d');
-		$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history				WHERE (start_date >='".$todays_date."' OR end_date >='".$todays_date."') AND post_id = '".$duplicate_of."'";
-		$results_date = $wpdb->get_results($query_date);
+		$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history
+						WHERE (start_date >= %s OR end_date >= %s) AND post_id = %d";
+		$results_date = $wpdb->get_results($wpdb->prepare($query_date,$todays_date,$todays_date,$duplicate_of));
 		$dates_new = array();
 		$booked_dates = array();
 		foreach($results_date as $k => $v) {
@@ -472,6 +455,12 @@ class bkap_booking_process {
 					$on_change_attributes_str = implode(',#',$on_change_attributes);
 					$on_change_attributes_str = settype(str_replace("attribute_","",$on_change_attributes_str),'string');
 					$attribute_change_var = 'jQuery(document).on("change",jQuery("#'.$on_change_attributes_str.'"),function() {
+					
+					var attribute_values = "";
+						var attribute_selected = "";
+						'.$attribute_value.'
+						'.$attribute_value_selected.'
+						jQuery("#wapbk_variation_value").val(attribute_selected);
 						if (jQuery("#wapbk_hidden_date").val() != "" && jQuery("#wapbk_hidden_date_checkout").val() != "") bkap_calculate_price();
 					});';
 					print("<input type='hidden' id='wapbk_hidden_booked_dates' name='wapbk_hidden_booked_dates'/>");					
@@ -548,15 +537,15 @@ class bkap_booking_process {
 						<input type="hidden" id="total_price_calculated" name="total_price_calculated"/>
 						<input type="hidden" id="wapbk_multiple_day_booking" name="wapbk_multiple_day_booking" value="'.$booking_settings['booking_enable_multiple_day'].'"/>');
 				
-				if (!isset($booking_settings['booking_enable_multiple_day'])) {
+				if (!isset($booking_settings['booking_enable_multiple_day']) || (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] != "on")) {
 					do_action('bkap_display_price_div',$post->ID);
 				}
 						
 				if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] != "on") {
-					$type_of_slot = apply_filters('bkap_slot_type',$post->ID);
+				/*	$type_of_slot = apply_filters('bkap_slot_type',$post->ID);
 					if(isset($type_of_slot) && $type_of_slot != 'multiple') {
 						do_action('bkap_display_price_div',$post->ID);
-					}
+					}*/
 					$currency_symbol = get_woocommerce_currency_symbol();
 					$addon_price = 'var data = {
 							id: '.$duplicate_of.',
@@ -565,6 +554,7 @@ class bkap_booking_process {
 							'.$attribute_fields_str.'
 						};
 						jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(amt) {
+					//	alert(amt);
 							if (jQuery("#wapbk_round_price").val() == "yes") {
 								var price = Math.round(amt);
 							} else{
@@ -1386,7 +1376,8 @@ class bkap_booking_process {
 									
 								};
 								jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(response) {
-									jQuery( "#ajax_img" ).hide();		
+									jQuery( "#ajax_img" ).hide();	
+							alert(response);	
 									if (isNaN(parseInt(response))) {
 										jQuery("#show_time_slot").html(response)
 									} else {
@@ -1407,8 +1398,7 @@ class bkap_booking_process {
 													var total_price = parseInt(diffDays) * parseFloat(exploded[0]) * parseInt(quantity);
 												}
 											}
-											jQuery("#block_variable_option_price").val(parseFloat(exploded[0])+","+price_type+","+exploded[2]);
-										} else {
+									} else {
 										'.$price_value.'
 									}	
 									if (jQuery("#wapbk_round_price").val() == "yes") {
@@ -1467,12 +1457,7 @@ class bkap_booking_process {
             $variation_id = "0";
         }
 		$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
-		if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_radio']!='' &&  is_plugin_active('bkap-deposits/deposits.php')) {
-			$price = apply_filters("bkap_add_updated_addon_price",$product_id,$booking_date,$variation_id);
-			do_action('bkap_deposits_display_updated_price',$product_id,$variation_id,$price);
-		} else {
-			do_action('bkap_display_updated_addon_price',$product_id,$booking_date,$variation_id);
-		}
+		do_action('bkap_display_updated_addon_price',$product_id,$booking_date,$variation_id);
 	}
 			
 	/**********************************
@@ -1492,21 +1477,10 @@ class bkap_booking_process {
 		}
 		$checkin_date = date('Y-m-d',strtotime($check_in_date));
 		$checkout_date = date('Y-m-d',strtotime($check_out_date));
+	
 		do_action("bkap_display_multiple_day_updated_price",$product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date);
 				
 		$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
-		if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes') {
-			do_action('bkap_display_block_updated_price',$product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date);
-			exit;
-		} else if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes") {
-			$price = $_POST['block_option_price'];
-			do_action('bkap_fixed_block_display_updated_price',$product_id,$variation_id_to_fetch,$price);
-			exit;
-		} else if (isset($booking_settings['booking_partial_payment_enable']) && is_plugin_active('bkap-deposits/deposits.php')) {
-			$price = apply_filters("bkap_add_multiple_day_updated_price",$product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date);
-			do_action('bkap_deposits_display_updated_price',$product_id,$variation_id_to_fetch,$price);
-			exit;
-		}
 		if ($product_type == 'variable'){
 			$variation_id_to_fetch =  bkap_booking_process::bkap_get_selected_variation_id($product_id, $_POST);
         } else {
@@ -1556,25 +1530,25 @@ class bkap_booking_process {
 			$variation_id = "";
 		}
 		$check_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-							WHERE start_date='".$date_to_check."'
-							AND post_id='".$post_id."'
+							WHERE start_date= %s
+							AND post_id= %d
 							AND available_booking > 0";
-		$results_check = $wpdb->get_results ( $check_query );
+		$results_check = $wpdb->get_results ( $wpdb->prepare($check_query,$date_to_check,$post_id) );
 		if ( !$results_check ) {
 			$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-									WHERE weekday='".$day_check."'
-									AND post_id='".$post_id."'
+									WHERE weekday= %s
+									AND post_id= %d
 									AND start_date='0000-00-00'
 									AND available_booking > 0";
-			$results_day_check = $wpdb->get_results ( $check_day_query );	
+			$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );	
 			if (!$results_day_check) {
 				$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-										WHERE weekday='".$day_check."'
-										AND post_id='".$post_id."'
+										WHERE weekday= %s
+										AND post_id= %d
 										AND start_date='0000-00-00'
 										AND total_booking = 0 
 										AND available_booking = 0";
-				$results_day_check = $wpdb->get_results ( $check_day_query );	
+				$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );	
 			}
 			foreach ( $results_day_check as $key => $value ) {
 				$insert_date = "INSERT INTO `".$wpdb->prefix."booking_history`
@@ -1626,11 +1600,11 @@ class bkap_booking_process {
 			$variation_id = "";
         }
 		$check_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-								WHERE start_date='".$date_to_check."'
-								AND post_id='".$post_id."'
+								WHERE start_date= %s
+								AND post_id= %d
 								AND available_booking > 0 ORDER BY STR_TO_DATE(from_time,'%H:%i')
 								";
-		$results_check = $wpdb->get_results ( $check_query );
+		$results_check = $wpdb->get_results ( $wpdb->prepare($check_query,$date_to_check,$post_id) );
 		if ( count($results_check) > 0 ) {
 			$drop_down = "<label>".get_option('book.time-label').": </label><select name='time_slot' id='time_slot' class='time_slot'>";
 			$drop_down .= "<option value=''>".__( 'Choose a Time', 'woocommerce-booking')."</option>";
@@ -1670,11 +1644,11 @@ class bkap_booking_process {
 				}	
 			}
 			$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-											WHERE weekday='".$day_check."'
-											AND post_id='".$post_id."'
+											WHERE weekday= %s
+											AND post_id= %d
 											AND start_date='0000-00-00'
 											AND available_booking > 0 ORDER BY STR_TO_DATE(from_time,'%H:%i')";
-			$results_day_check = $wpdb->get_results ( $check_day_query );
+			$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );
 			//remove duplicate time slots that have available booking set to 0
 			foreach ($results_day_check as $k => $v) {
 				$from_time_qry = date($time_format_value, strtotime($v->from_time));
@@ -1684,11 +1658,11 @@ class bkap_booking_process {
 					$to_time_qry = "";
 				}
 				$time_check_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-										WHERE start_date='".$date_to_check."'
-										AND post_id='".$post_id."'
-										AND from_time='".$from_time_qry."'
-										AND to_time='".$to_time_qry."' ORDER BY STR_TO_DATE(from_time,'%H:%i')";
-				$results_time_check = $wpdb->get_results ( $time_check_query );
+										WHERE start_date= %s
+										AND post_id= %d
+										AND from_time= %s
+										AND to_time= %s ORDER BY STR_TO_DATE(from_time,'%H:%i')";
+				$results_time_check = $wpdb->get_results ( $wpdb->prepare($time_check_query,$date_to_check,$post_id,$from_time_qry,$to_time_qry) );
 				if (count($results_time_check) > 0) {
 					unset($results_day_check[$k]);
 				}
@@ -1746,19 +1720,19 @@ class bkap_booking_process {
 			}
 		} else {
 			$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-										 WHERE weekday='".$day_check."'
-										 AND post_id='".$post_id."'
+										 WHERE weekday= %s
+										 AND post_id= %d
 										 AND start_date='0000-00-00'
 										 AND available_booking > 0 ORDER BY STR_TO_DATE(from_time,'%H:%i')";
-			$results_day_check = $wpdb->get_results ( $check_day_query );
+			$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );
 			if (!$results_day_check) {
 				$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-											WHERE weekday='".$day_check."'
-											AND post_id='".$post_id."'
+											WHERE weekday= %s
+											AND post_id= %d
 											AND start_date='0000-00-00'
 											AND total_booking = 0
 											AND available_booking = 0 ORDER BY STR_TO_DATE(from_time,'%H:%i')";
-				$results_day_check = $wpdb->get_results ( $check_day_query );
+				$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );
 			}
 			if ($results_day_check) {
 				$drop_down = "<label>".get_option('book.time-label'). ": </label><select name='time_slot' id='time_slot' class='time_slot'>";
@@ -1794,12 +1768,12 @@ class bkap_booking_process {
 				}
 			} else {
 				$check_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-										WHERE start_date='".$date_to_check."'
-										AND post_id='".$post_id."'
+										WHERE start_date= %s
+										AND post_id= %d
 										AND total_booking = 0
 										AND available_booking = 0 ORDER BY STR_TO_DATE(from_time,'%H:%i')
 							";
-				$results_check = $wpdb->get_results ( $check_query );
+				$results_check = $wpdb->get_results ( $wpdb->prepare($check_query,$date_to_check,$post_id) );
 				$drop_down = "<label>".get_option('book.time-label'). ": </label><select name='time_slot' id='time_slot' class='time_slot'>";
 				$drop_down .= "<option value=''>" . __( 'Choose a Time', 'woocommerce-booking') . "</option>";
 				foreach ( $results_check as $key => $value ) {

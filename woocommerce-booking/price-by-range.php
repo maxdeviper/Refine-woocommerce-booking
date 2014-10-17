@@ -1,6 +1,6 @@
 <?php 
  
- 
+session_start(); 
 	/**
 	 * Localisation
 	 **/
@@ -13,13 +13,15 @@
 
 		class bkap_block_booking_price {
 
-			public function __construct() {				
+			public function __construct() {		
+
+				$this->variable_block_price = 0;
 				// used to add new settings on the product page booking box
 				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_price_range_show_field_settings'));
 				add_action('init', array(&$this, 'bkap_load_ajax_price_range'));
 				add_filter('bkap_save_product_settings', array(&$this, 'bkap_price_range_product_settings_save'), 10, 2);
-				add_action('bkap_display_block_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),10,5);
-				add_filter('bkap_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 10, 2);
+				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),5,5);
+				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 5, 3);
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_price_range_get_cart_item_from_session'),11,2);
 				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_price_range_booking_after_add_to_cart'));	
 				add_action('bkap_deposits_update_order', array(&$this, 'bkap_price_range_order_item_meta'), 10,2);
@@ -57,8 +59,8 @@
  				$booking_settings = get_post_meta($post->ID, 'woocommerce_booking_settings', true);
 
 				if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes' ) {
-					echo ' <input type="hidden" id="block_option_enabled_price"  name="block_option_enabled_pric" value="on"/>';
-					echo ' <input type="hidden" id="block_variable_option_price"  name="block_variable_option_price" value=""/>';
+					echo ' <input type="hidden" id="block_option_enabled_price"  name="block_option_enabled_price" value="on"/>';
+				//	echo ' <input type="hidden" id="block_variable_option_price"  name="block_variable_option_price" value=""/>';
 					echo ' <input type="hidden" id="wapbk_variation_value"  name="wapbk_variation_value" value=""/>';
 				} else {
 					echo ' <input type="hidden" id="block_option_enabled_price"  name="block_option_enabled_price" value=""/>';
@@ -561,19 +563,19 @@
 				}
 				$product_attributes = get_post_meta($post_id, '_product_attributes', true);
 				$query = "SELECT * FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE post_id = '".$post_id."'";
+							WHERE post_id = %d";
 				 
-				$results = $wpdb->get_results($query);
+				$results = $wpdb->get_results($wpdb->prepare($query,$post_id));
 			
 				$var = "";
 				$i = 0;
 				foreach ($results as $key => $value) {
 					$var .= '<tr id="row_'.$value->id.'">';
 					$query_attribute = "SELECT * FROM `".$wpdb->prefix."booking_block_price_attribute_meta`
-							WHERE post_id = '".$post_id."'
-							AND block_id = '".$value->id."'";
+							WHERE post_id = %d
+							AND block_id = %d";
 					 
-					$results_attribute = $wpdb->get_results($query_attribute);
+					$results_attribute = $wpdb->get_results($wpdb->prepare($query_attribute,$post_id,$value->id));
 					$j = 1;
 				
 					$id = '';
@@ -637,167 +639,58 @@
                         /************************************
                          * This function return price by range of days details when add to cart button click on front end.
                          *************************************/
-			function bkap_price_range_add_cart_item_data($cart_arr, $product_id) {
+			public function bkap_price_range_add_cart_item_data($cart_arr, $product_id, $variation_id) {
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
-				if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes"){
+				if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {					
 					if ($booking_settings['booking_enable_multiple_day'] == 'on') {	
 						$diff_days = $_POST['wapbk_diff_days'];
-						$price_type = explode(",",$_POST['block_variable_option_price']);
-						//print_r($price_type);exit;
+						$price_type = explode("-",$_SESSION['variable_block_price']);
+					
 						if($price_type[1] == "fixed" || $price_type[1]  == 'per_day') {
 							$diff_days=1;
 						} 
-						//print_r($_POST['block_option_price']);
-						$total = $price_type[0] * $diff_days;
-						if(isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] =='yes') {
-							if($price_type != '') {
-								$total = $price_type[2] * $diff_days;
-							}
-							if(isset($booking_settings['allow_full_payment']) && $booking_settings['allow_full_payment'] == "yes") {
-								if ($_POST['payment_type']=="partial_payment") {
-									if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-										$deposit = $booking_settings['booking_partial_payment_value_deposit'];
-										//echo $deposit;
-										$rem = $total - $deposit;
-										$cart_arr['Total'] = $total;
-										$cart_arr['Remaining'] = $rem;
-										$cart_arr['Deposit'] = $deposit;
-										$cart_arr ['price'] = $deposit;
-									} elseif(isset($booking_settings['booking_partial_payment_radio']) &&	$booking_settings['booking_partial_payment_radio']=='percent'){
-										$deposit = $total * ($booking_settings['booking_partial_payment_value_deposit']/100);
-										//echo $deposit;
-										//echo $total;
-										$rem = $total-$deposit;
-										$cart_arr ['price'] = $deposit;
-										$cart_arr['Total'] = $total;
-										$cart_arr['Remaining'] = $rem;
-										$cart_arr['Deposit'] = $deposit;
-									}
-								}else if (isset($_POST['payment_type']) && $_POST['payment_type']=="full_payment") {
-									$cart_arr ['price'] = $total;
-									$cart_arr['Total'] = $total;
-									$cart_arr['Remaining'] =0;
-									$cart_arr['Deposit'] = $total;
-								}
-									//print_r($cart_arr);exit;
-							} else{
-								if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value'){
-									$deposit = $booking_settings['booking_partial_payment_value_deposit'];
-									$rem = $total-$deposit;
-									$cart_arr['Total'] = $total;
-									$cart_arr['Remaining'] = $rem;
-									$cart_arr['Deposit'] = $deposit;
-									$cart_arr ['price'] = $deposit;
-								} elseif(isset($booking_settings['booking_partial_payment_radio']) &&		$booking_settings['booking_partial_payment_radio']=='percent'){
-									$deposit = $total * ($booking_settings['booking_partial_payment_value_deposit']/100);
-									$rem = $total-$deposit;
-									$cart_arr ['price'] = $deposit;
-									$cart_arr['Total'] = $total;
-									$cart_arr['Remaining'] = $rem;
-									$cart_arr['Deposit'] = $deposit;
-								}
-							}
-						}else {
-							$cart_arr ['price'] = $total;
-						}
+						$price = $price_type[0] * $diff_days;
 					}
 				}else {
-					if (isset($booking_settings['booking_seasonal_pricing_enable']) && $booking_settings['booking_seasonal_pricing_enable'] != "yes") :
 					$product = get_product($product_id);
 					$product_type = $product->product_type;
-				//	$diff_days = '';
+				
 					$diff_days = 1;
 					if(isset($_POST['wapbk_diff_days']) && $_POST['wapbk_diff_days'] != '') {
 						$diff_days = $_POST['wapbk_diff_days'];
 					}
 					if ($product_type == 'variable') {
-						$sale_price = get_post_meta( $_POST['variation_id'], '_sale_price', true);
-						if($sale_price == '') {
-							$regular_price = get_post_meta( $_POST['variation_id'], '_regular_price',true);
-							$price = $regular_price * $diff_days;
-						} else {
-							$price = $sale_price * $diff_days;
+						$price = get_post_meta( $variation_id, '_sale_price', true);
+						if(!isset($price) || $price == '' || $price == 0) {
+							$price = get_post_meta( $variation_id, '_regular_price',true);
 						}
+						$price = $price * $diff_days;
 					} elseif($product_type == 'simple') {
-						$sale_price = get_post_meta( $product_id, '_sale_price', true);
-							
-						if(!isset($sale_price) || $sale_price == '' || $sale_price == 0) {
-							$regular_price = get_post_meta($product_id, '_regular_price',true);
-								
-							$price = $regular_price * $diff_days;
-						}else {
-							$price = $sale_price * $diff_days;
+						$price = get_post_meta( $product_id, '_sale_price', true);
+						if(!isset($price) || $price == '' || $price == 0) {
+							$price = get_post_meta($product_id, '_regular_price',true);
 						}
+						$price = $price * $diff_days;
 					}
-					if(isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] =='yes') {
-						$total = $price;
-						if(isset($booking_settings['allow_full_payment']) && $booking_settings['allow_full_payment'] == "yes"){
-							if ($_POST['payment_type']=="partial_payment"){
-								if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value'){
-									$deposit = $booking_settings['booking_partial_payment_value_deposit'];
-										//echo $deposit;
-									$rem = $total - $deposit;
-									$cart_arr['Total'] = $total;
-									$cart_arr['Remaining'] = $rem;
-									$cart_arr['Deposit'] = $deposit;
-									$cart_arr ['price'] = $deposit;
-								} elseif(isset($booking_settings['booking_partial_payment_radio']) &&	$booking_settings['booking_partial_payment_radio']=='percent'){
-									$deposit = $total * ($booking_settings['booking_partial_payment_value_deposit']/100);
-										//echo $deposit;
-										//echo $total;
-									$rem = $total-$deposit;
-									$cart_arr ['price'] = $deposit;
-									$cart_arr['Total'] = $total;
-									$cart_arr['Remaining'] = $rem;
-									$cart_arr['Deposit'] = $deposit;
-								}
-							} else if (isset($_POST['payment_type']) && $_POST['payment_type']=="full_payment"){
-								$cart_arr ['price'] = $total;
-								$cart_arr['Total'] = $total;
-								$cart_arr['Remaining'] =0;
-								$cart_arr['Deposit'] = $total;
-							}
-									//print_r($cart_arr);exit;
-						}else{
-							if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-								$deposit = $booking_settings['booking_partial_payment_value_deposit'];
-								$rem = $total-$deposit;
-								$cart_arr['Total'] = $total;
-								$cart_arr['Remaining'] = $rem;
-								$cart_arr['Deposit'] = $deposit;
-								$cart_arr ['price'] = $deposit;
-							}elseif(isset($booking_settings['booking_partial_payment_radio']) &&	$booking_settings['booking_partial_payment_radio']=='percent') {
-								$deposit = $total * ($booking_settings['booking_partial_payment_value_deposit']/100);
-								$rem = $total-$deposit;
-								$cart_arr ['price'] = $deposit;
-								$cart_arr['Total'] = $total;
-								$cart_arr['Remaining'] = $rem;
-								$cart_arr['Deposit'] = $deposit;
-							}
-						}
-					}else {
-						$cart_arr ['price'] = $total;
-					}
-					endif;
 				}
-				if (isset($booking_settings['booking_seasonal_pricing_enable']) && $booking_settings['booking_seasonal_pricing_enable'] == "yes") :
-					$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-					if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on") {
-						$cart_arr['price'] = round($cart_arr['price']);
-						if(isset(	$cart_arr['Total'])){
-							$cart_arr['Total'] = round($cart_arr['Total']);
-                                                }
-						if(isset(	$cart_arr['Deposit'])){
-							$cart_arr['Deposit'] = round($cart_arr['Deposit']);
-                                                }
-						if(isset(	$cart_arr['Remaining'])){
-							$cart_arr['Remaining'] = round($cart_arr['Remaining']);
-                                                }
-					
+				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
+					if (isset($price) && $price != '') {
+						if(isset($price_type[1]) && $price_type[1] == "fixed" || $price_type[1]  == 'per_day') {
+							$_POST['variable_blocks'] = "Y";
+							$_POST['price'] = $_SESSION['variable_block_price'];
+						}
+						else {
+							$_POST['price'] = $price;
+						}
 					}
-				endif;
-				//print_r($carr_arr);
+				}
+				else {
+					if (isset($price) && $price != '') {
+						$cart_arr['price'] = $price;
+					}
+				}
+				
 				return $cart_arr;
 			
 			}
@@ -916,9 +809,35 @@
                          /***********************************************************
                          * This function is used to show the price updation of the price by range of days on the front end.
                          ************************************************************/
-			function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date) {
-				//echo "here";
+			public function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date) {
+				$variation_id = $variation_id_to_fetch;
+				
+				$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
+				$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
+				$number = floor($number_of_days/(60*60*24));
+				if ( isset($booking_settings['booking_charge_per_day']) && $booking_settings['booking_charge_per_day'] == 'on' ){
+					$number = $number + 1;
+				}
+					
+				if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on')
+					$number = 1;
+				
+				$price = $this->price_range_calculate_price($product_id,$product_type,$variation_id,$number);
+				
+				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
+					if (isset($price) && $price != '') {
+						$_SESSION['variable_block_price'] = $_POST['price'] = $price;
+					}
+				}
+				else {
+					echo $price;
+					die();
+				}
+			}
+			
+			function price_range_calculate_price($product_id,$product_type,$variation_id,$number) {
 				global $wpdb;
+				
 				$results_price = array();
 				if ($product_type == 'variable') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
@@ -928,7 +847,6 @@
 						$product_attributes = get_post_meta($product_id, '_product_attributes', true);
 						$i = 0;
 						foreach($product_attributes as $key => $value) {
-							//print_r($_POST);
 							if(isset($_POST['attribute_selected'])) {
 								$string_explode = explode("|",$_POST['attribute_selected']);
 							}else{
@@ -937,12 +855,11 @@
 							$value_array = explode("|",$value['value']);
 							$s_value = '';
 							foreach($string_explode as $sk => $sv) {
-								//echo $sv;
 								if($sv == ''){
 									unset($string_explode[$sk]);
 								}
 							}
-							//print_r($string_explode);						
+								
 							foreach($value_array as $k => $v){
 								$string1 = str_replace(" ","",$v);
 								if(count($string_explode) > 0) {
@@ -951,7 +868,7 @@
 									$string2 = '';
 								}
 								if(strtolower($string1) == strtolower($string2) /* $pos_value != 0*/) {
-									//echo "here".$pos_value;
+										
 									if(substr($v, 0, -1) === ' ') {
 										$result = rtrim($v," ");
 										$variations_selected[$i] = $result;
@@ -962,11 +879,11 @@
 									} else {
 										$variations_selected[$i] = $v;
 									}
-								}					
+								}
 							}
 							$i++;
 						}
-						//print_r($variations_selected);
+				
 						$j = 1;
 						$k = 0;
 						$attribute_sub_query = '';
@@ -977,368 +894,194 @@
 							$k++;
 						}
 						$query = "SELECT c0.block_id FROM `".$wpdb->prefix."booking_block_price_attribute_meta` AS c0
-							JOIN `".$wpdb->prefix."booking_block_price_attribute_meta` AS c1 ON c1.block_id=c0.block_id
-							WHERE ".$attribute_sub_query." c0.post_id = '".$product_id."'";
-							//print_r("here".$query);
-							$results = $wpdb->get_results ( $query );
-						//print_r($results);
-						$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
-				//		$number = floor($number_of_days/(60*60*24)) + 1;
-						$number = floor($number_of_days/(60*60*24));
-						if ( isset($booking_settings['booking_charge_per_day']) && $booking_settings['booking_charge_per_day'] == 'on' ){
-							$number = $number + 1;
-						}
-						//echo $number;
-						if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on')
-							$number = 1;
-						//echo $number;
+						JOIN `".$wpdb->prefix."booking_block_price_attribute_meta` AS c1 ON c1.block_id=c0.block_id
+						WHERE ".$attribute_sub_query." c0.post_id = %d";
+				
+						$results = $wpdb->get_results ( $wpdb->prepare($query,$product_id) );
+							
+						$_POST['fixed_price'] = $_POST['variable_blocks'] = "N";
 						$e = 0;
 						foreach($results as $k => $v) {
 							$query = "SELECT price_per_day, fixed_price, maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE id = '".$v->block_id."' AND post_id = '".$product_id."' AND minimum_number_of_days <='".$number."' AND maximum_number_of_days >='".$number."'";
-							//echo $query;
-							$results_price[$e] = $wpdb->get_results($query);
+							WHERE id = %d AND post_id = %d AND minimum_number_of_days <= %d AND maximum_number_of_days >= %d";
+				
+							$results_array = $wpdb->get_results($wpdb->prepare($query,$v->block_id,$product_id,$number,$number));
+							if (isset($results_array) && count($results_array) > 0) {
+								$results_price[$e] = $results_array;
+							}
+							//	$results_price[$e] = $wpdb->get_results($query);
 							$e++;
 						}
-						//print_r($results_price);
-						if(count($results_price[0]) == 0) {
-							$e = 0;
-							foreach($results as $k => $v) {
-								$query = "SELECT price_per_day, fixed_price, MAX(maximum_number_of_days) AS maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
-								WHERE id = '".$v->block_id."' AND post_id = '".$product_id."' AND minimum_number_of_days <='".$number."'";
-								//echo $query;
-								$results_price[$e] = $wpdb->get_results($query);
-								//print_r($results_price);
-								$e++;
-							}
-							if(count($results_price) == 0) {
-								if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] == "yes"){ 
-									if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-										$regular_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-										if($regular_price == ''){
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-										}
-										$price = $booking_settings['booking_partial_payment_value_deposit'];
-										$price .= "-";
-										$price .= "-".$regular_price;
-									}elseif(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='percent') {
-										$sale_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-										if($sale_price == '') {
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
-											$price .= "-";
-											$price .= "-".$regular_price;
-										} else {
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
-											$price .= "-";
-											$price .= "-".$sale_price;
-										}
-									} else {
-										$sale_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-										if($sale_price == '') {
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-											$price = $regular_price;
-											$price .= "-";
-										} else {
-											$price = $sale_price;
-											$price .= "-";
-										}
+						if (isset($results) && count($results) > 0 && $results != false) {
+							if(isset($results_price[0]) && count($results_price[0]) == 0) {
+								$e = 0;
+								foreach($results as $k => $v) {
+									$query = "SELECT price_per_day, fixed_price, maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
+									WHERE id = %d AND post_id = %d AND minimum_number_of_days <= %d";
+									$results_array = $wpdb->get_results($wpdb->prepare($query,$v->block_id,$product_id,$number));
+									if (isset($results_array) && count($results_array) > 0) {
+										$results_price[$e] = $results_array;
 									}
-								} else {
-									$sale_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-										if($sale_price == ''){
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-											$price = $regular_price;
-											$price .= "-";
-										}else {
-											$price = $sale_price;
-											$price .= "-";
-										}
+									$e++;
 								}
-							} else{
-								foreach($results_price as $k => $v){
-									if(!empty($results_price[$k])){
-										if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value'){
-											$price = $booking_settings['booking_partial_payment_value_deposit'];
-										}elseif(isset($booking_settings['booking_partial_payment_radio']) &&			$booking_settings['booking_partial_payment_radio']=='percent') {
-											//$sale_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-											if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
-												$regular_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-												if($regular_price == ''){
-													$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-												}
-												$diff_days = '';
-												if($v[0]->maximum_number_of_days < $number){
-													$diff_days = $number - $v[0]->maximum_number_of_days;
-													if($v[0]->fixed_price != 0){
-														$oprice = $v[0]->fixed_price + ($regular_price * $diff_days);
-														$pprice = "-fixed";
-													} else{
-														$oprice = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($regular_price * $diff_days);
-														$pprice = "-per_day";
-													}
-												}
-												$price = (($booking_settings['booking_partial_payment_value_deposit']*$oprice)/100);
-												$price .= $pprice; 
-												$price .= "-".$oprice; 
-											}elseif($sale_price == ''){
-												$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-												$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
-											}else {
-												$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
-											}
-										} else if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {	
-											//echo $v[0]->fixed_price;
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-											if($regular_price == '') {
-												$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-											}
-											//$diff_days = ''; 
-											if($v[0]->maximum_number_of_days < $number) {
-												$diff_days = $number - $v[0]->maximum_number_of_days;
-												//echo $diff_days;
-												if($v[0]->fixed_price != 0) {
-													$price = $v[0]->fixed_price + ($regular_price * $diff_days);
-													$price .= "-fixed";
-													$price .= "-";
-												} else {
-													$price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($regular_price * $diff_days);
-													$price .= "-per_day";
-													$price .= "-fixed";
-													//echo $price;
-												}
-											}
-										}
-									} else {	
-										unset($results_price[$k]);
+								if(isset($results_price[0]) && count($results_price[0]) == 0) {
+									$price = get_post_meta( $variation_id, '_sale_price', true);
+									if(!isset($price) || $price == '' || $price == 0){
+										$price = get_post_meta( $variation_id, '_regular_price', true);
 									}
-								}
-							}
-						} else {
-							foreach($results_price as $k => $v) {
-								if(!empty($results_price[$k])) {
-									if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-										$price = $booking_settings['booking_partial_payment_value_deposit'];
-									}elseif(isset($booking_settings['booking_partial_payment_radio']) &&		$booking_settings['booking_partial_payment_radio']=='percent'){
-										//$sale_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-										if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-											if($regular_price == '') {
-												$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
+									$price .= "-";
+								} else{
+									foreach($results as $k => $v) {
+										$query = "SELECT price_per_day, fixed_price, MAX(maximum_number_of_days) AS maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
+										WHERE id = %d AND post_id = %d AND minimum_number_of_days <= %d";
+				
+										$results_array = $wpdb->get_results($wpdb->prepare($query,$v->block_id,$product_id,$number));
+										if (isset($results_array) && count($results_array) > 0) {
+											if ($results_array[0]->price_per_day != '' && $results_array[0]->fixed_price != '' && $results_array[0]->maximum_number_of_days != '') {
+												$results_price[$e] = $results_array;
+											}
+										}
+										$e++;
+									}
+									foreach($results_price as $k => $v){
+										if(!empty($results_price[$k])){
+											$_POST['variable_blocks'] = "Y";
+											$price = get_post_meta( $variation_id, '_sale_price', true);
+											if(!isset($price) || $price == '' || $price == 0){
+												$price = get_post_meta( $variation_id, '_regular_price', true);
 											}
 											$diff_days = '';
 											if($v[0]->maximum_number_of_days < $number){
 												$diff_days = $number - $v[0]->maximum_number_of_days;
 												if($v[0]->fixed_price != 0){
-													$oprice = $v[0]->fixed_price + ($regular_price * $diff_days);
-													$pprice = "-fixed";
-												} else {
-													$oprice = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($regular_price * $diff_days);
-													$pprice = "-per_day";
-												}
-											} else {
-												if($v[0]->fixed_price != 0) {
-													$oprice = $v[0]->fixed_price;
-													$pprice = "-fixed";
-												} else {
-													$oprice = $v[0]->price_per_day * $number;
-													$pprice = "-per_day";
+													$calc_price = $v[0]->fixed_price + ($price * $diff_days);
+													$price = $calc_price . "-fixed";
+													$_POST['fixed_price'] = "Y";
+												} else{
+													$calc_price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($price * $diff_days);
+													$price = $calc_price . "-per_day";
 												}
 											}
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$oprice)/100);
-											$price .= $pprice; 
-											$price .= "-".$oprice; 
-										} elseif($sale_price == '') {
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
 										} else {
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
-										}
-									} else if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {	
-										//echo $v[0]->fixed_price;
-										$regular_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-										if($regular_price == '') {
-											$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-										}
-										//$diff_days = ''; 
-										if($v[0]->maximum_number_of_days < $number) {
-											$diff_days = $number - $v[0]->maximum_number_of_days;
-											//echo $diff_days;
-											if($v[0]->fixed_price != 0) {
-												$price = $v[0]->fixed_price + ($regular_price * $diff_days);
-												$price .= "-fixed";
-												$price .= "-";
-											} else {
-												$price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($regular_price * $diff_days);
-												$price .= "-per_day";
-												$price .= "-fixed";
-												//echo $price;
-											}
-										} else {
-											if($v[0]->fixed_price != 0) {
-												$price = $v[0]->fixed_price;
-												$price .= "-fixed";
-												$price .= "-";
-											} else {
-												$price = $v[0]->price_per_day * $number;
-												$price .= "-per_day";
-												$price .= "-";
-												//echo $price;
-											}
+											unset($results_price[$k]);
 										}
 									}
-								} else {
-									unset($results_price[$k]);
+								}
+							} else {
+								foreach($results as $k => $v) {
+									$query = "SELECT price_per_day, fixed_price, MAX(maximum_number_of_days) AS maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
+									WHERE id = %d AND post_id = %d AND minimum_number_of_days <= %d";
+									$results_array = $wpdb->get_results($wpdb->prepare($query,$v->block_id,$product_id,$number));
+										
+									if (isset($results_array) && count($results_array) > 0) {
+										if ($results_array[0]->price_per_day != '' && $results_array[0]->fixed_price != '' && $results_array[0]->maximum_number_of_days != '') {
+											$results_price[$e] = $results_array;
+										}
+									}
+									$e++;
+								}
+								foreach($results_price as $k => $v) {
+									if(!empty($results_price[$k])) {
+										$_POST['variable_blocks'] = "Y";
+										$price = get_post_meta( $variation_id, '_sale_price', true);
+										if(!isset($price) || $price == '' || $price == 0){
+											$price = get_post_meta( $variation_id, '_regular_price', true);
+										}
+										$diff_days = '';
+										if($v[0]->maximum_number_of_days < $number){
+											$diff_days = $number - $v[0]->maximum_number_of_days;
+											if($v[0]->fixed_price != 0){
+												$_POST['fixed_price'] = "Y";
+												$calc_price = $v[0]->fixed_price + ($price * $diff_days);
+												$price =$calc_price .  "-fixed";
+											} else {
+												$calc_price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($price * $diff_days);
+												$price = $calc_price . "-per_day";
+											}
+										} else {
+											if($v[0]->fixed_price != 0) {
+												$_POST['fixed_price'] = "Y";
+												$calc_price = $v[0]->fixed_price;
+												$price = $calc_price . "-fixed";
+											} else {
+												$calc_price = $v[0]->price_per_day * $number;
+												$price = $calc_price . "-per_day";
+											}
+										}
+									} else {
+										unset($results_price[$k]);
+									}
 								}
 							}
 						}
+						else {
+							$price = get_post_meta( $variation_id, '_sale_price', true);
+							if(!isset($price) || $price == '' || $price == 0){
+								$price = get_post_meta( $variation_id, '_regular_price', true);
+							}
+							$price .= "-";
+						}
 					}
-					echo $price;
-					die();	
+					else {
+						$price = get_post_meta( $variation_id, '_sale_price', true);
+						if(!isset($price) || $price == '' || $price == 0){
+							$price = get_post_meta( $variation_id, '_regular_price', true);
+						}
+						$price .= "-";
+					}
 				} elseif ($product_type == 'simple') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 					if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes') {
 						$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
-					//	$number = floor($number_of_days/(60*60*24)) + 1;
+							
 						$number = floor($number_of_days/(60*60*24));
 						if ( isset($booking_settings['booking_charge_per_day']) && $booking_settings['booking_charge_per_day'] == 'on' ) {
 							$number = $number + 1;
 						}
-						//echo $number;
 						if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on')
 							$number = 1;
+				
 						$query = "SELECT price_per_day, fixed_price, maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE post_id = '".$product_id."' AND minimum_number_of_days <='".$number."' AND maximum_number_of_days >='".$number."'";
-							//echo $query;
-						$results_price = $wpdb->get_results($query);
+						WHERE post_id = %d AND minimum_number_of_days <= %d AND maximum_number_of_days >= %d";
+							
+						$results_price = $wpdb->get_results($wpdb->prepare($query,$product_id,$number,$number));
+				
 						if(count($results_price) == 0) {
-							$query = "SELECT price_per_day, fixed_price, MAX(maximum_number_of_days) AS maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE post_id = '".$product_id."' AND minimum_number_of_days <='".$number."'";
-							//echo $query;
-							$results_price = $wpdb->get_results($query);
-							//print_r($results_price);
+							$query = "SELECT price_per_day, fixed_price, maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
+							WHERE post_id = %d AND minimum_number_of_days <= %d'";
+				
+							$results_price = $wpdb->get_results($wpdb->prepare($query,$product_id,$number));
+								
 							if(count($results_price) == 0) {
-								if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] == "yes") { 
-									if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-										$regular_price = get_post_meta( $product_id, '_sale_price', true);
-										if($regular_price == '') {
-											$regular_price = get_post_meta( $product_id, '_regular_price', true);
-										}
-										
-										$price = $booking_settings['booking_partial_payment_value_deposit'];
-										$price .= "-value";
-										$price .= "-".$regular_price;
-									} elseif(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='percent') {
-										$sale_price = get_post_meta( $product_id, '_sale_price', true);
-										if($sale_price == '') {
-											$regular_price = get_post_meta( $product_id, '_regular_price', true);
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
-											$price .= "-percent";
-											$price .= "-".$regular_price;
-
-										} else {
-											$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
-											$price .= "-percent";
-											$price .= "-".$sale_price;
-										}
-									} else {
-										$sale_price = get_post_meta( $product_id, '_sale_price', true);
-										if($sale_price == '') {
-											$regular_price = get_post_meta( $product_id, '_regular_price', true);
-											$price = $regular_price;
-											$price .= "-";
-										} else {
-											$price = $sale_price;
-											$price .= "-";
-										}
-									}
-								} else {
-									$sale_price = get_post_meta( $product_id, '_sale_price', true);
-										if($sale_price == ''){
-											$regular_price = get_post_meta( $product_id, '_regular_price', true);
-											$price = $regular_price;
-											$price .= "-";
-										} else {
-											$price = $sale_price;
-											$price .= "-";
-										}
+								$price = get_post_meta( $product_id, '_sale_price', true);
+								if(!isset($price) || $price == '' || $price == 0){
+									$price = get_post_meta( $product_id, '_regular_price', true);
 								}
+								$price .= "-";
 							} else {
+								$query = "SELECT price_per_day, fixed_price, MAX(maximum_number_of_days) AS maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
+								WHERE post_id = %d AND minimum_number_of_days <= %d";
+									
+								$results_price = $wpdb->get_results($wpdb->prepare($query,$product_id,$number));
+									
 								foreach($results_price as $k => $v) {
-									//print_r($booking_settings);
-									if(!empty($results_price[$k])) {
-										if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] == "yes") { 
-											if(isset($booking_settings['booking_partial_payment_radio']) &&		$booking_settings['booking_partial_payment_radio']=='value'){
-												$price = $booking_settings['booking_partial_payment_value_deposit'];
-												if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] ==	"yes") {
-													$regular_price = get_post_meta( $product_id, '_sale_price', true);
-													if($regular_price == '') {
-														$regular_price = get_post_meta( $product_id, '_regular_price', true);
-													}
-													if($v->maximum_number_of_days < $number) {
-														$diff_days = $number - $v->maximum_number_of_days;
-														if($v->fixed_price != 0) {
-															$oprice = $v->fixed_price + ($regular_price * $diff_days);
-															$pprice = "-fixed";
-														} else {
-															$oprice = ($v->price_per_day * $v->maximum_number_of_days) + ($regular_price * $diff_days);
-															$pprice = "-per_day";
-														}
-													}
-													$price .= $pprice;
-													$price .= "-".$oprice;
-												}
-											} elseif(isset($booking_settings['booking_partial_payment_radio']) &&		$booking_settings['booking_partial_payment_radio']=='percent') {
-												$sale_price = get_post_meta( $product_id, '_sale_price', true);
-												if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
-													$regular_price = get_post_meta( $product_id, '_sale_price', true);
-													if($regular_price == '') {
-														$regular_price = get_post_meta( $product_id, '_regular_price', true);
-													}
-													if($v->maximum_number_of_days < $number) {
-														$diff_days = $number - $v->maximum_number_of_days;
-														if($v->fixed_price != 0) {
-														
-															$oprice = $v->fixed_price + ($regular_price * $diff_days);
-															$pprice = "-fixed";
-														} else {
-															$oprice = ($v->price_per_day * $v->maximum_number_of_days) + ($regular_price * $diff_days);
-															$pprice = "-per_day";
-														}
-													}
-												
-													//echo $oprice;
-													//echo "here".$booking_settings['booking_partial_payment_value_deposit'];
-													$price = (($booking_settings['booking_partial_payment_value_deposit']*$oprice)/100);
-													$price .= $pprice;
-													$price .= "-".$oprice; 
-												} elseif($sale_price == '') {
-													$regular_price = get_post_meta( $product_id, '_regular_price', true);
-													$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
-												} else {	
-													$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
-												}
-											}
-										} else if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {	
-											//echo $v[0]->fixed_price;
-											$regular_price = get_post_meta( $product_id, '_sale_price', true);
-											if($regular_price == '') {
-												$regular_price = get_post_meta( $product_id, '_regular_price', true);
-											}
-											if($v->maximum_number_of_days < $number) {
-												$diff_days = $number - $v->maximum_number_of_days;
-												if($v->fixed_price != 0) {	
-													$price = $v->fixed_price + ($regular_price * $diff_days);
-													$price .= "-fixed";
-													$price .= "-";		
-												} else {
-													$price = ($v->price_per_day * $v->maximum_number_of_days) + ($regular_price * $diff_days);
-													//echo $price;
-													$price .= "-per_day";
-													$price .= "-";
-												}
-											}
 										
+									if(!empty($results_price[$k])) {
+										$_POST['variable_blocks'] = "Y";
+										$price = get_post_meta( $product_id, '_sale_price', true);
+										if(!isset($price) || $price == '' || $price == 0){
+											$price = get_post_meta( $product_id, '_regular_price', true);
+										}
+										if($v->maximum_number_of_days < $number) {
+											$diff_days = $number - $v->maximum_number_of_days;
+											if($v->fixed_price != 0) {
+												$_POST['fixed_price'] = "Y";
+												$calc_price = $v->fixed_price + ($price * $diff_days);
+												$price = $calc_price . "-fixed";
+											} else {
+												$calc_price = ($v->price_per_day * $v->maximum_number_of_days) + ($price * $diff_days);
+												$price = $calc_price . "-per_day";
+											}
 										}
 									}else {
 										unset($results_price[$k]);
@@ -1347,79 +1090,33 @@
 							}
 						}else {
 							foreach($results_price as $k => $v) {
-								//print_r($booking_settings);
 								if(!empty($results_price[$k])) {
-									if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable'] == "yes") { 
-										if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-											$price = $booking_settings['booking_partial_payment_value_deposit'];
-											if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
-												$regular_price = get_post_meta( $product_id, '_sale_price', true);
-												if($regular_price == '') {
-													$regular_price = get_post_meta( $product_id, '_regular_price', true);
-												}
-												if($v->fixed_price != 0) {
-													$oprice = $v->fixed_price;
-													$pprice = "-fixed";		
-												} else {
-													$oprice = $v ->price_per_day * $number;
-													$pprice = "-per_day";
-												}
-												$price .= $pprice;
-												$price .= "-".$oprice;
-											}
-										} elseif(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='percent') {
-											$sale_price = get_post_meta( $product_id, '_sale_price', true);
-											if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
-												$regular_price = get_post_meta( $product_id, '_sale_price', true);
-												if($regular_price == ''){
-													$regular_price = get_post_meta( $product_id, '_regular_price', true);
-												}
-												if($v->fixed_price != 0) {
-													$oprice = $v->fixed_price;
-													$pprice = "-fixed";		
-												} else {
-													$oprice = $v ->price_per_day * $number;
-													$pprice = "-per_day";
-												
-												}
-												//echo $oprice;
-												//echo "here".$booking_settings['booking_partial_payment_value_deposit'];
-												$price = (($booking_settings['booking_partial_payment_value_deposit']*$oprice)/100);
-												$price .= $pprice;
-												$price .= "-".$oprice; 
-											} elseif($sale_price == '') {
-												$regular_price = get_post_meta( $product_id, '_regular_price', true);
-												$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
-											} else {
-												$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
-											}
-										}
-									} else if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {	
-										//echo $v[0]->fixed_price;
-										$regular_price = get_post_meta( $product_id, '_sale_price', true);
-										if($regular_price == '') {
-											$regular_price = get_post_meta( $product_id, '_regular_price', true);
-										}
-										if($v->fixed_price != 0) {
-											$price = $v->fixed_price;
-											$price .= "-fixed";
-											$price .= "-";		
-										} else {
-											$price = $v ->price_per_day * $number;
-											$price .= "-per_day";
-											$price .= "-";
-										}
+									$_POST['variable_blocks'] = "Y";
+									if($v->fixed_price != 0) {
+										$_POST['fixed_price'] = "Y";
+										$price = $v->fixed_price;
+										$price .= "-fixed";
+										$price .= "-";
+									} else {
+										$price = $v ->price_per_day * $number;
+										$price .= "-per_day";
+										$price .= "-";
 									}
 								} else {
 									unset($results_price[$k]);
 								}
 							}
 						}
-						
-						echo $price;
-						die();
+					}
+					else {
+						$price = get_post_meta( $product_id, '_sale_price', true);
+						if(!isset($price) || $price == '' || $price == 0){
+							$price = get_post_meta( $product_id, '_regular_price', true);
+						}
+						$price .= "-";
 					}
 				}
+				return $price;
 			}
 		}
 	

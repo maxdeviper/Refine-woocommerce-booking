@@ -43,13 +43,13 @@ class bkap_cancel_order{
 		$order_obj = new WC_order($order_id);
 		$order_items = $order_obj->get_items();
 		$select_query = "SELECT booking_id FROM `".$wpdb->prefix."booking_order_history`
-						WHERE order_id='".$order_id."'";
-		$results = $wpdb->get_results ( $select_query );
+						WHERE order_id= %d";
+		$results = $wpdb->get_results ( $wpdb->prepare($select_query,$order_id) );
 		foreach($results as $k => $v) {
 			$b[] = $v->booking_id;
 			$select_query_post = "SELECT post_id,id FROM `".$wpdb->prefix."booking_history`
-								WHERE id='".$v->booking_id."'";
-			$results_post[] = $wpdb->get_results($select_query_post);
+								WHERE id= %d";
+			$results_post[] = $wpdb->get_results($wpdb->prepare($select_query_post,$v->booking_id));
 		}
 		if (isset($results_post) && count($results_post) > 0 && $results_post != false) {
 			foreach($results_post as $k => $v) {
@@ -83,8 +83,8 @@ class bkap_cancel_order{
 						$booking_id = $result[$e];
 						if(isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 							$select_data_query = "SELECT start_date,end_date FROM `".$wpdb->prefix."booking_history`
-													WHERE id='".$booking_id."'";
-							$results_data = $wpdb->get_results ( $select_data_query );
+													WHERE id= %d";
+							$results_data = $wpdb->get_results ( $wpdb->prepare($select_data_query,$booking_id) );
 							$j=0;
 							foreach($results_data as $k => $v) {
 								$start_date = $results_data[$j]->start_date;
@@ -99,8 +99,8 @@ class bkap_cancel_order{
 								do_action('bkap_order_status_cancelled',$order_id,$item_value,$booking_id);
 							} else {
 								$select_data_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-												WHERE id='".$booking_id."'";
-								$results_data = $wpdb->get_results ( $select_data_query );
+												WHERE id= %d";
+								$results_data = $wpdb->get_results ( $wpdb->prepare($select_data_query,$booking_id) );
 								$j=0;
 								foreach($results_data as $k => $v){
 									$start_date = $results_data[$j]->start_date;
@@ -116,11 +116,11 @@ class bkap_cancel_order{
 													from_time = '".$from_time."' AND
 													to_time = '".$to_time."'";
 											$select = "SELECT * FROM `".$wpdb->prefix."booking_history`
-													WHERE post_id = '".$product_id."' AND
-													start_date = '".$start_date."' AND
-													from_time = '".$from_time."' AND
-													to_time = '".$to_time."'";
-											$select_results = $wpdb->get_results( $select );
+													WHERE post_id = %d AND
+													start_date = %s AND
+													from_time = %s AND
+													to_time = %s";
+											$select_results = $wpdb->get_results( $wpdb->prepare($select,$product_id,$start_date,$from_time,$to_time) );
 											foreach($select_results as $k => $v){
 												$details[$product_id] = $v;
 											}
@@ -132,10 +132,10 @@ class bkap_cancel_order{
 														start_date = '".$start_date."' AND
 														from_time = '".$from_time."'";
 											$select = "SELECT * FROM `".$wpdb->prefix."booking_history`
-													WHERE post_id = '".$product_id."' AND
-													start_date = '".$start_date."' AND
-													from_time = '".$from_time."'";
-											$select_results = $wpdb->get_results( $select );
+													WHERE post_id = %d AND
+													start_date = %s AND
+													from_time = %s";
+											$select_results = $wpdb->get_results( $wpdb->prepare($select,$product_id,$start_date,$from_time) );
 											foreach($select_results as $k => $v){
 												$details[$product_id] = $v;
 											}
@@ -147,8 +147,8 @@ class bkap_cancel_order{
 							}
 						} else {
 							$select_data_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-											WHERE id='".$booking_id."'";
-							$results_data = $wpdb->get_results ( $select_data_query );
+											WHERE id= %d";
+							$results_data = $wpdb->get_results ( $wpdb->prepare($select_data_query,$booking_id) );
 							$j=0;
 							foreach($results_data as $k => $v) {
 								$start_date = $results_data[$j]->start_date;

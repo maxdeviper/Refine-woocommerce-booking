@@ -16,16 +16,16 @@ class bkap_ics{
 			$order_obj = new WC_Order( $order->id );
 			$order_items = $order_obj->get_items();
 			//echo "order<pre>";print_r($order_items);echo "</pre>";
-			$today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = '".$order->id."'";
-			$results_date = $wpdb->get_results ( $today_query );
+			$today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = %d";
+			$results_date = $wpdb->get_results ( $wpdb->prepare($today_query,$order->id) );
 			$c = 0;
 			if($results_date) {
 				foreach ($order_items as $item_key => $item_value) {
 					$duplicate_of = get_post_meta($item_value['product_id'], '_icl_lang_duplicate_of', true);
 					if($duplicate_of == '' && $duplicate_of == null) {
 						$post_time = get_post($item_value['product_id']);
-						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-						$results_post_id = $wpdb->get_results ( $id_query );
+						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = %s ORDER BY ID LIMIT 1";
+						$results_post_id = $wpdb->get_results ($wpdb->prepare($id_query,$post_time->post_date));
 						if( isset($results_post_id) ) {
 							$duplicate_of = $results_post_id[0]->ID;
 						} else {
@@ -105,16 +105,16 @@ class bkap_ics{
 			$order_obj = new WC_Order( $order->id );	
 			$order_items = $order_obj->get_items();	
 			$random_hash = md5(date('r', time()));	
-			$today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = '".$order->id."'";
-			$results_date = $wpdb->get_results ( $today_query );
+			$today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = %d";
+			$results_date = $wpdb->get_results ($wpdb->prepare($today_query,$order->id));
 			$file = array();
 			$c = 0;
 			foreach ($order_items as $item_key => $item_value) {
 				$duplicate_of = get_post_meta($item_value['product_id'], '_icl_lang_duplicate_of', true);
 				if($duplicate_of == '' && $duplicate_of == null) {
 					$post_time = get_post($item_value['product_id']);
-					$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-					$results_post_id = $wpdb->get_results ( $id_query );
+					$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = %s ORDER BY ID LIMIT 1";
+					$results_post_id = $wpdb->get_results ($wpdb->prepare($id_query,$post_time->post_date));
 					if( isset($results_post_id) ) {
 						$duplicate_of = $results_post_id[0]->ID;
 					} else {

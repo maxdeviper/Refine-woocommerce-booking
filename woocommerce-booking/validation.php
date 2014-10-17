@@ -88,18 +88,18 @@ class bkap_validation{
 				}
 				if($to_time != '') {
 					$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-					WHERE post_id = '".$post_id."'
-					AND start_date = '".$date_check."'
-					AND from_time = '".$from_time."'
-					AND to_time = '".$to_time."' ";
-					$results = $wpdb->get_results( $query );
+					WHERE post_id = %d
+					AND start_date = %s
+					AND from_time = %s
+					AND to_time = %s";
+					$results = $wpdb->get_results($wpdb->prepare($query,$post_id,$date_check,$from_time,$to_time));
 				} 
 				else {
 					$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-					WHERE post_id = '".$post_id."'
-					AND start_date = '".$date_check."'
-					AND from_time = '".$from_time."'";
-					$results = $wpdb->get_results( $query );
+					WHERE post_id = %d
+					AND start_date = %s
+					AND from_time = %s";
+					$results = $wpdb->get_results( $wpdb->pepare($query,$post_id,$date_check,$from_time) );
 				}
 					
 				if (isset($results) && count($results) > 0) {
@@ -165,9 +165,9 @@ class bkap_validation{
 			$todays_date = date('Y-m-d');
 	
 			$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history
-			WHERE start_date >='".$todays_date."' AND post_id = '".$post_id."'";
+			WHERE start_date >= %s AND post_id = %d";
 	
-			$results_date = $wpdb->get_results($query_date);
+			$results_date = $wpdb->get_results($wpdb->prepare($query_date,$todays_date,$post_id));
 	
 			$dates_new = array();
 				
@@ -260,9 +260,9 @@ class bkap_validation{
 		} 
 		else {
 			$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-			WHERE post_id = '".$post_id."'
-			AND start_date = '".$date_check."' ";
-			$results = $wpdb->get_results( $query );
+			WHERE post_id = %d
+			AND start_date = %s ";
+			$results = $wpdb->get_results( $wpdb->prepare($query,$post_id,$date_check) );
 	
 			if (isset($results) && count($results) > 0) {
 				if( $results[0]->available_booking > 0 && $results[0]->available_booking < $_POST['quantity'] ) {
@@ -355,17 +355,17 @@ class bkap_validation{
 						
 					if($to_time != '') {
 						$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-						WHERE post_id = '".$duplicate_of."'
-						AND start_date = '".$date_check."'
-						AND from_time = '".$from_time."'
-						AND to_time = '".$to_time."' ";
-						$results = $wpdb->get_results( $query );
+						WHERE post_id = %d
+						AND start_date = %s
+						AND from_time = %s
+						AND to_time = %s";
+						$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$date_check,$from_time,$to_time) );
 					}else {
 						$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-						WHERE post_id = '".$duplicate_of."'
-						AND start_date = '".$date_check."'
-						AND from_time = '".$from_time."'";
-						$results = $wpdb->get_results( $query );
+						WHERE post_id = %d
+						AND start_date = %s
+						AND from_time = %s";
+						$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$date_check,$from_time) );
 					}
 					if (!$results) break;
 					else{
@@ -402,21 +402,22 @@ class bkap_validation{
 					}
 				}
 			} else if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
+			//	print_r($value);
 				$date_checkout = date('d-n-Y', strtotime($value['booking'][0]['hidden_date_checkout']));
 				$date_cheeckin = date('d-n-Y', strtotime($value['booking'][0]['hidden_date']));
 				$order_dates = bkap_common::bkap_get_betweendays($date_cheeckin, $date_checkout);
 				$todays_date = date('Y-m-d');
 	
 				$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history
-				WHERE start_date >='".$todays_date."' AND post_id = '".$duplicate_of."'";
-				$results_date = $wpdb->get_results($query_date);
+				WHERE start_date >= %s AND post_id = %d";
+				$results_date = $wpdb->get_results($wpdb->prepare($query_date,$todays_date,$duplicate_of));
 
 				$dates_new = array();
 					
 				foreach($results_date as $k => $v) {
 					$start_date = $v->start_date;
 					$end_date = $v->end_date;
-					$dates = bkap-common::bkap_get_betweendays($start_date, $end_date);
+					$dates = bkap_common::bkap_get_betweendays($start_date, $end_date);
 				
 					$dates_new = array_merge($dates,$dates_new);
 				}
@@ -444,9 +445,9 @@ class bkap_validation{
 				}
 			}else {
 				$query = "SELECT total_booking,available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-				WHERE post_id = '".$duplicate_of."'
-				AND start_date = '".$date_check."' ";
-				$results = $wpdb->get_results( $query );
+				WHERE post_id = %d
+				AND start_date = %s";
+				$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$date_check) );
 	
 				if(!$results) break;
 				else {

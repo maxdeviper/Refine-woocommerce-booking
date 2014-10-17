@@ -100,6 +100,16 @@ function bkap_woocommerce_booking_delete(){
 	$results = $wpdb->get_results ($sql_table_option);
 }
 
+function is_booking_active()
+{
+	if (is_plugin_active('woocommerce-booking/woocommerce-booking.php')) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 //if (is_woocommerce_active())
 {
 	/**
@@ -116,8 +126,6 @@ function bkap_woocommerce_booking_delete(){
 			
 			public function __construct() {
 				
-				
-				//include_once('arrays.php');
 				// Initialize settings
 				register_activation_hook( __FILE__, array(&$this, 'bkap_bookings_activate'));
 				add_action( 'plugins_loaded', array(&$this, 'bkap_bookings_update_db_check'));
@@ -136,39 +144,32 @@ function bkap_woocommerce_booking_delete(){
 				add_action( 'admin_enqueue_scripts', array(&$this, 'bkap_my_enqueue_scripts_css' ));
 				add_action( 'admin_enqueue_scripts', array(&$this, 'bkap_my_enqueue_scripts_js' ));
 				
-				//add_action( 'woocommerce_before_main_content', array(&$this, 'front_side_scripts_js'));
-				//add_action( 'woocommerce_before_main_content', array(&$this, 'front_side_scripts_css'));
 				add_action( 'woocommerce_before_single_product', array(&$this, 'bkap_front_side_scripts_js'));
 				add_action( 'woocommerce_before_single_product', array(&$this, 'bkap_front_side_scripts_css'));
 				
 				// Display on Products Page
 				add_action( 'woocommerce_before_add_to_cart_form', array('bkap_booking_process', 'bkap_before_add_to_cart'));
 				add_action( 'woocommerce_before_add_to_cart_button', array('bkap_booking_process', 'bkap_booking_after_add_to_cart'));
-				
-				// Ajax Calls
-			//	require_once( ABSPATH . "wp-includes/pluggable.php" );
-				
+			
 				add_action('wp_ajax_bkap_remove_time_slot', array(&$this, 'bkap_remove_time_slot'));
 				add_action('wp_ajax_bkap_remove_day', array(&$this, 'bkap_remove_day'));
 				add_action('wp_ajax_bkap_remove_specific', array(&$this, 'bkap_remove_specific'));
 				add_action('wp_ajax_bkap_remove_recurring', array(&$this, 'bkap_remove_recurring'));
 				
-				add_filter('woocommerce_add_cart_item_data', array(bkap_cart, 'bkap_add_cart_item_data'), 10, 2);
-				add_filter('woocommerce_get_cart_item_from_session', array(bkap_cart, 'bkap_get_cart_item_from_session'), 10, 2);
-				add_filter( 'woocommerce_get_item_data', array(bkap_cart, 'bkap_get_item_data'), 10, 2 );
+				add_filter('woocommerce_add_cart_item_data', array('bkap_cart', 'bkap_add_cart_item_data'), 10, 2);
+				add_filter('woocommerce_get_cart_item_from_session', array('bkap_cart', 'bkap_get_cart_item_from_session'), 10, 2);
+				add_filter( 'woocommerce_get_item_data', array('bkap_cart', 'bkap_get_item_data_booking'), 10, 2 );
 				
-				//$show_checkout_date_calendar = 1;
 				if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
-					add_filter( 'woocommerce_add_cart_item', array(bkap_cart, 'bkap_add_cart_item'), 10, 1 );
+					add_filter( 'woocommerce_add_cart_item', array('bkap_cart', 'bkap_add_cart_item'), 10, 1 );
 				}
-				add_action( 'woocommerce_checkout_update_order_meta', array(bkap_checkout, 'bkap_order_item_meta'), 10, 2);
-			//	add_action( 'woocommerce_order_item_meta', array(&$this, 'bkap_add_order_item_meta'), 10, 2 );
-				add_action('woocommerce_before_checkout_process', array(bkap_validation, 'bkap_quantity_check'));
-				add_filter( 'woocommerce_add_to_cart_validation', array(bkap_validation, 'bkap_get_validate_add_cart_item'), 10, 3 );
+				add_action( 'woocommerce_checkout_update_order_meta', array('bkap_checkout', 'bkap_order_item_meta'), 10, 2);
+				add_action('woocommerce_before_checkout_process', array('bkap_validation', 'bkap_quantity_check'));
+				add_filter( 'woocommerce_add_to_cart_validation', array('bkap_validation', 'bkap_get_validate_add_cart_item'), 10, 3 );
 				add_action('woocommerce_order_status_cancelled' , array('bkap_cancel_order','bkap_woocommerce_cancel_order'),10,1);
-				add_action('woocommerce_order_status_refunded' , array(&$this,'bkap_woocommerce_cancel_order'),10,1);
+				add_action('woocommerce_order_status_refunded' , array('bkap_cancel_order','bkap_woocommerce_cancel_order'),10,1);
 				add_action('woocommerce_duplicate_product' , array(&$this,'bkap_product_duplicate'),10,2);
-				add_action('woocommerce_check_cart_items', array(bkap_validation,'bkap_quantity_check'));
+				add_action('woocommerce_check_cart_items', array('bkap_validation','bkap_quantity_check'));
 				
 				//Export date to ics file from order received page
 				$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
@@ -190,34 +191,31 @@ function bkap_woocommerce_booking_delete(){
 			
                         
 			/***************************************************************** 
-                         * This function is used to load ajax functions required by plugin.
-                         *******************************************************************/
+            * This function is used to load ajax functions required by plugin.
+            *******************************************************************/
 			function bkap_book_load_ajax() {
 				if ( !is_user_logged_in() ){
 					add_action('wp_ajax_nopriv_bkap_get_per_night_price', array('bkap_booking_process', 'bkap_get_per_night_price'));
 					add_action('wp_ajax_nopriv_bkap_check_for_time_slot', array('bkap_booking_process', 'bkap_check_for_time_slot'));
-					//add_action('wp_ajax_nopriv_check_for_prices', array(&$this, 'check_for_prices'));
 					add_action('wp_ajax_bkap_nopriv_insert_date', array('bkap_booking_process', 'bkap_insert_date'));
 					add_action('wp_ajax_nopriv_bkap_call_addon_price', array('bkap_booking_process', 'bkap_call_addon_price'));
-					//add_action('wp_ajax_nopriv_display_results', array(&$this, 'display_results'));
 				} else{
 					add_action('wp_ajax_bkap_get_per_night_price', array('bkap_booking_process', 'bkap_get_per_night_price'));
 					add_action('wp_ajax_bkap_check_for_time_slot', array('bkap_booking_process', 'bkap_check_for_time_slot'));
-					//	add_action('wp_ajax_check_for_prices', array(&$this, 'check_for_prices'));
 					add_action('wp_ajax_bkap_insert_date', array('bkap_booking_process', 'bkap_insert_date'));
 					add_action('wp_ajax_bkap_call_addon_price', array('bkap_booking_process', 'bkap_call_addon_price'));
-					//add_action('wp_ajax_display_results', array(&$this, 'display_results'));
 				}
 			}
                         
-                        /***************************************
-                         * This function duplicates the booking settings of the original product to the new product.
-                         ***************************************/ 
-                        function bkap_product_duplicate($new_id, $post) {
+            /************************************************
+            * This function duplicates the booking settings 
+            * of the original product to the new product.
+            ************************************************/ 
+            function bkap_product_duplicate($new_id, $post) {
 				global $wpdb;
 				$old_id = $post->ID;
-				$duplicate_query = "SELECT * FROM `".$wpdb->prefix."booking_history` WHERE post_id = ".$old_id."";
-				$results_date = $wpdb->get_results ( $duplicate_query );
+				$duplicate_query = "SELECT * FROM `".$wpdb->prefix."booking_history` WHERE post_id = %d";
+				$results_date = $wpdb->get_results ( $wpdb->prepare($duplicate_query,$old_id) );
 				foreach($results_date as $key => $value) {
 					$query_insert = "INSERT INTO `".$wpdb->prefix."booking_history`
 					(post_id,weekday,start_date,end_date,from_time,to_time,total_booking,available_booking)
@@ -233,10 +231,12 @@ function bkap_woocommerce_booking_delete(){
 					$wpdb->query( $query_insert );
 				}
 			}
-			            /****************************************************
-                         *  This function is executed when the plugin is updated using the Automatic Updater. 
-                         *  The function then calls the bookings_activate function which will check the table structures for the plugin and make any changes if necessary.
-                         ******************************************************/
+			/***************************************************************
+            *  This function is executed when the plugin is updated using 
+            *  the Automatic Updater. It calls the bookings_activate function 
+            *  which will check the table structures for the plugin and 
+            *  make any changes if necessary.
+            ***************************************************************/
 			function bkap_bookings_update_db_check() {
 				global $booking_plugin_version, $BookUpdateChecker;
 		
@@ -247,9 +247,11 @@ function bkap_woocommerce_booking_delete(){
 				}
 			}
 			
-                        /*********************************************************
-                         * This function detects when the booking plugin is activated and creates all the tables necessary in database,if they do not exists. 
-                         *********************************************************/
+            /************************************************************
+            * This function detects when the booking plugin is activated 
+            * and creates all the tables necessary in database,
+            * if they do not exists. 
+            ************************************************************/
 			function bkap_bookings_activate() {
 				
 				global $wpdb;
@@ -482,142 +484,27 @@ function bkap_woocommerce_booking_delete(){
 				wp_enqueue_style( 'booking', plugins_url('/css/booking.css', __FILE__ ) , '', '', false);
 			}
 			
-                        /*********************************************
-                         * This function returns the number of bookings done for a date.
-                         *********************************************/
+            /*********************************************
+            * This function returns the number of bookings done for a date.
+            *********************************************/
 			function bkap_get_date_lockout($start_date) {
 				global $wpdb,$post;
-				$duplicate_of = get_post_meta($post->ID, '_icl_lang_duplicate_of', true);
-				if($duplicate_of == '' && $duplicate_of == null) {
-					$post_time = get_post($post->ID);
-					$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-					$results_post_id = $wpdb->get_results ( $id_query );
-					if( isset($results_post_id) ) {
-						$duplicate_of = $results_post_id[0]->ID;
-					} else {
-						$duplicate_of = $post->ID;
-					}
-					//$duplicate_of = $item_value['product_id'];
-				}
+				$duplicate_of = bkap_common::bkap_get_product_id($post->ID);
+				
 				$date_lockout = "SELECT sum(total_booking) - sum(available_booking) AS bookings_done FROM `".$wpdb->prefix."booking_history`
-				WHERE start_date='".$start_date."' AND post_id='".$duplicate_of."'";
-					//echo $date_lockout;
-				$results_date_lock = $wpdb->get_results($date_lockout);
-					//print_r($results_date_lock);
+								WHERE start_date= %s AND post_id= %d";
+					
+				$results_date_lock = $wpdb->get_results($wpdb->prepare($date_lockout,$start_date,$duplicate_of));
+					
 				$bookings_done = $results_date_lock[0]->bookings_done;
 				return $bookings_done;
 			}
                       
-			/*function check_for_prices() {
-				//echo "here";
-				$booking_settings = get_post_meta($_POST['post_id'],'woocommerce_booking_settings',true);
-				//$recurring_prices = $booking_settings['booking_recurring_prices'];
-				$day_to_check = date("w",strtotime($_POST['current_date']));
-				$price = $recurring_prices['booking_weekday_'.$day_to_check.'_price'];
-				//echo "here".$price;
-				if($price == '' || $price == 0){
-					$product = get_product($_POST['post_id']);
-					$product_type = $product->product_type;
-					if ($product_type == 'variable'){
-					//	print_r($_POST);
-						$variation_id_to_fetch = $this->get_selected_variation_id($_POST['post_id'], $_POST);
-						if ($variation_id_to_fetch != ""){
-							$sale_price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-							if($sale_price == ''){
-								$regular_price = get_post_meta( $variation_id_to_fetch, '_regular_price',true);
-								echo $regular_price;
-							} else{
-								echo $sale_price;
-							}
-						} else echo "Please select an option."; 
-					} elseif ($product_type == 'simple'){
-						$sale_price = get_post_meta( $_POST['post_id'], '_sale_price', true);
-						if($sale_price == '')
-						{
-							$regular_price = get_post_meta( $_POST['post_id'], '_regular_price',true);
-							echo $regular_price;
-						} else{
-							echo $sale_price;
-						}
-					}
-				} else {
-					echo $price;
-				}
-				die();
-			}
-			*/
-			/*****************************************
-                         * This function updates the database for the booking details and add booking fields on the order received page,
-                         *  and woocommerce edit order when order is placed for woocommerce version below 2.0.
-                         *******************************************/
-		/*	function bkap_add_order_item_meta( $item_meta, $cart_item ) {
-					
-				// Add the fields
-				global $wpdb;
-				
-				$quantity = $cart_item['quantity'];
-					
-				$post_id = $cart_item['product_id'];
-					
-				if (isset($cart_item['booking'])) :
-					
-					foreach ($cart_item['booking'] as $booking) :
-					
-						$date_select = $booking['date'];
-						$name = get_option('book.item-meta-date');
-						$item_meta->add( $name, $date_select );
-
-						if ($booking['time_slot'] != "") {
-							$time_select = $booking['time_slot'];
-
-							$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-							$time_format = $saved_settings->booking_time_format;
-							if ($time_format == "" OR $time_format == "NULL") $time_format = "12";
-							$time_slot_to_display = $booking['time_slot'];
-							if ($time_format == '12'){
-								$time_exploded = explode("-", $time_slot_to_display);
-								$from_time = date('h:i A', strtotime($time_exploded[0]));
-								$to_time = date('h:i A', strtotime($time_exploded[1]));
-								$time_slot_to_display = $from_time.' - '.$to_time;
-							}
-							
-							$time_exploded = explode("-", $time_select);
-							$name = get_option('book.item-meta-time');
-							$item_meta->add( $name, $time_slot_to_display );
-						}		
-						$hidden_date = $booking['hidden_date'];
-						$date_query = date('Y-m-d', strtotime($hidden_date));
-							
-						$query = "UPDATE `".$wpdb->prefix."booking_history`
-							SET available_booking = available_booking - ".$quantity."
-							WHERE post_id = '".$post_id."' AND
-							start_date = '".$date_query."' AND
-							from_time = '".trim($time_exploded[0])."' AND
-							to_time = '".trim($time_exploded[1])."' ";
-						$wpdb->query( $query );
-					
-						if (mysql_affected_rows($wpdb) == 0){
-							$from_time = date('H:i', strtotime($time_exploded[0]));
-							$to_time = date('H:i', strtotime($time_exploded[1]));
-							$query = "UPDATE `".$wpdb->prefix."booking_history`
-										SET available_booking = available_booking - ".$quantity."
-										WHERE post_id = '".$post_id."' AND
-										start_date = '".$date_query."' AND
-										from_time = '".$from_time."' AND
-										to_time = '".$to_time."' ";
-											
-							$wpdb->query( $query );
-						}
-						
-					endforeach;
-					
-				endif;
-			}*/
-					                        /*****************************************************
-                         * This function deletes a single time slot from View/Delete Booking date, Timeslots.
-                         ******************************************************/
+			/*****************************************************
+            * This function deletes a single time slot from 
+            * View/Delete Booking date, Timeslots.
+            ******************************************************/
 			function bkap_remove_time_slot() {
-				
 				global $wpdb;
 				
 				if(isset($_POST['details'])) {
@@ -693,8 +580,9 @@ function bkap_woocommerce_booking_delete(){
 				
 			}
 			/************************************************
-                         * This function deletes a single day from View/Delete Booking date, Timeslots.
-                         ************************************************/
+            * This function deletes a single day from 
+            * View/Delete Booking date, Timeslots.
+            ************************************************/
 			function bkap_remove_day() {
 			
 				global $wpdb;
@@ -730,9 +618,10 @@ function bkap_woocommerce_booking_delete(){
 				update_post_meta($details[1], 'woocommerce_booking_settings', $book_details);
 				}
 			}
-		/********************************************************
-                 * This function deletes all dates from View/Delete Booking date, Timeslots of specific day method.
-                 ********************************************************/	
+		/*************************************************************************
+        * This function deletes all dates from View/Delete Booking date, Timeslots
+        * of specific day method.
+        *************************************************************************/	
 		function bkap_remove_specific() {
 				
 				global $wpdb;
@@ -751,16 +640,14 @@ function bkap_woocommerce_booking_delete(){
 								 WHERE
 								 post_id = '".$details."' AND
 								 weekday = '' ";
-				//echo $delete_query;
 				$wpdb->query($delete_query);
 				}
 			}
 			/**********************************************************************
-                         * This function deletes all Days from View/Delete Booking date, Timeslots of specific day method.
-                         ************************************************************************/
-			function bkap_remove_recurring() {
-			
-			
+            * This function deletes all Days from View/Delete Booking date, Timeslots 
+            * of specific day method.
+            ************************************************************************/
+			function bkap_remove_recurring() {		
 				global $wpdb;
 				
 				if(isset($_POST['details'])) {

@@ -40,8 +40,8 @@ class view_bookings{
                 $terms = wp_get_object_terms( $id_value->order_id, 'shop_order_status', array('fields' => 'slugs') );
                 if( (isset($terms[0]) && $terms[0] != 'cancelled') && (isset($terms[0]) && $terms[0] != 'refunded')) {
 
-                $today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = '".$id_value->order_id."'";
-                $results_date = $wpdb->get_results ( $today_query );
+                $today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = %d";
+                $results_date = $wpdb->get_results ( $wpdb->prepare($today_query,$id_value->order_id) );
 
                 $c = 0;
                 	foreach ($order_items as $items_key => $items_value ) {

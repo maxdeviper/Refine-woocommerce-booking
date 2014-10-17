@@ -114,9 +114,9 @@
 						$e = 0;
 						foreach($results as $k => $v) {
 							$query = "SELECT price_per_day, fixed_price FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE id = '".$v->block_id."' AND post_id = '".$product_id."' AND minimum_number_of_days <='".$number."' AND maximum_number_of_days >= '".$number."'";
+							WHERE id = %d AND post_id = %d AND minimum_number_of_days <= %d AND maximum_number_of_days >= %d";
 							//echo $query;
-							$results_price[$e] = $wpdb->get_results($query);
+							$results_price[$e] = $wpdb->get_results($wpdb->prepare($query,$v->block_id,$product_id,$number,$number));
 							$e++;
 						}
 						
@@ -166,9 +166,9 @@
 						//$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
 						$number = $days;
 						$query = "SELECT price_per_day, fixed_price FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE post_id = '".$product_id."' AND minimum_number_of_days <='".$number."' AND maximum_number_of_days >= '".$number."'";
+							WHERE post_id = %d AND minimum_number_of_days <= %d AND maximum_number_of_days >= %d";
 							//echo $query;
-						$results_price = $wpdb->get_results($query);
+						$results_price = $wpdb->get_results($wpdb->prepare($query,$product_id,$number,$number));
 						if(count($results_price) == 0) {
 							$sale_price = get_post_meta( $product_id, '_sale_price', true);
 							if($sale_price == '') {
@@ -241,26 +241,26 @@
 				else $variation_id = "";
 				
 				$check_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-							WHERE start_date='".$date_to_check."'
-							AND post_id='".$post_id."'
+							WHERE start_date= %s
+							AND post_id= %d
 							AND available_booking > 0";
-				$results_check = $wpdb->get_results ( $check_query );
+				$results_check = $wpdb->get_results ( $wpdb->prepare($check_query,$date_to_check,$post_id) );
 			
 				if ( !$results_check ) {
 					$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-									WHERE weekday='".$day_check."'
-									AND post_id='".$post_id."'
+									WHERE weekday= %s
+									AND post_id= %d
 									AND start_date='0000-00-00'
 									AND available_booking > 0";
-					$results_day_check = $wpdb->get_results ( $check_day_query );	
+					$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );	
 					if (!$results_day_check) {
 						$check_day_query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-										WHERE weekday='".$day_check."'
-										AND post_id='".$post_id."'
+										WHERE weekday= %s
+										AND post_id= %d
 										AND start_date='0000-00-00'
 										AND total_booking = 0 
 										AND available_booking = 0";
-						$results_day_check = $wpdb->get_results ( $check_day_query );	
+						$results_day_check = $wpdb->get_results ( $wpdb->prepare($check_day_query,$day_check,$post_id) );	
 					}
 				
 					foreach ( $results_day_check as $key => $value ) {
@@ -286,8 +286,8 @@
                          ***********************************/
 			function bkap_get_fixed_blocks($post_id) {
 				global $wpdb;
-				$query = "SELECT * FROM `".$wpdb->prefix."booking_fixed_blocks` WHERE post_id = '".$post_id."'";
-				$results = $wpdb->get_results($query);
+				$query = "SELECT * FROM `".$wpdb->prefix."booking_fixed_blocks` WHERE post_id = %d";
+				$results = $wpdb->get_results($wpdb->prepare($query,$post_id));
 			
 				return $results;
 			}
@@ -296,8 +296,8 @@
                          *********************************************/
 			function bkap_get_fixed_blocks_count($post_id){
 				global $wpdb;
-				$query = "SELECT * FROM `".$wpdb->prefix."booking_fixed_blocks` WHERE post_id = '".$post_id."'";
-				$results = $wpdb->get_results($query);
+				$query = "SELECT * FROM `".$wpdb->prefix."booking_fixed_blocks` WHERE post_id = %d";
+				$results = $wpdb->get_results($wpdb->prepare($query,$post_id));
 				
 				return count($results);
 			}
@@ -309,8 +309,8 @@
 				$duplicate_of = get_post_meta($post_id, '_icl_lang_duplicate_of', true);
 				if($duplicate_of == '' && $duplicate_of == null) {
 					$post_time = get_post($post_id);
-					$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-					$results_post_id = $wpdb->get_results ( $id_query );
+					$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = %s ORDER BY ID LIMIT 1";
+					$results_post_id = $wpdb->get_results ( $wpdb->prepare($id_query,$post_time->post_date) );
 					if( isset($results_post_id) ) {
 						$duplicate_of = $results_post_id[0]->ID;
 					} else {
@@ -319,9 +319,9 @@
 					//$duplicate_of = $item_value['product_id'];
 				}
 				$date_lockout = "SELECT sum(total_booking) - sum(available_booking) AS bookings_done FROM `".$wpdb->prefix."booking_history`
-				WHERE start_date='".$start_date."' AND post_id='".$duplicate_of."'";
+								WHERE start_date= %s AND post_id= %d";
 					//echo $date_lockout;
-				$results_date_lock = $wpdb->get_results($date_lockout);
+				$results_date_lock = $wpdb->get_results($wpdb->prepare($date_lockout,$start_date,$duplicate_of));
 					//print_r($results_date_lock);
 				$bookings_done = $results_date_lock[0]->bookings_done;
 				return $bookings_done;
@@ -350,17 +350,16 @@
 					if ( $meta_id ) {
 						$check_query = "SELECT meta_value AS product_id FROM `".$wpdb->prefix."woocommerce_order_itemmeta`
 						WHERE meta_key ='_product_id'
-						AND order_item_id ='".$_POST['order_item_id']."'
-						";
-					$results_check = $wpdb->get_results ( $check_query );
+						AND order_item_id = %d";
+					$results_check = $wpdb->get_results ( $wpdb->prepare($check_query,$_POST['order_item_id']) );
 					$product_id = $results_check[0]->product_id;
 					//print_r($product_id);
 					$prod_id = get_post_meta($product_id, '_icl_lang_duplicate_of', true);
 					if($prod_id == '' && $prod_id == null) {
 						//	$duplicate_of = $cart_item['product_id'];
 						$post_time = get_post($product_id);
-						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = '".$post_time->post_date."' ORDER BY ID LIMIT 1";
-						$results_post_id = $wpdb->get_results ( $id_query );
+						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = %s ORDER BY ID LIMIT 1";
+						$results_post_id = $wpdb->get_results ( $wpdb->prepare($id_query,$post_time->post_date) );
 					if( isset($results_post_id) ) {
 						$prod_id = $results_post_id[0]->ID;
 					} else {
@@ -543,10 +542,10 @@
 					//echo "here";die();
 					global $woocommerce_booking;
 					$lockout_query = "SELECT DISTINCT start_date FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id='".$prod_id."'
+								WHERE post_id= %d
 								AND total_booking > 0
 								AND available_booking = 0";
-					$results_lockout = $wpdb->get_results ( $lockout_query );
+					$results_lockout = $wpdb->get_results ( $wpdb->prepare($lockout_query,$prod_id) );
 					//print_r($results_lockout);die();
 					$lockout_query = "SELECT DISTINCT start_date FROM `".$wpdb->prefix."booking_history`
 					WHERE post_id='".$prod_id."'
@@ -569,10 +568,10 @@
 						foreach($results_lock as $key => $value) {
 							if ($v->start_date == $value->start_date) {
 								$date_lockout = "SELECT COUNT(start_date) FROM `".$wpdb->prefix."booking_history`
-												WHERE post_id='".$prod_id."'
-												AND start_date='".$v->start_date."'
+												WHERE post_id= %d
+												AND start_date= %s
 												AND available_booking = 0";
-								$results_date_lock = $wpdb->get_results($date_lockout);
+								$results_date_lock = $wpdb->get_results($wpdb->prepare($date_lockout,$prod_id,$v->start_date));
 							
 								if ($product_settings['booking_date_lockout'] > $results_date_lock[0]->{'COUNT(start_date)'}) unset($results_lockout[$k]);	
 							} 

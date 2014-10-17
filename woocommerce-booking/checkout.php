@@ -48,9 +48,9 @@ class bkap_checkout{
 			}
 				
 			$query = "SELECT order_item_id,order_id FROM `".$wpdb->prefix."woocommerce_order_items`
-						WHERE order_id = '".$item_meta."' AND order_item_name = '".addslashes($post_title)."'".$sub_query;
+						WHERE order_id = %s AND order_item_name = %s".$sub_query;
 		
-			$results = $wpdb->get_results( $query );
+			$results = $wpdb->get_results($wpdb->prepare($query,$item_meta,addslashes($post_title)));
 		
 			$order_item_ids[] = $results[0]->order_item_id;
 			$order_id = $results[0]->order_id;
@@ -60,18 +60,18 @@ class bkap_checkout{
 		
 			$order_items = $order_obj->get_items();
 				
-			$type_of_slot = apply_filters('bkap_slot_type',$post_id);
-			if(is_plugin_active('bkap-tour-operators/tour_operators_addon.php')) {
-				do_action('bkap_operator_update_order',$values,$results[0]);
-			}
-			$booking_settings = get_post_meta( $post_id, 'woocommerce_booking_settings', true);
-			if(isset($booking_settings['booking_partial_payment_enable']) && isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']!='' &&  is_plugin_active('bkap-deposits/deposits.php')) {
-				do_action('bkap_deposits_update_order',$values,$results[0]);
-			}
-			if($type_of_slot == 'multiple') {
-				do_action('bkap_update_booking_history',$values,$results[0]);
-			}else
-			{
+		//	$type_of_slot = apply_filters('bkap_slot_type',$post_id);
+		//	if(is_plugin_active('bkap-tour-operators/tour_operators_addon.php')) {
+			do_action('bkap_update_order',$values,$results[0]);
+		//	}
+		//	$booking_settings = get_post_meta( $post_id, 'woocommerce_booking_settings', true);
+		//	if(isset($booking_settings['booking_partial_payment_enable']) && isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']!='' &&  is_plugin_active('bkap-deposits/deposits.php')) {
+		//		do_action('bkap_deposits_update_order',$values,$results[0]);
+		//	}
+		//	if($type_of_slot == 'multiple') {
+		//		do_action('bkap_update_booking_history',$values,$results[0]);
+		//	}else
+		//	{
 				if (isset($values['booking'])) :
 					$details = array();
 					if ($booking[0]['date'] != "") {
@@ -169,11 +169,11 @@ class bkap_checkout{
 								$wpdb->query( $query );
 									
 								$select = "SELECT * FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id = '".$post_id."' AND
-								start_date = '".$date_query."' AND
-								from_time = '".$query_from_time."' AND
-								to_time = '".$query_to_time."' ";
-								$select_results = $wpdb->get_results( $select );
+								WHERE post_id = %d AND
+								start_date = %s AND
+								from_time = %s AND
+								to_time = %s";
+								$select_results = $wpdb->get_results( $wpdb->prepare($select,$post_id,$date_query,$query_from_time,$query_to_time) );
 								foreach($select_results as $k => $v) {
 									$details[$post_id] = $v;
 								}
@@ -188,10 +188,10 @@ class bkap_checkout{
 								$wpdb->query( $query );
 									
 								$select = "SELECT * FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id = '".$post_id."' AND
-								start_date = '".$date_query."' AND
-								from_time = '".$query_from_time."'";
-								$select_results = $wpdb->get_results( $select );
+								WHERE post_id =  %d AND
+								start_date = %s AND
+								from_time = %s";
+								$select_results = $wpdb->get_results( $wpdb->prepare($select,$post_id,$date_query,$query_from_time) );
 								foreach($select_results as $k => $v) {
 									$details[$post_id] = $v;
 								}
@@ -212,23 +212,23 @@ class bkap_checkout{
 						if(array_key_exists('date',$booking[0]) && $booking[0]['time_slot'] != "") {
 							if($query_to_time != '') {
 								$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id = '".$post_id."' AND
-								start_date = '".$date_query."' AND
-								from_time = '".$query_from_time."' AND
-								to_time = '".$query_to_time."' ";
-								$order_results = $wpdb->get_results( $order_select_query );
+								WHERE post_id = %d AND
+								start_date = %s AND
+								from_time = %s AND
+								to_time = %s ";
+								$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$date_query,$query_from_time,$query_to_time) );
 							}else {
 								$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id = '".$post_id."' AND
-								start_date = '".$date_query."' AND
-								from_time = '".$query_from_time."'";
-								$order_results = $wpdb->get_results( $order_select_query );
+								WHERE post_id = %d AND
+								start_date = %s AND
+								from_time = %s";
+								$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$post_id,$query_from_time) );
 							}
 						} else {
 							$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-							WHERE post_id = '".$post_id."' AND
-							start_date = '".$date_query."'";
-							$order_results = $wpdb->get_results( $order_select_query );
+							WHERE post_id = %d AND
+							start_date = %s";
+							$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$date_query) );
 						}
 						$j = 0;
 						foreach($order_results as $k => $v) {
@@ -314,10 +314,10 @@ class bkap_checkout{
 										}
 										$results = array();
 										$query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-													WHERE post_id = '".$duplicate_of."'
-													AND weekday = '".$weekday."'";
+													WHERE post_id = %s
+													AND weekday = %s";
 								
-										$results = $wpdb->get_results( $query );
+										$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$weekday) );
 										if (!$results) break;
 										else {
 											foreach($results as $r_key => $r_val) {
@@ -384,10 +384,10 @@ class bkap_checkout{
 										}
 										$results= array();
 										$query = "SELECT * FROM `".$wpdb->prefix."booking_history`
-										WHERE post_id = '".$duplicate_of."'
-										AND weekday = '".$weekday."'
+										WHERE post_id = %d
+										AND weekday = %s
 										AND to_time = '' ";
-										$results = $wpdb->get_results( $query );
+										$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$weekday) );
 										if (!$results) break;
 										else {
 											foreach($results as $r_key => $r_val) {
@@ -428,7 +428,7 @@ class bkap_checkout{
 								}
 							}
 						}
-					}
+				//	}
 				}
 			}
 			$ticket = array(apply_filters('bkap_send_ticket',$values,$order_obj));

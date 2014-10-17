@@ -119,15 +119,19 @@ class bkap_cart{
 			else {
 				$variation_id = '0';
 			}
-			$type_of_slot = apply_filters('bkap_slot_type',$product_id);
-			if($type_of_slot == 'multiple') {
-				$cart_arr = (array) apply_filters('bkap_multiple_add_cart_item_data', $cart_item_meta, $product_id);
-			}else {
+		//	print_r($cart_arr);
+		//	$type_of_slot = apply_filters('bkap_slot_type',$product_id);
+		//	if($type_of_slot == 'multiple') {
+		//		$cart_arr = (array) apply_filters('bkap_multiple_add_cart_item_data', $cart_item_meta, $product_id);
+		//		print_r($cart_arr);
+		//	}
+		/*	else {
 				$cart_arr = (array) apply_filters('bkap_add_cart_item_data', $cart_arr, $product_id);
-	
-				if(is_plugin_active('bkap-seasonal-pricing/seasonal_pricing.php'))
-					$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
-			}
+	*/
+			//	if(is_plugin_active('bkap-seasonal-pricing/seasonal_pricing.php'))
+				$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
+		//	}
+	//	print_r($cart_arr);
 			$cart_item_meta['booking'][] = $cart_arr;
 		}
 	
@@ -167,10 +171,10 @@ class bkap_cart{
      * This function displays the Booking 
      * details on cart page, checkout page.
     ************************************/
-	public static function bkap_get_item_data( $other_data, $cart_item ) {
+	public static function bkap_get_item_data_booking( $other_data, $cart_item ) {
 
 		global $wpdb;
-				
+			
 		if (isset($cart_item['booking'])) :
 			$duplicate_of = bkap_common::bkap_get_product_id($cart_item['product_id']);
 			
