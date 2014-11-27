@@ -20,7 +20,7 @@ session_start();
 				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_price_range_show_field_settings'));
 				add_action('init', array(&$this, 'bkap_load_ajax_price_range'));
 				add_filter('bkap_save_product_settings', array(&$this, 'bkap_price_range_product_settings_save'), 10, 2);
-				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),5,5);
+				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),5,6);
 				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 5, 3);
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_price_range_get_cart_item_from_session'),11,2);
 				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_price_range_booking_after_add_to_cart'));	
@@ -304,6 +304,9 @@ session_start();
                             },
                             success: function(data, textStatus, xhr) {
                                    jQuery("#block_price_booking_table").html(data);
+						
+						//			var num_col = jQuery("#list_block_price").find("tr")[0].cells.length;
+					//	alert("Total Columns: "+ num_col);
                                 	// reset and hide form
 									jQuery("#add_block_price").hide();
 									//jQuery("#add_block_price").closest("form").find("input[type=text], textarea").val("");
@@ -351,7 +354,7 @@ session_start();
 				}
 				
 				jQuery(document).ready(function() {
-					jQuery("table#list_block_price").on('click', '.edit_block',function() {
+					jQuery("table#list_block_price").on('click', '.edit_block_range',function() {
 						var passed_id = this.id;
 						var exploded_id = passed_id.split('&');
 						var attribute_count = parseInt(jQuery("#attribute_count").val());
@@ -387,7 +390,7 @@ session_start();
 						});	
 					});
 
-					jQuery("table#list_block_price").on('click','a.bkap_delete_price_block',function() {
+					jQuery("table#list_block_price").on('click','a.delete_block_range',function() {
 						var y=confirm('Are you sure you want to delete this block?');
 						if(y==true){
 							var passed_id = this.id;
@@ -474,7 +477,7 @@ session_start();
 			function bkap_save_booking_block_price() {
 				global $wpdb;
 				$post_id = $_POST['post_id'];
-				$block_id = $_POST['id'];
+				$id = $_POST['id'];
 				if(isset($_POST['attribute_count'])) {
 					$attribute_count = $_POST['attribute_count']; 
 				}
@@ -486,7 +489,7 @@ session_start();
 				$fixed_price = $_POST['fixed_price'];
 				$product_attributes = get_post_meta($post_id, '_product_attributes', true);
 				$result = array();
-				if (($post_id != "") && ($block_id == "")) {
+				if (($post_id != "") && ($id == "")) {
 					$insert_booking_block_price = "INSERT INTO {$wpdb->prefix}booking_block_price_meta
 					(post_id,minimum_number_of_days,maximum_number_of_days,price_per_day,fixed_price)
 					VALUE(
@@ -496,7 +499,7 @@ session_start();
 					'{$price_per_day}',
 					'{$fixed_price}')";
 					$wpdb->query($insert_booking_block_price);
-					
+				//	$id = $wpdb->insert_id();
 					$select_id = 'SELECT MAX(id) as block_id FROM `'.$wpdb->prefix."booking_block_price_meta".'`';
 					$results = $wpdb->get_results($select_id);
 					$block_attribute_id = $results[0]->block_id;
@@ -523,7 +526,7 @@ session_start();
 					maximum_number_of_days = '".$maximum_number_of_days."',
 					price_per_day = '".$price_per_day."',
 					fixed_price = '".$fixed_price."'
-					WHERE id = '".$block_id."'";
+					WHERE id = '".$id."'";
 					$wpdb->query($edit_block_price);
 					$i = 0;
 					foreach($product_attributes as $k => $v) {
@@ -531,13 +534,13 @@ session_start();
 						$meta_value = $attributes[$i];
 						$edit_block_price_attribute = "UPDATE `".$wpdb->prefix."booking_block_price_attribute_meta`
 							SET meta_value = '".$meta_value."'
-							WHERE block_id = '".$block_id."' AND
+							WHERE block_id = '".$id."' AND
 							attribute_id = '".$attribute_id."'";
 						$wpdb->query($edit_block_price_attribute);
 					}
 					$this->bkap_booking_block_price_table();
 				}
-			
+				echo $id;
 				die();
 			}
 			
@@ -588,8 +591,8 @@ session_start();
 							<td>'.$value->maximum_number_of_days.'</td>
 							<td>'.$value->price_per_day.'</td>
 							<td>'.$value->fixed_price.'</td>
-							<td> <a href="javascript:void(0);" id="'.$value->id.'&'.count($product_attributes).'&'.$post_id.'&'.$id.$value->minimum_number_of_days.'&'.$value->maximum_number_of_days.'&'.$value->price_per_day.'&'.$value->fixed_price.'" class="edit_block"><img src="'.plugins_url().'/woocommerce-booking/images/edit.png" alt="Edit Block" title="Edit Block"></a> </td>
-							<td> <a href="javascript:void(0);" id="'.$value->id.'" class="bkap_delete_price_block"> <img src="'.plugins_url().'/woocommerce-booking/images/delete.png" alt="Delete Block" title="Delete Block"></a> </td>
+							<td> <a href="javascript:void(0);" id="'.$value->id.'&'.count($product_attributes).'&'.$post_id.'&'.$id.$value->minimum_number_of_days.'&'.$value->maximum_number_of_days.'&'.$value->price_per_day.'&'.$value->fixed_price.'" class="edit_block_range"><img src="'.plugins_url().'/woocommerce-booking/images/edit.png" alt="Edit Block" title="Edit Block"></a> </td>
+							<td> <a href="javascript:void(0);" id="'.$value->id.'" class="delete_block_range"> <img src="'.plugins_url().'/woocommerce-booking/images/delete.png" alt="Delete Block" title="Delete Block"></a> </td>
 							</tr>';
 				}
 				?>
@@ -640,13 +643,15 @@ session_start();
                          * This function return price by range of days details when add to cart button click on front end.
                          *************************************/
 			public function bkap_price_range_add_cart_item_data($cart_arr, $product_id, $variation_id) {
+			
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 				if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {					
 					if ($booking_settings['booking_enable_multiple_day'] == 'on') {	
 						$diff_days = $_POST['wapbk_diff_days'];
+						
 						$price_type = explode("-",$_SESSION['variable_block_price']);
-					
+						
 						if($price_type[1] == "fixed" || $price_type[1]  == 'per_day') {
 							$diff_days=1;
 						} 
@@ -676,11 +681,13 @@ session_start();
 				}
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 					if (isset($price) && $price != '') {
-						if(isset($price_type[1]) && $price_type[1] == "fixed" || $price_type[1]  == 'per_day') {
+						if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
 							$_POST['variable_blocks'] = "Y";
 							$_POST['price'] = $_SESSION['variable_block_price'];
 						}
 						else {
+							//Per day price needs to be sent as the addons will multiply the price by the no. of days
+							$price = $price / $diff_days;
 							$_POST['price'] = $price;
 						}
 					}
@@ -689,6 +696,13 @@ session_start();
 					if (isset($price) && $price != '') {
 						$cart_arr['price'] = $price;
 					}
+				}
+				
+				//Round the price if needed
+			
+				$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
+				if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on" && isset($cart_arr['price'])) {
+					$cart_arr['price'] = round($cart_arr['price']);
 				}
 				
 				return $cart_arr;
@@ -809,7 +823,7 @@ session_start();
                          /***********************************************************
                          * This function is used to show the price updation of the price by range of days on the front end.
                          ************************************************************/
-			public function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date) {
+			public function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date,$currency_selected) {
 				$variation_id = $variation_id_to_fetch;
 				
 				$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
@@ -821,68 +835,77 @@ session_start();
 					
 				if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on')
 					$number = 1;
-				
-				$price = $this->price_range_calculate_price($product_id,$product_type,$variation_id,$number);
-				
+				if ($product_type == 'variable') {
+					$variations_selected = array();
+					$string_explode = '';
+					$product_attributes = get_post_meta($product_id, '_product_attributes', true);
+					$i = 0;
+					foreach($product_attributes as $key => $value) {
+						if(isset($_POST['attribute_selected'])) {
+							$string_explode = explode("|",$_POST['attribute_selected']);
+						}else{
+							$string_explode = array();
+						}
+						$value_array = explode("|",$value['value']);
+						$s_value = '';
+						foreach($string_explode as $sk => $sv) {
+							if($sv == ''){
+								unset($string_explode[$sk]);
+							}
+						}
+					
+						foreach($value_array as $k => $v){
+							$string1 = str_replace(" ","",$v);
+							if(count($string_explode) > 0) {
+								$string2 = str_replace(" ","",$string_explode[$i+1]);
+							} else {
+								$string2 = '';
+							}
+							if(strtolower($string1) == strtolower($string2) /* $pos_value != 0*/) {
+					
+								if(substr($v, 0, -1) === ' ') {
+									$result = rtrim($v," ");
+									$variations_selected[$i] = $result;
+								}
+								if(substr($v, 0, 1) === ' ') {
+									$result = preg_replace("/ /","",$v,1);
+									$variations_selected[$i] = $result;
+								} else {
+									$variations_selected[$i] = $v;
+								}
+							}
+						}
+						$i++;
+					}
+				}
+				else {
+					$variations_selected = array();
+				}
+				$price = $this->price_range_calculate_price($product_id,$product_type,$variation_id,$number,$variations_selected);
+			
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 					if (isset($price) && $price != '') {
 						$_SESSION['variable_block_price'] = $_POST['price'] = $price;
 					}
 				}
 				else {
-					echo $price;
-					die();
+					$_SESSION['variable_block_price'] = $price;
+					if (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] == 'Y') {
+						$price = bkap_common::bkap_multicurrency_price($price,$currency_selected);
+						echo $price;
+						die();
+					}
 				}
 			}
 			
-			function price_range_calculate_price($product_id,$product_type,$variation_id,$number) {
+			public static function price_range_calculate_price($product_id,$product_type,$variation_id,$number,$variations_selected) {
 				global $wpdb;
 				
 				$results_price = array();
 				if ($product_type == 'variable') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 					if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes'){
-						$variations_selected = array();
-						$string_explode = '';
-						$product_attributes = get_post_meta($product_id, '_product_attributes', true);
-						$i = 0;
-						foreach($product_attributes as $key => $value) {
-							if(isset($_POST['attribute_selected'])) {
-								$string_explode = explode("|",$_POST['attribute_selected']);
-							}else{
-								$string_explode = array();
-							}
-							$value_array = explode("|",$value['value']);
-							$s_value = '';
-							foreach($string_explode as $sk => $sv) {
-								if($sv == ''){
-									unset($string_explode[$sk]);
-								}
-							}
-								
-							foreach($value_array as $k => $v){
-								$string1 = str_replace(" ","",$v);
-								if(count($string_explode) > 0) {
-									$string2 = str_replace(" ","",$string_explode[$i+1]);
-								} else {
-									$string2 = '';
-								}
-								if(strtolower($string1) == strtolower($string2) /* $pos_value != 0*/) {
-										
-									if(substr($v, 0, -1) === ' ') {
-										$result = rtrim($v," ");
-										$variations_selected[$i] = $result;
-									}
-									if(substr($v, 0, 1) === ' ') {
-										$result = preg_replace("/ /","",$v,1);
-										$variations_selected[$i] = $result;
-									} else {
-										$variations_selected[$i] = $v;
-									}
-								}
-							}
-							$i++;
-						}
+						
 				
 						$j = 1;
 						$k = 0;
@@ -1032,14 +1055,6 @@ session_start();
 				} elseif ($product_type == 'simple') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 					if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes') {
-						$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
-							
-						$number = floor($number_of_days/(60*60*24));
-						if ( isset($booking_settings['booking_charge_per_day']) && $booking_settings['booking_charge_per_day'] == 'on' ) {
-							$number = $number + 1;
-						}
-						if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on')
-							$number = 1;
 				
 						$query = "SELECT price_per_day, fixed_price, maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
 						WHERE post_id = %d AND minimum_number_of_days <= %d AND maximum_number_of_days >= %d";
@@ -1048,7 +1063,7 @@ session_start();
 				
 						if(count($results_price) == 0) {
 							$query = "SELECT price_per_day, fixed_price, maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
-							WHERE post_id = %d AND minimum_number_of_days <= %d'";
+							WHERE post_id = %d AND minimum_number_of_days <= %d";
 				
 							$results_price = $wpdb->get_results($wpdb->prepare($query,$product_id,$number));
 								

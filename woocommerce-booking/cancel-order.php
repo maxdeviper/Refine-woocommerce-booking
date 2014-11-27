@@ -85,13 +85,12 @@ class bkap_cancel_order{
 							$select_data_query = "SELECT start_date,end_date FROM `".$wpdb->prefix."booking_history`
 													WHERE id= %d";
 							$results_data = $wpdb->get_results ( $wpdb->prepare($select_data_query,$booking_id) );
-							$j=0;
-							foreach($results_data as $k => $v) {
-								$start_date = $results_data[$j]->start_date;
-								$end_date = $results_data[$j]->end_date;
-								$sql_delete_query = "DELETE FROM `".$wpdb->prefix."booking_history` WHERE id = '".$booking_id."' AND start_date =	'".$start_date."'	AND end_date = '".$end_date."' ";
+							
+							for ($i = 0; $i < $qty; $i++) {
+								$start_date = $results_data[0]->start_date;
+								$end_date = $results_data[0]->end_date;
+								$sql_delete_query = "DELETE FROM `".$wpdb->prefix."booking_history` WHERE start_date =	'".$start_date."' AND end_date = '".$end_date."' ";
 								$wpdb->query( $sql_delete_query );
-								$j++;
 							}
 						} else if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on') {
 							$type_of_slot = apply_filters('bkap_slot_type',$product_id);
@@ -169,7 +168,8 @@ class bkap_cancel_order{
 					}
 				}
 			}
-			$book_global_settings = json_decode(get_option('woocommerce_booking_global_settings'));		
+			$book_global_settings = json_decode(get_option('woocommerce_booking_global_settings'));	
+			$global_timeslot_lockout = '';
 			$label =  get_option("book.item-meta-date");
 			$hidden_date = date('d-n-Y',strtotime($start_date));
 			if (isset($booking_settings['booking_time_settings'][$hidden_date])){
@@ -217,7 +217,7 @@ class bkap_cancel_order{
 					}
 				}
 			}
-			if($book_global_settings->booking_global_timeslot == 'on' || $global_timeslot_lockout == 'on') {
+			if(isset($book_global_settings->booking_global_timeslot) && $book_global_settings->booking_global_timeslot == 'on' || $global_timeslot_lockout == 'on') {
 				$args = array( 'post_type' => 'product', 'posts_per_page' => -1 );
 				$product = query_posts( $args );
 				foreach($product as $k => $v) {
@@ -229,7 +229,7 @@ class bkap_cancel_order{
 					
 					$booking_settings = get_post_meta($v, 'woocommerce_booking_settings' , true);
 					if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on') {
-						if(count($details) > 0) {
+						if(isset($details) && count($details) > 0) {
 							if(!array_key_exists($duplicate_of,$details)) {	
 								foreach($details as $key => $val) {
 									$start_date = $val->start_date;

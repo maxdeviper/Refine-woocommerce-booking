@@ -63,7 +63,6 @@ DTSTART:<?php echo (bkap_get_dateToCal($_POST['book_date_start']))."\n"; ?>
 DTEND:<?php echo (bkap_get_dateToCal($_POST['book_date_end']))."\n"; ?>
 DTSTAMP:<?php echo (bkap_get_dateToCal($_POST['current_time']))."\n"; ?>
 UID:<?php echo (uniqid())."\n"; ?>
-LOCATION:<?php echo (bkap_get_escapeString('Mumbai'))."\n"; ?>
 DESCRIPTION:<?php echo (bkap_get_escapeString($_POST['book_name']))."\n"; ?>
 SUMMARY:<?php echo (bkap_get_escapeString($_POST['book_name']))."\n"; ?>
 END:VEVENT

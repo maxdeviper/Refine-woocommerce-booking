@@ -1,6 +1,4 @@
 <?php 
- 
- 
 	/**
 	 * Localisation
 	 **/
@@ -21,7 +19,7 @@
 				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_fixed_block_show_field_settings'));
 				add_action('init', array(&$this, 'bkap_load_ajax_fixed_block'));
 				add_filter('bkap_save_product_settings', array(&$this, 'bkap_fixed_block_product_settings_save'), 10, 2);
-				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_fixed_block_show_updated_price'),5,3);
+				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_fixed_block_show_updated_price'),5,6);
 				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_fixed_block_add_cart_item_data'), 5, 3);
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_fixed_block_get_cart_item_from_session'),11,2);
 
@@ -31,6 +29,16 @@
 			//	add_filter('bkap_get_item_data', array(&$this, 'bkap_get_item_data'), 10, 2 );
 				add_action('bkap_deposits_update_order', array(&$this, 'bkap_fixed_block_order_item_meta'), 10,2);
 				add_action('bkap_display_price_div', array(&$this, 'bkap_fixed_block_display_price'),10,1);
+				
+				$this->days = array( 'any_days' => 'Any Days',
+						'0' => 'Sunday',
+						'1' => 'Monday',
+						'2' => 'Tuesday',
+						'3' => 'Wednesday',
+						'4' => 'Thursday',
+						'5' => 'Friday',
+						'6' => 'Saturday'
+				);
 				
 			}
 			
@@ -158,7 +166,7 @@
 			}
 
                         /*********************************************
-                        * This fumnction display the price after selecting the date on front end.
+                        * This function display the price after selecting the date on front end.
                          ****************************************************/
 			function bkap_fixed_block_display_price($product_id) {
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
@@ -206,9 +214,9 @@
 				</script>
 				<div id="block_booking_page" style="display:none;">
 				<table class='form-table'>
-					<tr id="seasonal_price">
+					<tr id="fixed_block">
 						<th>
-							<label for="booking_seasonl_pricing"><b><?php _e( 'Enable Fixed Block Booking', 'bkap_block_booking');?></b></label>
+							<label for="booking_fixed_block"><b><?php _e( 'Enable Fixed Block Booking', 'bkap_block_booking');?></b></label>
 						</th>
 						<td>
 							<?php 
@@ -257,7 +265,7 @@
 							});
 				</script>
 				<tr>
-				 	<label for="add_block_label"><b><?php _e( 'Enter a Block:')?></b></label>
+				 	<label for="add_block_label"><b> Enter a Block: </b></label>
 				</tr>
 				<tr>
 					<table>
@@ -274,7 +282,7 @@
 						<td><input type="text" id="number_of_days" name="number_of_days" size="10"></input></td>
 						<td><select id="start_day" name="start_day">
 						<?php 
-						$days = bkap_get_book_arrays('days');
+						$days = $this->days;
 						foreach ($days as $dkey => $dvalue) {
 							?>
 							<option value="<?php echo $dkey; ?>"><?php echo $dvalue; ?></option>
@@ -325,6 +333,16 @@
 						alert("Price cannot be blank.");
 						return;
 					}
+					var days = [];
+					days["any_days"] = "Any Days";
+					days["0"] = "Sunday";
+					days["1"] = "Monday";
+					days["2"] = "Tuesday";
+					days["3"] = "Wednesday";
+					days["4"] = "Thursday";
+					days["5"] = "Friday";
+					days["6"] = "Saturday";
+						
 					var data = {
 							post_id: "'.$post->ID.'", 
 							booking_block_name: jQuery("#booking_block_name").val(),
@@ -337,29 +355,81 @@
 							};
 
 							
-							jQuery.ajax({
-                            url: "'.get_admin_url().'/admin-ajax.php",
-                            type: "POST",
-                            data : data,
-                            dataType: "html",
-                            beforeSend: function() {
-                             //loading	
-                            },
-                            success: function(data, textStatus, xhr) {
-                                   jQuery("#block_booking_table").html(data);
-                                	// reset and hide form
-									jQuery("#add_block").hide();
+							jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(response) {
+                                              
+                               // 	alert(response);
+						
+									insert_id = response;
+								if (jQuery("#table_id").val() != "") {
+						
+									var row_id = "row_"+insert_id;
+						
+									var day_num = jQuery("#start_day").val()
+									var start_day = days[day_num];
+									var day_num = jQuery("#end_day").val();
+									var end_day = days[day_num];
+						
+									var table = document.getElementById("list_blocks").rows;
+									var x = table[row_id].cells;
+									x[0].innerHTML = jQuery("#booking_block_name").val();
+									x[1].innerHTML = jQuery("#number_of_days").val();
+									x[2].innerHTML = start_day;
+									x[3].innerHTML = end_day;
+									x[4].innerHTML = jQuery("#fixed_block_price").val();
 									
-									//jQuery("#add_block").closest("form").find("input[type=text], textarea").val("");
+									var edit_id = insert_id + "&" + jQuery("#start_day").val() + "&" + jQuery("#end_day").val() + "&" + jQuery("#booking_block_name").val() + "&" + jQuery("#fixed_block_price").val() + "&" + jQuery("#number_of_days").val();
+									var edit_data = "<a href=\"javascript:void(0);\" id=\""+edit_id+"\" class=\"edit_block\"> <img src=\"'.plugins_url().'/woocommerce-booking/images/edit.png\" alt=\"Edit Fixed Block\" title=\"Edit Fixed Block\"></a>";
+									
+									x[5].innerHTML = edit_data;
+								}
+								else {
+						
+									var table = document.getElementById("list_blocks");
+									var row = table.insertRow(-1);
+									var row_id = "row_"+insert_id;
+									row.id = row_id;
+						
+									var day_num = jQuery("#start_day").val()
+									var start_day = days[day_num];
+									var day_num = jQuery("#end_day").val();
+									var end_day = days[day_num];
+						
+									var cell1 = row.insertCell(0);
+									cell1.innerHTML = jQuery("#booking_block_name").val();
+						
+									var cell2 = row.insertCell(1);
+									cell2.innerHTML = jQuery("#number_of_days").val()
+									
+									var cell3 = row.insertCell(2);
+									cell3.innerHTML = start_day;
+						
+									var cell4 = row.insertCell(3);
+									cell4.innerHTML = end_day;
+						
+									var cell5 = row.insertCell(4);
+									cell5.innerHTML = jQuery("#fixed_block_price").val();
+						
+									var edit_id = insert_id + "&" + jQuery("#start_day").val() + "&" + jQuery("#end_day").val() + "&" + jQuery("#booking_block_name").val() + "&" + jQuery("#fixed_block_price").val() + "&" + jQuery("#number_of_days").val();
+							//		alert(edit_id);
+									var edit_data = "<a href=\"javascript:void(0);\" id=\""+edit_id+"\" class=\"edit_block\"> <img src=\"'.plugins_url().'/woocommerce-booking/images/edit.png\" alt=\"Edit Fixed Block\" title=\"Edit Fixed Block\"></a>";
+									var cell6 = row.insertCell(5);
+									cell6.innerHTML = edit_data;
+									
+									var delete_data = "<a href=\"javascript:void(0);\" id=\""+insert_id+"\" class=\"delete_block\"> <img src=\"'.plugins_url().'/woocommerce-booking/images/delete.png\" alt=\"Delete Fixed Block\" title=\"Delete Fixed Block\"></a>"; 
+									var cell7 = row.insertCell(6);
+									cell7.innerHTML = delete_data;
+						
+								}
+								//	reset the fields	
 									jQuery("#booking_block_name").val("");
 									jQuery("#number_of_days").val("");
 									jQuery("#fixed_block_price").val("");
-								 
-
-                            },
-                            error: function(xhr, textStatus, errorThrown) {
-                              // error status
-                            }
+									jQuery("#start_day").val("");
+									jQuery("#end_day").val("");
+								 // reset and hide form
+									jQuery("#add_block").hide();
+									
+                          
                         });
 
 
@@ -372,16 +442,16 @@
 				<script type="text/javascript">
 				
 				
-                                /*******************************************
-                                 * This function displays the div with the fields when Add new Booking Block button is clicked on the admin product page
-                                 *****************************************/
+                /*******************************************************
+                * This function displays the div with the fields when 
+                Add new Booking Block button is clicked on the admin 
+                product page
+                ********************************************************/
 				function bkap_show_div_fixed_blocks() {
-			//		jQuery("input[name=booking_seasonal_pricing_radio]").attr("checked",false);
 					jQuery("#fixed_block_name").val("");
-					jQuery("#fixed_block_start_date").val("");
-					jQuery("#fixed_block_end_date").val("");
+					jQuery("#start_day").val("any_days");
+					jQuery("#end_day").val("any_days");
 					jQuery("#fixed_block_price").val("");
-			//		jQuery("#booking_seasonal_pricing_operator").val("add");
 					jQuery("#table_id").val("");
 					document.getElementById("add_block").style.display = "block";
 					jQuery("#add_block").show();
@@ -399,14 +469,16 @@
 				jQuery(document).ready(function(){
 					
 					jQuery("table#list_blocks").on('click', 'a.edit_block',function() {
+						
 						var passed_id = this.id;
+						
 						var exploded_id = passed_id.split('&');
-					//	alert("ID:" + exploded_id);
+				
 						jQuery("#booking_block_name").val(exploded_id[3]);
 						jQuery("#number_of_days").val(exploded_id[5]);
 						jQuery("#start_day").val(exploded_id[1]);
 						jQuery("#end_day").val(exploded_id[2]);
-						jQuery("#price").val(exploded_id[4]);
+						jQuery("#fixed_block_price").val(exploded_id[4]);
 						jQuery("#table_id").val(exploded_id[0]);
 						//jQuery("#booking_seasonal_pricing_operator").val(exploded_id[5]);
 
@@ -422,7 +494,7 @@
 
 					});
 
-					jQuery("table#list_blocks").on('click','a.bkap_delete_block',function() {
+					jQuery("table#list_blocks").on('click','a.delete_block',function() {
 						var y=confirm('Are you sure you want to delete this block?');
 						//alert(y);
 						if(y==true) {
@@ -437,7 +509,7 @@
 							});
 						}
 					});
-					jQuery("table#list_blocks a.bkap_delete_all_blocks").click(function() {
+					jQuery("table#list_blocks a.delete_all_blocks").click(function() {
 						var y=confirm('Are you sure you want to delete all the blocks?');
 						if(y==true) {
 							//var passed_id = this.id;
@@ -538,7 +610,9 @@
 					'{$price}',
 					'LOCAL' )";
 					$wpdb->query($insert_booking_block);
-					$this->bkap_booking_block_table();
+					
+					$id = $wpdb->insert_id;
+				
 				} else {
 					
 					$edit_season = "UPDATE `".$wpdb->prefix."booking_fixed_blocks`
@@ -550,11 +624,9 @@
 					WHERE id = '".$id."'";
 
 					$wpdb->query($edit_season);
-					//	echo ($insert_season);
-					$id = $wpdb->insert_id;
-					$this->bkap_booking_block_table();
+					
 				}
-				//echo $id;
+				echo $id;
 				die();
 			}
 			/*******************************************
@@ -585,11 +657,11 @@
 					$var .= '<tr id="row_'.$value->id.'">
 							<td>'.$value->block_name.'</td>
 							<td>'.$value->number_of_days.'</td>
-							<td>'.$date_name[$value->start_day].'</td>
-							<td>'.$date_name[$value->end_day].'</td>
+							<td>'.$this->days[$value->start_day].'</td>
+							<td>'.$this->days[$value->end_day].'</td>
 							<td>'.$value->price.'</td>
-							<td> <a href="javascript:void(0);" id="'.$value->id.'&'.$value->start_day.'&'.$value->end_day.'&'.$value->block_name.'&'.$value->price.'&'.$value->number_of_days.'" class="edit_block"> <img src="'.plugins_url().'/woocommerce-booking/images/edit.png" alt="Edit Season" title="Edit Season"></a> </td>
-							<td> <a href="javascript:void(0);" id="'.$value->id.'" class="delete_block"> <img src="'.plugins_url().'/woocommerce-booking/images/delete.png" alt="Delete Season" title="Delete Season"></a> </td>
+							<td> <a href="javascript:void(0);" id="'.$value->id.'&'.$value->start_day.'&'.$value->end_day.'&'.$value->block_name.'&'.$value->price.'&'.$value->number_of_days.'" class="edit_block"> <img src="'.plugins_url().'/woocommerce-booking/images/edit.png" alt="Edit Fixed Block" title="Edit Fixed Block"></a> </td>
+							<td> <a href="javascript:void(0);" id="'.$value->id.'" class="delete_block"> <img src="'.plugins_url().'/woocommerce-booking/images/delete.png" alt="Delete Fixed Block" title="Delete Fixed Block"></a> </td>
 							</tr>';
 				}
 				?>
@@ -605,7 +677,7 @@
 							<th> <?php _e('Start Day', 'bkap_block_booking');?> </th>
 							<th> <?php _e('End Day', 'bkap_block_booking');?> </th>
 							<th> <?php _e('Price', 'bkap_block_booking');?> </th>
-							<th> <?php _e('Edit', 'bkap_block_booking');?> </th>
+							<th> Edit </th>
 							<?php print('<th> <a href="javascript:void(0);" id="'.$post_id.'" class="delete_all_blocks"> Delete All </a> </th>');	?>  
 						</tr>
 						<?php 
@@ -634,71 +706,77 @@
                          *************************************/
 			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id, $variation_id)
 			{
-				if (!isset($_POST['price']) || (isset($_POST['price']) && $_POST['price'] == '')):
-			
-				$currency_symbol = get_woocommerce_currency_symbol();
-				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
-
-				$fixed_blocks_count = $this->bkap_get_fixed_blocks_count($product_id);
-				if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && $fixed_blocks_count > 0) {
-					$product = get_product($product_id);
-					$product_type = $product->product_type;
-					
-					if ( $product_type == 'variable') {
-						$price = get_post_meta( $variation_id, '_sale_price', true);
-						if($price == '') {
-							$price = get_post_meta( $variation_id, '_regular_price', true);
+				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):
+					$currency_symbol = get_woocommerce_currency_symbol();
+					$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
+	
+					$fixed_blocks_count = $this->bkap_get_fixed_blocks_count($product_id);
+					if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && $fixed_blocks_count > 0) {
+						$product = get_product($product_id);
+						$product_type = $product->product_type;
+						
+						if ( $product_type == 'variable') {
+							$price = get_post_meta( $variation_id, '_sale_price', true);
+							if($price == '') {
+								$price = get_post_meta( $variation_id, '_regular_price', true);
+							}
+						} elseif($product_type == 'simple') {
+							$price = get_post_meta( $product_id, '_sale_price', true);
+							if($price == '') {
+								$price = get_post_meta( $product_id, '_regular_price', true);
+							}
 						}
-					} elseif($product_type == 'simple') {
-						$price = get_post_meta( $product_id, '_sale_price', true);
-						if($price == '') {
-							$price = get_post_meta( $product_id, '_regular_price', true);
-						}
-					}
-					$date_disp = $_POST['booking_calender'];
-			
-					$hidden_date = $_POST['wapbk_hidden_date'];
-					if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && isset($cart_arr['price'])) :
-                                            if($product_type == 'variable'){ //Make this chnage
-                                                $price = $price + $_POST['block_option_price'];
-                                            } else{
-                                                $price =0;
-												$price = $_POST['block_option_price'];
-                                            }
-                                            $diff_days=1; 
-					endif;
-
-					if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {	
-						$diff_days = $_POST['wapbk_diff_days'];
-						if (isset($booking_settings['booking_fixed_block_enable'])&& $booking_settings['booking_fixed_block_enable'] == "yes")  {
-							$total = $price;
+						$date_disp = $_POST['booking_calender'];
+				
+						$hidden_date = $_POST['wapbk_hidden_date'];
+						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && isset($cart_arr['price'])) :
+	                                            if($product_type == 'variable'){ //Make this chnage
+	                                                $price = $price + $_POST['block_option_price'];
+	                                            } else{
+	                                                $price =0;
+													$price = $_POST['block_option_price'];
+	                                            }
+	                                            $diff_days=1; 
+						endif;
+	
+						if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {	
+							$diff_days = $_POST['wapbk_diff_days'];
+							if (isset($booking_settings['booking_fixed_block_enable'])&& $booking_settings['booking_fixed_block_enable'] == "yes")  {
+								$total = $price;
+							}
+							else {
+								$price = $price * $diff_days;
+							}
+							
 						}
 						else {
-							$price = $price * $diff_days;
+							if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes") {
+								$total = $price ;
+							} 
 						}
-						
+						$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
+						if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on") {
+							$price = round($price);
+						}
+					}
+					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
+						if (isset($price) && $price != '') {
+							$_POST['price'] = $price;
+						}
 					}
 					else {
-						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes") {
-							$total = $price ;
-						} 
+						if (isset($price) && $price != '') {
+							$cart_arr['price'] = $price;
+						}
 					}
+					//Round the price if needed
+						
 					$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-					if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on") {
-						$price = round($price);
+					if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on" && isset($cart_arr['price'])) {
+						$cart_arr['price'] = round($cart_arr['price']);
 					}
-				}
-				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
-					if (isset($price) && $price != '') {
-						$_POST['price'] = $price;
-					}
-				}
-				else {
-					if (isset($price) && $price != '') {
-						$cart_arr['price'] = $price;
-					}
-				}
 				endif;
+				
 				return $cart_arr;
 			}
 			
@@ -806,72 +884,38 @@
                         /***********************************************************
                          * This function is used to show the price updation of the fixed block on the front end.
                          ************************************************************/
-			function bkap_fixed_block_show_updated_price($product_id,$product_type,$variation_id) {
-				if (!isset($_POST['price']) || (isset($_POST['price']) && $_POST['price'] == '')):
-				$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
-				if ($product_type == 'variable') {
-					
-					$price = get_post_meta( $variation_id, '_sale_price', true);
-					if(!isset($price) || $price == '' || $price == 0){
-						$price = get_post_meta( $variation_id, '_regular_price', true);
-					}
-				
-					if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
-					/*	if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable']== "yes") {
-							if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-								$price = $booking_settings['booking_partial_payment_value_deposit'];
-							} elseif(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='percent') {
-								$price = (($booking_settings['booking_partial_payment_value_deposit']*$oprice)/100);
-							
-							}
-						} else {
-                                                        $price = get_post_meta(  $variation_id, '_sale_price', true);
-                                                        if($price == '') {
-                                                                $price = $oprice + get_post_meta(  $variation_id, '_regular_price', true);
-
-                                                        }
-							//$price = $oprice;
-						}*/
-						$price += $_POST['block_option_price'];
-					} /*else {
-						$sale_price = get_post_meta( $variation_id, '_sale_price', true);
-						if($sale_price == '') {
-							$regular_price = get_post_meta( $variation_id, '_regular_price', true);
-							$price = (($booking_settings['booking_partial_payment_value_deposit']*$regular_price)/100);
-						} else {
-							$price = (($booking_settings['booking_partial_payment_value_deposit']*$sale_price)/100);
+			function bkap_fixed_block_show_updated_price($product_id,$product_type,$variation_id,$checkin_date,$checkout_date,$currency_selected) {
+				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):
+					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
+					if ($product_type == 'variable') {
+						
+						$price = get_post_meta( $variation_id, '_sale_price', true);
+						if(!isset($price) || $price == '' || $price == 0){
+							$price = get_post_meta( $variation_id, '_regular_price', true);
 						}
-					}	*/
-				} elseif ($product_type == 'simple') {
-				//	$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
-					if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
-						$price = $_POST['block_option_price'];
-						//echo "here".$oprice;
-					/*	if (isset($booking_settings['booking_partial_payment_enable']) && $booking_settings['booking_partial_payment_enable']== "yes") {
-							if(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='value') {
-								$price = $booking_settings['booking_partial_payment_value_deposit'];
-							} elseif(isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']=='percent') {
-								$price = (($booking_settings['booking_partial_payment_value_deposit']*$oprice)/100);
-							
+					
+						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
+							$price += $_POST['block_option_price'];
+						} 
+					} elseif ($product_type == 'simple') {
+						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
+							$price = $_POST['block_option_price'];
+						}
+						else {
+							$price = get_post_meta( $product_id, '_sale_price', true);
+							if(!isset($price) || $price == '' || $price == 0){
+								$price = get_post_meta( $product_id, '_regular_price', true);
 							}
-						} else {
-							$price = $oprice;
-						}*/
+						}
+					}
+					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
+						$_POST['price'] = $price;
 					}
 					else {
-						$price = get_post_meta( $variation_id_to_fetch, '_sale_price', true);
-						if(!isset($price) || $price == '' || $price == 0){
-							$price = get_post_meta( $variation_id_to_fetch, '_regular_price', true);
-						}
+						$price = bkap_common::bkap_multicurrency_price($price,$currency_selected);
+						echo $price;
+						die();
 					}
-				}
-				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
-					$_POST['price'] = $price;
-				}
-				else {
-					echo $price;
-					die();
-				}
 				endif;
 			}
 			

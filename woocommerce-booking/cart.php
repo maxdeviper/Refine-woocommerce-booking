@@ -37,6 +37,7 @@ class bkap_cart{
 			$cart_item['data']->adjust_price( $extra_cost );
 				
 		endif;
+		
 		return $cart_item;
 	}
 		
@@ -119,22 +120,12 @@ class bkap_cart{
 			else {
 				$variation_id = '0';
 			}
-		//	print_r($cart_arr);
-		//	$type_of_slot = apply_filters('bkap_slot_type',$product_id);
-		//	if($type_of_slot == 'multiple') {
-		//		$cart_arr = (array) apply_filters('bkap_multiple_add_cart_item_data', $cart_item_meta, $product_id);
-		//		print_r($cart_arr);
-		//	}
-		/*	else {
-				$cart_arr = (array) apply_filters('bkap_add_cart_item_data', $cart_arr, $product_id);
-	*/
-			//	if(is_plugin_active('bkap-seasonal-pricing/seasonal_pricing.php'))
-				$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
-		//	}
-	//	print_r($cart_arr);
+		
+			$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
+		
 			$cart_item_meta['booking'][] = $cart_arr;
 		}
-	
+		
 		return $cart_item_meta;
 	}
 

@@ -193,6 +193,18 @@ class global_menu{
                         }else{
                                 $booking_settings->booking_global_selection = '';
                         }
+                        if (isset($_POST['minimum_day_booking'])) {
+                        	$booking_settings->minimum_day_booking = $_POST['minimum_day_booking'];
+                        }
+                        else {
+                        	$booking_settings->minimum_day_booking = '';
+                        }
+                        if (isset($_POST['global_booking_minimum_number_days'])) {
+                        	$booking_settings->global_booking_minimum_number_days = $_POST['global_booking_minimum_number_days'];
+                        }
+                        else {
+                        	$booking_settings->global_booking_minimum_number_days = '';
+                        }
                         $booking_settings = apply_filters( 'bkap_save_global_settings', $booking_settings);
                         $woocommerce_booking_settings = json_encode($booking_settings);
 
@@ -499,6 +511,68 @@ class global_menu{
                                                                         <img class="help_tip" width="16" height="16" data-tip="<?php _e('Please select this checkbox if you want to select the date globally for All products once selected for a product and added to cart.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" style="vertical-align:top;"/><br>
                                                                 </td>
                                                                 </tr>
+                                                                <tr>
+                                                                                            <th>
+                                                                                                <label for="minimum_day_booking"><b><?php _e('Minimum Day Booking:', 'woocommerce-booking');?></b></label>
+                                                                                            </th>
+                                                                                            <td>
+                                                                                                <?php
+                                                                                                        $minimum_booking_checked = "";
+                                                                                                        $minimum_days_div_show = 'none';
+                                                                                                        if (isset($saved_settings->minimum_day_booking) && $saved_settings->minimum_day_booking == 'on') {
+                                                                                                                $minimum_booking_checked = 'checked';
+                                                                                                                $minimum_days_div_show = 'block';
+                                                                                                        }
+                                                                                                ?>
+                                                                                            <input type="checkbox" id="minimum_day_booking" name="minimum_day_booking" <?php echo $minimum_booking_checked; ?>  onClick="minimum_days_method(this)" <?php echo $minimum_booking_checked; ?>/>
+                                                                                            <img class="help_tip" width="16" height="16" data-tip="<?php _e('Enter minimum days of booking for Multiple days booking.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
+                                                                                         </td>
+                                                                                        </tr>
+                                                                                  </table>
+                                                                                        
+                                                                                    <script type="text/javascript">
+                                                                                                function minimum_days_method(chk)
+                                                                                                {
+                                                                                                        if ( jQuery( "input[name='minimum_day_booking']").attr("checked"))
+                                                                                                        {
+                                                                                                                document.getElementById("minimum_booking_days").style.display = "block";
+
+                                                                                                        }
+                                                                                                        if ( !jQuery( "input[name='minimum_day_booking']").attr("checked") )
+                                                                                                        {
+                                                                                                                document.getElementById("minimum_booking_days").style.display = "none";
+
+                                                                                                        }
+                                                                                                }
+                                                                                        </script>
+
+                                                                                        
+                                                                                        <div id="minimum_booking_days" name="minimum_booking_days" style="display:<?php echo $minimum_days_div_show; ?>;">
+                                                                                        <table class="form-table">
+
+                                                                                        <tr>
+                                                                                            <th>
+                                                                                                    <label for="global_booking_minimum_number_days"><b><?php _e( 'Minimum number of days to choose:', 'woocommerce-booking');?></b></label>
+                                                                                            </th>
+                                                                                            <td>
+                                                                                                <?php 
+                                                                                                        $minimum_day = "";
+                                                                                                    if ( isset($saved_settings->global_booking_minimum_number_days) && $saved_settings->global_booking_minimum_number_days != "" ) {
+                                                                                                            $minimum_day = $saved_settings->global_booking_minimum_number_days;
+                                                                                                    }
+                                                                                                    else {
+                                                                                                            $minimum_day = "0";
+                                                                                                    }		
+                                            //                                                  ?>
+                                                                                                    <input type="text" name="global_booking_minimum_number_days" id="global_booking_minimum_number_days" value="<?php echo $minimum_day;?>" >
+                                                                                                <img class="help_tip" width="16" height="16" data-tip="<?php _e('The minimum number days you want to be booked for multiple day booking. For example, if you require minimum 2 days for booking, enter the value 2 in this field.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        
+                                                                                            </table>
+                                                                                        </div>
+                                                                                        <table class="form-table">
+                                                                                
                                                                 <?php do_action('bkap_after_global_holiday_field');?>
                                                                 <tr>
                                                                         <th>

@@ -1,9 +1,9 @@
 <?php 
 /*
-Plugin Name: WooCommerce Booking Plugin
+Plugin Name: WooCommerce Booking & Appointment Plugin
 Plugin URI: http://www.tychesoftwares.com/store/premium-plugins/woocommerce-booking-plugin
 Description: This plugin lets you capture the Booking Date & Booking Time for each product thereby allowing your WooCommerce store to effectively function as a Booking system. It allows you to add different time slots for different days, set maximum bookings per time slot, set maximum bookings per day, set global & product specific holidays and much more.
-Version: 1.7.6
+Version: 2.0
 Author: Ashok Rane
 Author URI: http://www.tychesoftwares.com/
 */
@@ -15,7 +15,7 @@ $ExampleUpdateChecker = new PluginUpdateChecker(
 );*/
 
 global $BookUpdateChecker;
-$BookUpdateChecker = '1.7.6';
+$BookUpdateChecker = '2.0';
 
 // this is the URL our updater / license checker pings. This should be the URL of the site with EDD installed
 define( 'EDD_SL_STORE_URL_BOOK', 'http://www.tychesoftwares.com/' ); // IMPORTANT: change the name of this constant to something unique to prevent conflicts with other plugins using this system
@@ -36,7 +36,7 @@ $license_key = trim( get_option( 'edd_sample_license_key' ) );
 
 // setup the updater
 $edd_updater = new EDD_BOOK_Plugin_Updater( EDD_SL_STORE_URL_BOOK, __FILE__, array(
-		'version' 	=> '1.7.6', 		// current version number
+		'version' 	=> '2.0', 		// current version number
 		'license' 	=> $license_key, 	// license key (used get_option above to retrieve from DB)
 		'item_name' => EDD_SL_ITEM_NAME_BOOK, 	// name of this plugin
 		'author' 	=> 'Ashok Rane'  // author of this plugin
@@ -186,7 +186,7 @@ function is_booking_active()
 				add_action('admin_init', array('bkap_license', 'bkap_edd_sample_deactivate_license'));
 				add_action('admin_init', array('bkap_license', 'bkap_edd_sample_activate_license'));	
 				add_filter('woocommerce_my_account_my_orders_actions', array('bkap_cancel_order', 'bkap_get_add_cancel_button'), 10, 3 );
-				add_filter('add_to_cart_fragments', array('bkap-cart', 'bkap_woo_cart_widget_subtotal'));
+				add_filter('add_to_cart_fragments', array('bkap_cart', 'bkap_woo_cart_widget_subtotal'));
 			}
 			
                         
@@ -199,11 +199,13 @@ function is_booking_active()
 					add_action('wp_ajax_nopriv_bkap_check_for_time_slot', array('bkap_booking_process', 'bkap_check_for_time_slot'));
 					add_action('wp_ajax_bkap_nopriv_insert_date', array('bkap_booking_process', 'bkap_insert_date'));
 					add_action('wp_ajax_nopriv_bkap_call_addon_price', array('bkap_booking_process', 'bkap_call_addon_price'));
+					add_action('wp_ajax_nopriv_bkap_js', array('bkap_booking_process', 'bkap_js'));
 				} else{
 					add_action('wp_ajax_bkap_get_per_night_price', array('bkap_booking_process', 'bkap_get_per_night_price'));
 					add_action('wp_ajax_bkap_check_for_time_slot', array('bkap_booking_process', 'bkap_check_for_time_slot'));
 					add_action('wp_ajax_bkap_insert_date', array('bkap_booking_process', 'bkap_insert_date'));
 					add_action('wp_ajax_bkap_call_addon_price', array('bkap_booking_process', 'bkap_call_addon_price'));
+					add_action('wp_ajax_bkap_js', array('bkap_booking_process', 'bkap_js'));
 				}
 			}
                         
@@ -242,7 +244,7 @@ function is_booking_active()
 		
 				$booking_plugin_version = $BookUpdateChecker;
 				
-				if ($booking_plugin_version == "1.7.6") {
+				if ($booking_plugin_version == "2.0") {
 					$this->bkap_bookings_activate();
 				}
 			}
@@ -323,7 +325,7 @@ function is_booking_active()
 				dbDelta($sql_price);
 				dbDelta($sql_meta);
 				dbDelta($blocks_sql);
-				update_option('woocommerce_booking_db_version','1.7.6');
+				update_option('woocommerce_booking_db_version','2.0');
 			
 				$check_table_query = "SHOW COLUMNS FROM $table_name LIKE 'end_date'";
 				

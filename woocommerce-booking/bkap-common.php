@@ -74,5 +74,24 @@ class bkap_common{
 		}
 		return $price;
 	}
+	
+	public static function bkap_multicurrency_price($price,$currency_selected) {	
+		global $woocommerce_wpml;
+		if($currency_selected != '') {
+			$settings = $woocommerce_wpml->get_settings();
+			if($settings['enable_multi_currency'] == 2) {
+				$custom_post = get_post_meta( $variation_id, '_wcml_custom_prices_status', true);
+				if($custom_post == 0) {
+					$currencies = $woocommerce_wpml->multi_currency_support->get_currencies();
+					foreach($currencies as $ckey => $cval) {
+						if($ckey == $currency_selected) {
+							$price  = $price * $cval['rate'];
+						}
+					}
+				}
+			}
+		}
+		return $price;
+	}
 }
 ?>

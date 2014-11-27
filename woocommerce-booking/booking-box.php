@@ -18,7 +18,7 @@ class bkap_booking_box_class{
                
                $woo_booking_dates = get_post_meta($duplicate_of, 'woocommerce_booking_settings', true);
             
-               $enable_inline_calendar = $enable_date = $enable_multiple_day = $specific_booking_chk = $recurring_booking_chk = "";
+               $enable_inline_calendar = $enable_date = $enable_multiple_day = $specific_booking_chk = $recurring_booking_chk = $enable_minimum_day_booking_multiple = "";
 
                if(isset($_POST['enable_inline_calendar'])) {
                        $enable_inline_calendar = $_POST['enable_inline_calendar'];
@@ -30,7 +30,15 @@ class bkap_booking_box_class{
                if (isset($_POST['booking_enable_multiple_day'])) {
                        $enable_multiple_day = $_POST['booking_enable_multiple_day'];
                }
-
+               //product level - minimum booking for multiple days
+               if (isset($_POST['minimum_day_booking_multiple'])) {
+               	$enable_minimum_day_booking_multiple = $_POST['minimum_day_booking_multiple'];
+               }
+               
+               $booking_minimum_number_days_multiple = 0;
+               if (isset($_POST['booking_minimum_number_days_multiple'])) {
+               	$booking_minimum_number_days_multiple = $_POST['booking_minimum_number_days_multiple'];
+               }
                if (isset($_POST['booking_specific_booking'])) {
                        $specific_booking_chk = $_POST['booking_specific_booking'];
                }
@@ -268,6 +276,8 @@ class bkap_booking_box_class{
                $booking_settings['booking_enable_date'] = $enable_date;
                $booking_settings['enable_inline_calendar'] = $enable_inline_calendar;
                $booking_settings['booking_enable_multiple_day'] = $enable_multiple_day;
+               $booking_settings['enable_minimum_day_booking_multiple'] = $enable_minimum_day_booking_multiple;
+               $booking_settings['booking_minimum_number_days_multiple'] = $booking_minimum_number_days_multiple;
                $booking_settings['booking_specific_booking'] = $specific_booking_chk;
                $booking_settings['booking_recurring_booking'] = $recurring_booking_chk;
                $booking_settings['booking_recurring'] = $booking_days;
@@ -385,6 +395,8 @@ class bkap_booking_box_class{
                                        jQuery('#booking_enable_weekday').hide();
                                        jQuery('#selective_booking').hide();
                                        jQuery('#purchase_without_date').hide();
+                                       jQuery('#multiple_day_minimum').show();
+              							jQuery('#multiple_day_minimum_days').show();
                                } else {
                                        jQuery('#booking_method').show();
                                        jQuery('#inline_calender').show();
@@ -392,6 +404,8 @@ class bkap_booking_box_class{
                                        jQuery('#booking_enable_weekday').show();
                                        jQuery('#selective_booking').show();
                                        jQuery('#purchase_without_date').show();
+                                       jQuery('#multiple_day_minimum').hide();
+              							jQuery('#multiple_day_minimum_days').hide();
                                }
                        });
                });
@@ -507,18 +521,102 @@ class bkap_booking_box_class{
                        $enable_multiple_day = '';
                        $booking_method_div = $booking_time_div = 'table-row';
                        $purchase_without_date = 'show';
+                       $minimum_days_div_show= 'none';
+                       $multiple_minimum_days_show = 'none';
                        if( isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on' ) {
                                $enable_multiple_day = 'checked';
                                $booking_method_div = 'none';
                                $booking_time_div = 'none';
                                $purchase_without_date = 'none';
+                               $multiple_minimum_days_show = 'none';
+                               $minimum_days_div_show = 'block';
                        }
                        ?>
-                       <input type="checkbox" id="booking_enable_multiple_day" name="booking_enable_multiple_day" <?php echo $enable_multiple_day;?> >
+                       <input type="checkbox" id="booking_enable_multiple_day" name="booking_enable_multiple_day" onClick="minimum_days_method(this)" <?php echo $enable_multiple_day;?> >
                        <img class="help_tip" width="16" height="16" data-tip="<?php _e('Enable Multiple day Bookings on Products Page', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
                        </td>
                </tr>
 
+               </table>
+                                
+                                
+                
+                                <script type="text/javascript">
+                                    function minimum_days_method(chk) {
+                                            if ( jQuery( "input[name='booking_enable_multiple_day']").attr("checked")) {
+                                                    document.getElementById("minimum_booking_days").style.display = "block";
+                                            }
+                                            if ( !jQuery( "input[name='booking_enable_multiple_day']").attr("checked") ) {
+                                                    document.getElementById("minimum_booking_days").style.display = "none";
+                                            }
+                                    }
+				</script>
+                
+                                <div id="minimum_booking_days" name="minimum_booking_days" style="display:<?php echo $minimum_days_div_show; ?>;">
+				<table class="form-table">
+                                <tr id="multiple_day_minimum" style="display:<?php if(isset($multiple_day_minimum)){ echo $multiple_day_minimum; }?>;">
+                                    <th>
+                                            <label for="minimum_day_booking_multiple"><b><?php _e('Minimum Day Booking For Multiple Days:', 'woocommerce-booking');?></b></label>
+                                    </th>
+                                    <td>
+                                            <?php
+                                                        $minimum_booking_multiple_checked = "";
+                                                        $multiple_minimum_days_show = 'none';
+                                                        if (isset($booking_settings['enable_minimum_day_booking_multiple']) && $booking_settings['enable_minimum_day_booking_multiple'] == 'on'){
+                                                                $minimum_booking_multiple_checked = 'checked';
+                                                                $multiple_minimum_days_show = 'block';
+                                                        }
+                                                ?>
+                                            <input type="checkbox" id="minimum_day_booking_multiple" name="minimum_day_booking_multiple" <?php echo $minimum_booking_multiple_checked; ?> onClick="multiple_minimum_days(this)" <?php echo $minimum_booking_multiple_checked; ?>/>
+                                            <img class="help_tip" width="16" height="16" data-tip="<?php _e('Select the checkbox if you want multiple day bookings to span for a minimum of more than 1 night always.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
+                                    </td>
+                                </tr>
+                                </table>
+                                    
+                                 </div>
+                                
+                                
+                                <script type="text/javascript">
+                                        function multiple_minimum_days(chk)
+                                        {
+                                                if ( jQuery( "input[name='minimum_day_booking_multiple']").attr("checked"))
+                                                {
+                                                        document.getElementById("multiple_minimum_days").style.display = "block";
+
+                                                }
+                                                if ( !jQuery( "input[name='booking_enable_multiple_day']").attr("checked") )
+                                                    {
+                                                        document.getElementById("multiple_minimum_days").style.display = "none";
+                                                    }
+                                                if ( !jQuery( "input[name='minimum_day_booking_multiple']").attr("checked") )
+                                                {
+                                                        document.getElementById("multiple_minimum_days").style.display = "none";
+
+                                                }
+                                        }
+				</script>
+                                         
+                                 <div id="multiple_minimum_days" name="multiple_minimum_days" style="display:<?php echo $multiple_minimum_days_show; ?>;">
+				<table class="form-table">
+                                    <tr id="multiple_day_minimum_days" style="display:<?php  if(isset($multiple_day_minimum)){ echo $multiple_day_minimum; }  ;?>;">
+                                    <th>
+                                         <label for="booking_minimum_number_days_multiple"><b><?php _e( 'Minimum number of days to book for multiple day bookings:', 'woocommerce-booking');?></b></label>
+                                    </th>
+                                    <td>
+                                        <?php 
+                                            $minimum_day_multiple = "";
+                                            if ( isset($booking_settings['booking_minimum_number_days_multiple']) && $booking_settings['booking_minimum_number_days_multiple'] != "" )
+                                                $minimum_day_multiple = $booking_settings['booking_minimum_number_days_multiple'];
+                                            else
+                                                $minimum_day_multiple = "0";	
+                //                       ?>
+                                         <input type="text" name="booking_minimum_number_days_multiple" id="booking_minimum_number_days_multiple" value="<?php echo $minimum_day_multiple;?>" >
+                                         <img class="help_tip" width="16" height="16" data-tip="<?php _e('The minimum number of booking days you want to book for multiple days booking. For example, if you take minimum 2 days of booking, add 2 in the field here.', 'woocommerce-booking');?>" src="<?php echo plugins_url() ;?>/woocommerce/assets/images/help.png" />
+                                    </td>
+                                </tr>
+                                    </table>
+                                </div>
+                                <table class="form-table">
                <tr id="inline_calender" style="display:show">
                        <th>
                        <label for="enable_inline_calendar"> <b> <?php _e( 'Enable Inline Calendar:', 'woocommerce-booking' );?> </b> </label>
@@ -661,7 +759,7 @@ class bkap_booking_box_class{
                do_action('bkap_before_minimum_days', $duplicate_of);?>
                <tr>
                        <th>
-                       <label for="booking_minimum_number_days"><b><?php _e( 'Minimum Booking time (in days):', 'woocommerce-booking');?></b></label>
+                       <label for="booking_minimum_number_days"><b><?php _e( 'Advance Booking Period (in days):', 'woocommerce-booking');?></b></label>
                        </th>
                        <td>
                        <?php 

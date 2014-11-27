@@ -26,7 +26,7 @@ class bkap_checkout{
 		$i = 0;
 		foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values ) {
 			$_product = $values['data'];
-		
+			$parent_id = $_product->get_parent();
 			if(array_key_exists("variation_id",$values)){
 				$variation_id = $values['variation_id'];
 			}
@@ -73,6 +73,7 @@ class bkap_checkout{
 		//	}else
 		//	{
 				if (isset($values['booking'])) :
+					$booking_settings = get_post_meta($post_id, 'woocommerce_booking_settings', true);
 					$details = array();
 					if ($booking[0]['date'] != "") {
 						$name = get_option('book.item-meta-date');
@@ -81,7 +82,6 @@ class bkap_checkout{
 						woocommerce_add_order_item_meta( $results[0]->order_item_id, $name, sanitize_text_field( $date_select, true ) );
 					}
 					if (array_key_exists('date_checkout',$booking[0]) && $booking[0]['date_checkout'] != "") {
-						$booking_settings = get_post_meta($post_id, 'woocommerce_booking_settings', true);
 		
 						if ($booking_settings['booking_enable_multiple_day'] == 'on') {
 							$name_checkout = get_option('checkout.item-meta-date');
@@ -147,6 +147,22 @@ class bkap_checkout{
 							'0',
 							'0' )";
 							$wpdb->query( $query );
+							
+							//Insert records for parent products - Grouped Products
+							if (isset($parent_id) && $parent_id != '') {
+								$query_parent = "INSERT INTO `".$wpdb->prefix."booking_history`
+												(post_id,weekday,start_date,end_date,from_time,to_time,total_booking,available_booking)
+												VALUES (
+												'".$parent_id."',
+												'',
+												'".$date_query."',
+												'".$date_checkout_query."',
+												'',
+												'',
+												'0',
+												'0' )";
+								$wpdb->query( $query_parent );
+							}
 						}
 						$new_booking_id = mysql_insert_id();
 						$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
@@ -207,37 +223,36 @@ class bkap_checkout{
 						}
 		
 					}
-	
 					if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] != 'on') {
 						if(array_key_exists('date',$booking[0]) && $booking[0]['time_slot'] != "") {
 							if($query_to_time != '') {
 								$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id = %d AND
-								start_date = %s AND
-								from_time = %s AND
-								to_time = %s ";
+														WHERE post_id = %d AND
+														start_date = %s AND
+														from_time = %s AND
+														to_time = %s ";
 								$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$date_query,$query_from_time,$query_to_time) );
 							}else {
 								$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-								WHERE post_id = %d AND
-								start_date = %s AND
-								from_time = %s";
+														WHERE post_id = %d AND
+														start_date = %s AND
+														from_time = %s";
 								$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$post_id,$query_from_time) );
 							}
 						} else {
 							$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-							WHERE post_id = %d AND
-							start_date = %s";
+													WHERE post_id = %d AND
+													start_date = %s";
 							$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$date_query) );
 						}
 						$j = 0;
 						foreach($order_results as $k => $v) {
 							$booking_id = $order_results[$j]->id;
 							$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
-							(order_id,booking_id)
-							VALUES (
-							'".$order_id."',
-							'".$booking_id."' )";
+											(order_id,booking_id)
+											VALUES (
+											'".$order_id."',
+											'".$booking_id."' )";
 							$wpdb->query( $order_query );
 							$j++;
 						}
@@ -277,7 +292,7 @@ class bkap_checkout{
 					}
 				}
 			}
-			if(isset($book_global_settings->booking_global_timeslot) && $book_global_settings->booking_global_timeslot == 'on' || $global_timeslot_lockout == 'on') {
+			if(isset($book_global_settings->booking_global_timeslot) && $book_global_settings->booking_global_timeslot == 'on' || isset($global_timeslot_lockout) && $global_timeslot_lockout == 'on') {
 				$args = array( 'post_type' => 'product', 'posts_per_page' => -1 );
 				$product = query_posts( $args );
 				foreach($product as $k => $v){
@@ -285,7 +300,9 @@ class bkap_checkout{
 				}
 				foreach($product_ids as $k => $v){
 					$duplicate_of = bkap_common::bkap_get_product_id($v);
+					
 					$booking_settings = get_post_meta($v, 'woocommerce_booking_settings' , true);
+					
 					if(isset($booking_settings['booking_enable_time']) && $booking_settings['booking_enable_time'] == 'on') {
 				
 						if(!array_key_exists($duplicate_of,$details)) {
@@ -315,7 +332,8 @@ class bkap_checkout{
 										$results = array();
 										$query = "SELECT * FROM `".$wpdb->prefix."booking_history`
 													WHERE post_id = %s
-													AND weekday = %s";
+													AND weekday = %s
+													AND start_date = '0000-00-00'";
 								
 										$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$weekday) );
 										if (!$results) break;
@@ -331,7 +349,7 @@ class bkap_checkout{
 													'".$start_date."',
 													'".$r_val->from_time."',
 													'".$r_val->to_time."',
-													'".$r_val->available_booking."',
+													'".$r_val->total_booking."',
 													'".$available_booking."' )";
 												
 													$wpdb->query( $query_insert );
@@ -355,7 +373,7 @@ class bkap_checkout{
 															'".$start_date."',
 															'".$r_val->from_time."',
 															'".$r_val->to_time."',
-															'".$r_val->available_booking."',
+															'".$r_val->total_booking."',
 															'".$r_val->available_booking."' )";
 															$wpdb->query( $query_insert );
 														}
@@ -386,6 +404,7 @@ class bkap_checkout{
 										$query = "SELECT * FROM `".$wpdb->prefix."booking_history`
 										WHERE post_id = %d
 										AND weekday = %s
+										AND start_date = '0000-00-00'
 										AND to_time = '' ";
 										$results = $wpdb->get_results( $wpdb->prepare($query,$duplicate_of,$weekday) );
 										if (!$results) break;
@@ -400,7 +419,7 @@ class bkap_checkout{
 													'".$weekday."',
 													'".$start_date."',
 													'".$r_val->from_time."',
-													'".$r_val->available_booking."',
+													'".$r_val->total_booking."',
 													'".$available_booking."' )";
 													$wpdb->query( $query_insert );
 												}else {

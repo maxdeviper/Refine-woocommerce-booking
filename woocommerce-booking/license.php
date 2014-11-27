@@ -39,7 +39,7 @@ class bkap_license{
                                                                            <input type="submit" class="button-secondary" name="edd_license_deactivate" value="<?php _e('Deactivate License'); ?>"/>
                                                                    <?php } else {
                                                                            wp_nonce_field( 'edd_sample_nonce', 'edd_sample_nonce' ); ?>
-                                                                           <input type="submit" class="button-secondary" name="edd_license_activate" value="<?php _e('Activate License'); ?>"/>
+                                                                           <input type="submit" class="button-secondary" name="edd_license_activate" value="Activate License"/>
                                                                    <?php } ?>
                                                            </td>
                                                    </tr>

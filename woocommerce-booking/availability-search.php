@@ -24,24 +24,61 @@ function bkap_get_custom_posts($where, $query){
 		$start_date = $chkin;
 		$end_date =  $chkout;
 	
-$where = " AND($wpdb->posts.post_type = 'product'and $wpdb->posts.post_status = 'publish') AND $wpdb->posts.ID NOT IN
-		(SELECT b.post_id FROM $booking_table AS b
-		WHERE ('$start_date' between b.start_date and date_sub(b.end_date,INTERVAL 1 DAY))
-		  or 
-		  ('$end_date' between b.start_date and date_sub(b.end_date,INTERVAL 1 DAY))
-		  or 
-		  (b.start_date between '$start_date' and '$end_date')
-		  or
-		  b.start_date = '$start_date'
-		)and $wpdb->posts.ID NOT IN(SELECT post_id from $meta_table
-		where meta_key =  'woocommerce_booking_settings' and meta_value LIKE  '%booking_enable_date\";s:0%') and $wpdb->posts.ID NOT IN(SELECT a.id
-		FROM $post_table AS a
-		LEFT JOIN $meta_table AS b ON a.id = b.post_id
-		AND (
-		b.meta_key =  'woocommerce_booking_settings'
-		)
-		WHERE b.post_id IS NULL)";
-
+		$language_selected = '';
+		if (defined('ICL_LANGUAGE_CODE'))
+		{
+			if(constant('ICL_LANGUAGE_CODE') != '')
+			{
+				$wpml_current_language = constant('ICL_LANGUAGE_CODE');
+				if (!empty($wpml_current_language)) {
+					$language_selected = $wpml_current_language;
+				}
+			}
+		}
+		if($language_selected != '')
+		{
+			$where = " AND($wpdb->posts.post_type = 'product'and $wpdb->posts.post_status = 'publish') AND $wpdb->posts.ID NOT IN
+			(SELECT b.post_id FROM $booking_table AS b
+			WHERE ('$start_date' between b.start_date and date_sub(b.end_date,INTERVAL 1 DAY))
+			or
+			('$end_date' between b.start_date and date_sub(b.end_date,INTERVAL 1 DAY))
+			or
+			(b.start_date between '$start_date' and '$end_date')
+			or
+			b.start_date = '$start_date'
+			)and $wpdb->posts.ID NOT IN(SELECT post_id from $meta_table
+			where meta_key =  'woocommerce_booking_settings' and meta_value LIKE  '%booking_enable_date\";s:0%') and $wpdb->posts.ID NOT IN(SELECT a.id
+			FROM $post_table AS a
+			LEFT JOIN $meta_table AS b ON a.id = b.post_id
+			AND (
+			b.meta_key =  'woocommerce_booking_settings'
+			)
+			WHERE b.post_id IS NULL) AND $wpdb->posts.ID IN
+			(SELECT element_id FROM $icl_table
+			WHERE language_code = '".ICL_LANGUAGE_CODE."')";
+		
+		
+		}
+		else
+		{
+			$where = " AND($wpdb->posts.post_type = 'product'and $wpdb->posts.post_status = 'publish') AND $wpdb->posts.ID NOT IN
+					(SELECT b.post_id FROM $booking_table AS b
+					WHERE ('$start_date' between b.start_date and date_sub(b.end_date,INTERVAL 1 DAY))
+					  or 
+					  ('$end_date' between b.start_date and date_sub(b.end_date,INTERVAL 1 DAY))
+					  or 
+					  (b.start_date between '$start_date' and '$end_date')
+					  or
+					  b.start_date = '$start_date'
+					)and $wpdb->posts.ID NOT IN(SELECT post_id from $meta_table
+					where meta_key =  'woocommerce_booking_settings' and meta_value LIKE  '%booking_enable_date\";s:0%') and $wpdb->posts.ID NOT IN(SELECT a.id
+					FROM $post_table AS a
+					LEFT JOIN $meta_table AS b ON a.id = b.post_id
+					AND (
+					b.meta_key =  'woocommerce_booking_settings'
+					)
+					WHERE b.post_id IS NULL)";
+		}
 		
 	}
 	return $where;

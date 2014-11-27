@@ -76,6 +76,8 @@ class bkap_validation{
 				$quantity_check_pass = apply_filters('bkap_validate_add_to_cart',$_POST,$post_id);
 			} 
 			else {
+				if (isset($_POST['quantity'])) $item_quantity = $_POST['quantity'];
+				else $item_quantity = 1;
 				if(isset($_POST['time_slot'])) {
 					$time_range = explode("-", $_POST['time_slot']);
 					$from_time = date('G:i', strtotime($time_range[0]));
@@ -96,10 +98,12 @@ class bkap_validation{
 				} 
 				else {
 					$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-					WHERE post_id = %d
-					AND start_date = %s
-					AND from_time = %s";
-					$results = $wpdb->get_results( $wpdb->pepare($query,$post_id,$date_check,$from_time) );
+								WHERE post_id = %d
+								AND start_date = %s
+								AND from_time = %s";
+								
+					$prepare_query = $wpdb->prepare($query,$post_id,$date_check,$from_time);
+					$results = $wpdb->get_results($prepare_query);
 				}
 					
 				if (isset($results) && count($results) > 0) {
@@ -120,7 +124,7 @@ class bkap_validation{
 							else $time_slot_to_display = $from_time;
 						}
 	
-						if( $results[0]->available_booking > 0 && $results[0]->available_booking < $_POST['quantity'] ) {
+						if( $results[0]->available_booking > 0 && $results[0]->available_booking < $item_quantity ) {
 								
 							$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-msg1') .$results[0]->available_booking.bkap_get_book_t('book.limited-booking-msg2').$time_slot_to_display.'.';
 							wc_add_notice( $message, $notice_type = 'error');
@@ -142,7 +146,7 @@ class bkap_validation{
 						$product_id = $values['product_id'];
 	
 						if ($product_id == $post_id && $booking[0]['hidden_date'] == $_POST['wapbk_hidden_date'] && $booking[0]['time_slot'] == $_POST['time_slot']) {
-							$total_quantity = $_POST['quantity'] + $quantity;
+							$total_quantity = $item_quantity + $quantity;
 							if (isset($results) && count($results) > 0) {
 	
 								if ($results[0]->available_booking > 0 && $results[0]->available_booking < $total_quantity) {
@@ -165,10 +169,10 @@ class bkap_validation{
 			$todays_date = date('Y-m-d');
 	
 			$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history
-			WHERE start_date >= %s AND post_id = %d";
-	
-			$results_date = $wpdb->get_results($wpdb->prepare($query_date,$todays_date,$post_id));
-	
+						WHERE start_date >='".$todays_date."' AND post_id = '".$post_id."'";
+				
+			$results_date = $wpdb->get_results($query_date);
+				
 			$dates_new = array();
 				
 			foreach($results_date as $k => $v) {
@@ -183,10 +187,21 @@ class bkap_validation{
 			if (isset($booking_settings['booking_date_lockout'])) {
 				$lockout = $booking_settings['booking_date_lockout'];
 			}
-				
+			
+			if (isset($_POST['quantity']) && is_array($_POST['quantity'])) {
+				$item_quantity = $_POST['quantity'][$post_id];
+			}
+			else {
+				if (isset($_POST['quantity'])) {
+					$item_quantity = $_POST['quantity'];
+				}
+				else {
+					$item_quantity = 1;
+				}
+			}
 			foreach ($order_dates as $k => $v) {
 				if (array_key_exists($v,$dates_new_arr)) {
-					if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $_POST['quantity']) {
+					if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $item_quantity) {
 						$available_tickets = $lockout - $dates_new_arr[$v];
 						$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 						wc_add_notice( $message, $notice_type = 'error');
@@ -194,7 +209,7 @@ class bkap_validation{
 					}
 				} else {
 						
-					if ($lockout != 0 && $lockout < $_POST['quantity']) {
+					if ($lockout != 0 && $lockout < $item_quantity) {
 						$available_tickets = $lockout;
 						$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 						wc_add_notice( $message, $notice_type = 'error');
@@ -219,7 +234,7 @@ class bkap_validation{
 						foreach ($order_dates as $k => $v) {
 							if (array_key_exists($v,$dates_new_arr)) {
 								if (in_array($v,$dates)) {
-									if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $_POST['quantity'] + $quantity) {
+									if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $item_quantity + $quantity) {
 										$available_tickets = $lockout - $dates_new_arr[$v];
 										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 										wc_add_notice( $message, $notice_type = 'error');
@@ -227,7 +242,7 @@ class bkap_validation{
 									}
 								} 
 								else {
-									if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $_POST['quantity']) {
+									if ($lockout != 0 && $lockout < $dates_new_arr[$v] + $item_quantity) {
 										$available_tickets = $lockout - $dates_new_arr[$v];
 										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 										wc_add_notice( $message, $notice_type = 'error');
@@ -237,7 +252,7 @@ class bkap_validation{
 							} 
 							else {
 								if (in_array($v,$dates)) {
-									if ($lockout != 0 && $lockout < $_POST['quantity'] + $quantity) {
+									if ($lockout != 0 && $lockout < $item_quantity + $quantity) {
 										$available_tickets = $lockout;
 										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 										wc_add_notice( $message, $notice_type = 'error');
@@ -245,7 +260,7 @@ class bkap_validation{
 									}
 								} 
 								else {
-									if ($lockout != 0 && $lockout < $_POST['quantity']) {
+									if ($lockout != 0 && $lockout < $item_quantity) {
 										$available_tickets = $lockout;
 										$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$available_tickets.bkap_get_book_t('book.limited-booking-date-msg2').$v.'.';
 										wc_add_notice( $message, $notice_type = 'error');
@@ -260,12 +275,18 @@ class bkap_validation{
 		} 
 		else {
 			$query = "SELECT total_booking, available_booking, start_date FROM `".$wpdb->prefix."booking_history`
-			WHERE post_id = %d
-			AND start_date = %s ";
+						WHERE post_id = %d
+						AND start_date = %s ";
 			$results = $wpdb->get_results( $wpdb->prepare($query,$post_id,$date_check) );
 	
+			if (isset($_POST['quantity'])) {
+				$item_quantity = $_POST['quantity'];
+			}
+			else {
+				$item_quantity = 1;
+			}
 			if (isset($results) && count($results) > 0) {
-				if( $results[0]->available_booking > 0 && $results[0]->available_booking < $_POST['quantity'] ) {
+				if( $results[0]->available_booking > 0 && $results[0]->available_booking < $item_quantity ) {
 					$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.bkap_get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
 					wc_add_notice( $message, $notice_type = 'error');
 					$quantity_check_pass = 'no';
@@ -287,7 +308,7 @@ class bkap_validation{
 					$quantity = $values['quantity'];
 					$product_id = $values['product_id'];
 					if ($product_id == $post_id && $booking[0]['hidden_date'] == $_POST['wapbk_hidden_date']) {
-						$total_quantity = $_POST['quantity'] + $quantity;
+						$total_quantity = $item_quantity + $quantity;
 						if (isset($results) && count($results) > 0) {
 							if( $results[0]->available_booking > 0 && $results[0]->available_booking < $total_quantity ) {
 								$message = $post_title->post_title.bkap_get_book_t('book.limited-booking-date-msg1')	.$results[0]->available_booking.bkap_get_book_t('book.limited-booking-date-msg2').$results[0]->start_date.'.';
@@ -409,9 +430,10 @@ class bkap_validation{
 				$todays_date = date('Y-m-d');
 	
 				$query_date ="SELECT DATE_FORMAT(start_date,'%d-%c-%Y') as start_date,DATE_FORMAT(end_date,'%d-%c-%Y') as end_date FROM ".$wpdb->prefix."booking_history
-				WHERE start_date >= %s AND post_id = %d";
-				$results_date = $wpdb->get_results($wpdb->prepare($query_date,$todays_date,$duplicate_of));
-
+						WHERE start_date >='".$todays_date."' AND post_id = '".$duplicate_of."'";
+				
+				$results_date = $wpdb->get_results($query_date);
+				
 				$dates_new = array();
 					
 				foreach($results_date as $k => $v) {
