@@ -706,57 +706,41 @@
                          *************************************/
 			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id, $variation_id)
 			{
-				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):
+				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):	
+					$product = get_product($product_id);
+					$product_type = $product->product_type;
+					
+					if ( $product_type == 'variable') {
+						$price = get_post_meta( $variation_id, '_sale_price', true);
+						if($price == '') {
+							$price = get_post_meta( $variation_id, '_regular_price', true);
+						}
+					} elseif($product_type == 'simple') {
+						$price = get_post_meta( $product_id, '_sale_price', true);
+						if($price == '') {
+							$price = get_post_meta( $product_id, '_regular_price', true);
+						}
+					}
 					$currency_symbol = get_woocommerce_currency_symbol();
 					$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 	
 					$fixed_blocks_count = $this->bkap_get_fixed_blocks_count($product_id);
 					if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && $fixed_blocks_count > 0) {
-						$product = get_product($product_id);
-						$product_type = $product->product_type;
+					
+                    	if($product_type == 'variable'){ //Make this chnage
+                        	$price = $price + $_POST['block_option_price'];
+                    	} 
+                    	else {
+                            $price =0;
+							$price = $_POST['block_option_price'];
+                        }
+					}
+					else {
+						$diff_days=1;
 						
-						if ( $product_type == 'variable') {
-							$price = get_post_meta( $variation_id, '_sale_price', true);
-							if($price == '') {
-								$price = get_post_meta( $variation_id, '_regular_price', true);
-							}
-						} elseif($product_type == 'simple') {
-							$price = get_post_meta( $product_id, '_sale_price', true);
-							if($price == '') {
-								$price = get_post_meta( $product_id, '_regular_price', true);
-							}
-						}
-						$date_disp = $_POST['booking_calender'];
-				
-						$hidden_date = $_POST['wapbk_hidden_date'];
-						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && isset($cart_arr['price'])) :
-	                                            if($product_type == 'variable'){ //Make this chnage
-	                                                $price = $price + $_POST['block_option_price'];
-	                                            } else{
-	                                                $price =0;
-													$price = $_POST['block_option_price'];
-	                                            }
-	                                            $diff_days=1; 
-						endif;
-	
-						if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {	
+						if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 							$diff_days = $_POST['wapbk_diff_days'];
-							if (isset($booking_settings['booking_fixed_block_enable'])&& $booking_settings['booking_fixed_block_enable'] == "yes")  {
-								$total = $price;
-							}
-							else {
-								$price = $price * $diff_days;
-							}
-							
-						}
-						else {
-							if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes") {
-								$total = $price ;
-							} 
-						}
-						$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
-						if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on") {
-							$price = round($price);
+							$price = $price * $diff_days;
 						}
 					}
 					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
@@ -765,18 +749,22 @@
 						}
 					}
 					else {
-						if (isset($price) && $price != '') {
-							$cart_arr['price'] = $price;
+						if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
+							if (isset($price) && $price != '') {
+								$cart_arr['price'] = $price;
+							}
 						}
 					}
 					//Round the price if needed
 						
 					$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
 					if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on" && isset($cart_arr['price'])) {
-						$cart_arr['price'] = round($cart_arr['price']);
+						if (isset($cart_arr['price'])) {
+							$cart_arr['price'] = round($cart_arr['price']);
+						}
 					}
+					
 				endif;
-				
 				return $cart_arr;
 			}
 			

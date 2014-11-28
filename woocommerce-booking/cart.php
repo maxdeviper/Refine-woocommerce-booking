@@ -120,9 +120,9 @@ class bkap_cart{
 			else {
 				$variation_id = '0';
 			}
-		
+			
 			$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
-		
+			
 			$cart_item_meta['booking'][] = $cart_arr;
 		}
 		
@@ -249,7 +249,7 @@ class bkap_cart{
 			if (isset($values['booking'])) {
 				$booking = $values['booking'];
 			}
-			if (isset($booking[0]['price']) && $booking[0]['price'] != '') {
+			if (isset($booking[0]['price']) && $booking[0]['price'] != 0) {
 				$price += ($booking[0]['price']) * $values['quantity'];
 			}
 			else {
@@ -265,6 +265,7 @@ class bkap_cart{
 					$variation_id = $values['variation_id'];
 				}
 				$book_price = bkap_common::bkap_get_price($values['product_id'], $variation_id, $product_type);
+				
 				$price += $book_price * $values['quantity'];
 			}
 		}

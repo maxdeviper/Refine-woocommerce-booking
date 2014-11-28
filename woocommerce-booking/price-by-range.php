@@ -657,7 +657,8 @@ session_start();
 						} 
 						$price = $price_type[0] * $diff_days;
 					}
-				}else {
+				}
+				else {
 					$product = get_product($product_id);
 					$product_type = $product->product_type;
 				
@@ -670,14 +671,14 @@ session_start();
 						if(!isset($price) || $price == '' || $price == 0) {
 							$price = get_post_meta( $variation_id, '_regular_price',true);
 						}
-						$price = $price * $diff_days;
-					} elseif($product_type == 'simple') {
+					} 
+					elseif($product_type == 'simple') {
 						$price = get_post_meta( $product_id, '_sale_price', true);
 						if(!isset($price) || $price == '' || $price == 0) {
 							$price = get_post_meta($product_id, '_regular_price',true);
 						}
-						$price = $price * $diff_days;
 					}
+					$price = $price * $diff_days;
 				}
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 					if (isset($price) && $price != '') {
@@ -693,8 +694,10 @@ session_start();
 					}
 				}
 				else {
-					if (isset($price) && $price != '') {
-						$cart_arr['price'] = $price;
+					if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
+						if (isset($price) && $price != '') {
+							$cart_arr['price'] = $price;
+						}
 					}
 				}
 				
@@ -702,7 +705,9 @@ session_start();
 			
 				$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
 				if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on" && isset($cart_arr['price'])) {
-					$cart_arr['price'] = round($cart_arr['price']);
+					if (isset($cart_arr['price'])) {
+						$cart_arr['price'] = round($cart_arr['price']);
+					}
 				}
 				
 				return $cart_arr;
