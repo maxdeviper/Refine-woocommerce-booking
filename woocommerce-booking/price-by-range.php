@@ -643,7 +643,6 @@ session_start();
                          * This function return price by range of days details when add to cart button click on front end.
                          *************************************/
 			public function bkap_price_range_add_cart_item_data($cart_arr, $product_id, $variation_id) {
-			
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 				if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {					
@@ -680,6 +679,7 @@ session_start();
 					}
 					$price = $price * $diff_days;
 				}
+			
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 					if (isset($price) && $price != '') {
 						if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
@@ -696,6 +696,9 @@ session_start();
 				else {
 					if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 						if (isset($price) && $price != '') {
+							if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
+								$_POST['variable_blocks'] = "Y";
+							}
 							$cart_arr['price'] = $price;
 						}
 					}
@@ -889,16 +892,26 @@ session_start();
 				$price = $this->price_range_calculate_price($product_id,$product_type,$variation_id,$number,$variations_selected);
 			
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
-					if (isset($price) && $price != '') {
+					if (isset($price) && $price != '' || $price != 0) {
 						$_SESSION['variable_block_price'] = $_POST['price'] = $price;
+					}
+					else {
+						echo "Please select an option";
+						die();
 					}
 				}
 				else {
-					$_SESSION['variable_block_price'] = $price;
 					if (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] == 'Y') {
-						$price = bkap_common::bkap_multicurrency_price($price,$currency_selected);
-						echo $price;
-						die();
+						$_SESSION['variable_block_price'] = $price;
+						if ($price != 0) {
+							$price = bkap_common::bkap_multicurrency_price($price,$currency_selected);
+							echo $price;
+							die();
+						}
+						else {
+							echo "Please select an option";
+							die();
+						}
 					}
 				}
 			}
@@ -953,11 +966,16 @@ session_start();
 									$e++;
 								}
 								if(isset($results_price[0]) && count($results_price[0]) == 0) {
-									$price = get_post_meta( $variation_id, '_sale_price', true);
-									if(!isset($price) || $price == '' || $price == 0){
-										$price = get_post_meta( $variation_id, '_regular_price', true);
+									if ($variation_id != '') {
+										$price = get_post_meta( $variation_id, '_sale_price', true);
+										if(!isset($price) || $price == '' || $price == 0){
+											$price = get_post_meta( $variation_id, '_regular_price', true);
+										}
+										$price .= "-";
 									}
-									$price .= "-";
+									else {
+										$price = 0;
+									}
 								} else{
 									foreach($results as $k => $v) {
 										$query = "SELECT price_per_day, fixed_price, MAX(maximum_number_of_days) AS maximum_number_of_days FROM `".$wpdb->prefix."booking_block_price_meta`
@@ -974,21 +992,26 @@ session_start();
 									foreach($results_price as $k => $v){
 										if(!empty($results_price[$k])){
 											$_POST['variable_blocks'] = "Y";
-											$price = get_post_meta( $variation_id, '_sale_price', true);
-											if(!isset($price) || $price == '' || $price == 0){
-												$price = get_post_meta( $variation_id, '_regular_price', true);
-											}
-											$diff_days = '';
-											if($v[0]->maximum_number_of_days < $number){
-												$diff_days = $number - $v[0]->maximum_number_of_days;
-												if($v[0]->fixed_price != 0){
-													$calc_price = $v[0]->fixed_price + ($price * $diff_days);
-													$price = $calc_price . "-fixed";
-													$_POST['fixed_price'] = "Y";
-												} else{
-													$calc_price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($price * $diff_days);
-													$price = $calc_price . "-per_day";
+											if ($variation_id != '') {
+												$price = get_post_meta( $variation_id, '_sale_price', true);
+												if(!isset($price) || $price == '' || $price == 0){
+													$price = get_post_meta( $variation_id, '_regular_price', true);
 												}
+												$diff_days = '';
+												if($v[0]->maximum_number_of_days < $number){
+													$diff_days = $number - $v[0]->maximum_number_of_days;
+													if($v[0]->fixed_price != 0){
+														$calc_price = $v[0]->fixed_price + ($price * $diff_days);
+														$price = $calc_price . "-fixed";
+														$_POST['fixed_price'] = "Y";
+													} else{
+														$calc_price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($price * $diff_days);
+														$price = $calc_price . "-per_day";
+													}
+												}
+											}
+											else {
+												$price = 0;
 											}
 										} else {
 											unset($results_price[$k]);
@@ -1011,30 +1034,35 @@ session_start();
 								foreach($results_price as $k => $v) {
 									if(!empty($results_price[$k])) {
 										$_POST['variable_blocks'] = "Y";
+										if ($variation_id != '') {
 										$price = get_post_meta( $variation_id, '_sale_price', true);
-										if(!isset($price) || $price == '' || $price == 0){
-											$price = get_post_meta( $variation_id, '_regular_price', true);
+											if(!isset($price) || $price == '' || $price == 0){
+												$price = get_post_meta( $variation_id, '_regular_price', true);
+											}
+											$diff_days = '';
+											if($v[0]->maximum_number_of_days < $number){
+												$diff_days = $number - $v[0]->maximum_number_of_days;
+												if($v[0]->fixed_price != 0){
+													$_POST['fixed_price'] = "Y";
+													$calc_price = $v[0]->fixed_price + ($price * $diff_days);
+													$price =$calc_price .  "-fixed";
+												} else {
+													$calc_price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($price * $diff_days);
+													$price = $calc_price . "-per_day";
+												}
+											} else {
+												if($v[0]->fixed_price != 0) {
+													$_POST['fixed_price'] = "Y";
+													$calc_price = $v[0]->fixed_price;
+													$price = $calc_price . "-fixed";
+												} else {
+													$calc_price = $v[0]->price_per_day * $number;
+													$price = $calc_price . "-per_day";
+												}
+											}
 										}
-										$diff_days = '';
-										if($v[0]->maximum_number_of_days < $number){
-											$diff_days = $number - $v[0]->maximum_number_of_days;
-											if($v[0]->fixed_price != 0){
-												$_POST['fixed_price'] = "Y";
-												$calc_price = $v[0]->fixed_price + ($price * $diff_days);
-												$price =$calc_price .  "-fixed";
-											} else {
-												$calc_price = ($v[0]->price_per_day * $v[0]->maximum_number_of_days) + ($price * $diff_days);
-												$price = $calc_price . "-per_day";
-											}
-										} else {
-											if($v[0]->fixed_price != 0) {
-												$_POST['fixed_price'] = "Y";
-												$calc_price = $v[0]->fixed_price;
-												$price = $calc_price . "-fixed";
-											} else {
-												$calc_price = $v[0]->price_per_day * $number;
-												$price = $calc_price . "-per_day";
-											}
+										else {
+											$price = 0;
 										}
 									} else {
 										unset($results_price[$k]);
@@ -1043,19 +1071,29 @@ session_start();
 							}
 						}
 						else {
+							if ($variation_id != '') {
+								$price = get_post_meta( $variation_id, '_sale_price', true);
+								if(!isset($price) || $price == '' || $price == 0){
+									$price = get_post_meta( $variation_id, '_regular_price', true);
+								}
+								$price .= "-";
+							}
+							else {
+								$price = 0;
+							}
+						}
+					}
+					else {
+						if ($variation_id != '') {
 							$price = get_post_meta( $variation_id, '_sale_price', true);
 							if(!isset($price) || $price == '' || $price == 0){
 								$price = get_post_meta( $variation_id, '_regular_price', true);
 							}
 							$price .= "-";
 						}
-					}
-					else {
-						$price = get_post_meta( $variation_id, '_sale_price', true);
-						if(!isset($price) || $price == '' || $price == 0){
-							$price = get_post_meta( $variation_id, '_regular_price', true);
+						else {
+							$price = 0;
 						}
-						$price .= "-";
 					}
 				} elseif ($product_type == 'simple') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);

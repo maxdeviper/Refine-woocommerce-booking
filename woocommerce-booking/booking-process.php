@@ -541,10 +541,7 @@ class bkap_booking_process {
 					foreach ($block_dates as $bkey => $bvalue) {
 						$blocked_dates_str = '';
 						if (is_array($bvalue) && isset($bvalue['dates']) && count($bvalue['dates']) > 0){
-							$str_pos = strpos($bvalue['dates'],',');
-							if (isset($str_pos) && $str_pos != '') {
-								$blocked_dates_str = '"'.implode('","', $bvalue['dates']).'"';
-							}
+							$blocked_dates_str = '"'.implode('","', $bvalue['dates']).'"';
                         }
 						$field_name = $i;
 						if ( (is_array($bvalue) && isset($bvalue['field_name']) && $bvalue['field_name'] != '' ) ) {
@@ -1032,8 +1029,8 @@ class bkap_booking_process {
 									}
 								}
 							}
+							'.$js_code.'
 							var block_option_enabled= jQuery("#block_option_enabled").val();
-
 							if (block_option_enabled =="on") {
 								if ( id_booking == "booking_calender" || id_booking == "inline_calendar" ) {
 									if (block_option_start_day == date.getDay() || block_option_start_day == "any_days") {
@@ -1057,7 +1054,6 @@ class bkap_booking_process {
 				       				}
 				       			}
 				       		}
-							'.$js_code.' 
 							return [true];
 						}
                         

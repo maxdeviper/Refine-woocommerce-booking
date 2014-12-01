@@ -139,18 +139,8 @@
                          ************************************/
 			function bkap_get_date_lockout($start_date,$post_id){
 				global $wpdb,$post;
-				$duplicate_of = get_post_meta($post_id, '_icl_lang_duplicate_of', true);
-				if($duplicate_of == '' && $duplicate_of == null) {
-					$post_time = get_post($post_id);
-					$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = %s ORDER BY ID LIMIT 1";
-					$results_post_id = $wpdb->get_results ( $wpdb->prepare($id_query,$post_time->post_date) );
-					if( isset($results_post_id) ) {
-						$duplicate_of = $results_post_id[0]->ID;
-					} else {
-						$duplicate_of = $post_id;
-					}
-					//$duplicate_of = $item_value['product_id'];
-				}
+				$duplicate_of = bkap_common::bkap_get_product_id($post_id);
+				
 				$date_lockout = "SELECT sum(total_booking) - sum(available_booking) AS bookings_done FROM `".$wpdb->prefix."booking_history`
 								WHERE start_date= %s AND post_id= %d";
 					//echo $date_lockout;
@@ -625,7 +615,11 @@
 						$meta_id_next = $meta_id + 1;
 						$meta_ids[$cart_item_key][$i] = $meta_id_next;
 						
-						echo '<tr data-meta_id="'.$meta_id_next.'"><td><input type="text" name="meta_key[' . $meta_id_next. ']" value="'.get_option('book.time-label').'" /></td><td><input type="text" name="meta_value[' . $meta_id_next. ']" value="" /></td><td width="1%"><button class="remove_order_item_meta button">&times;</button></td></tr>';
+						echo '<tr data-meta_id="'.$meta_id_next.'">
+								<td><input type="text" name="meta_key[' . $meta_id_next. ']" value="'.get_option('book.time-label').'" /></td>
+								<td><input type="text" name="meta_value[' . $meta_id_next. ']" value="" /></td>
+								<td width="1%"><button class="remove_order_item_meta button">&times;</button></td>
+								</tr>';
 						
 						$options_checkin[] = "beforeShowDay: bkap_show_book";
 						$options_checkin[] = "onSelect: bkap_show_times";
@@ -864,22 +858,28 @@
 										
 								jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(response) {
 								jQuery( "tr[data-meta_id=\"'.$meta_id_next.'\"]" ).show();
-							
-								var select = jQuery("<select style=\"width:100%;\">");
+							//	alert(response);
+						
+									var select = jQuery("<select style=\"width:100%;\">");
 								select.append(jQuery("<option>").val("Choose a Time").html("Choose an option"));
-								//alert(response);
+							
 								var time_slots = response.split("|");
+						//	alert(time_slots);
 								for (var i = 0; i <= time_slots.length; ++i)  {
 									if(time_slots[i] != "" && time_slots[i] != null)
 										select.append(jQuery("<option>").val(time_slots[i]).html(time_slots[i]));
 								}
 								//response;
-								//alert('.$meta_id_next.');
+						//	alert(select);
+						//		alert('.$meta_id_next.');
 								select.val(1).attr({name: "meta_value['.$meta_id_next.']"}).change(function(){
 								    
 								});
 								jQuery("input[name=\"meta_value['.$meta_id_next.']\"]").replaceWith(select);
-								//alert("Got this from the server: " + response);
+							
+							//	jQuery("input[name=\"meta_value['.$meta_id_next.']\"]").innerHTML(response);
+						
+							//	alert("Got this from the server: " + response);
 								jQuery( "#ajax_img" ).hide();
 								jQuery("#show_time_slot").html(response);
 								jQuery("#time_slot").change(function()
@@ -1014,12 +1014,9 @@
 					
 					</script>
 					');
-					//echo "CHECK<pre>";print_r($a);echo "</pre>";
-					//return $a;*/
-				endif;
 					
-					//print_r($meta_ids);
-				}
+						endif;
+					}
 				} else {
 					echo '<tr data-meta_id="'.$meta_id.'"><td><input type="text" name="meta_key[' . $meta_id . ']" value="" /><textarea name="meta_key[' . $meta_id . ']" value="" /></td><td width="1%"><button class="remove_order_item_meta button">&times;</button></td></tr>';
 				}
@@ -1035,7 +1032,7 @@
 				$post_id = $_POST['post_id'];
 				
 				$drop_down = bkap_booking_process::get_time_slot($current_date,$post_id);
-				
+
 				echo $drop_down;
 				die();
 			/*	global $wpdb;
@@ -1668,7 +1665,7 @@
 															WHERE order_item_id = '".$oid_value."'
 															AND meta_key = '_line_subtotal'";
 								$wpdb->query( $query_update_subtotal );
-
+									
 								$items['line_subtotal'] = $line_subtotal;
 						
 								$query_update_total =  "UPDATE `".$wpdb->prefix."woocommerce_order_itemmeta`
@@ -1676,11 +1673,19 @@
 														WHERE order_item_id = '".$oid_value."'
 														AND meta_key = '_line_total'";
 								$wpdb->query( $query_update_total );
+							
 								$items['line_total'] = $line_subtotal;
 							}
 							$time_name = get_option('book.item-meta-time');
 							$items_string = http_build_query($items);
-						
+					
+							$query_update_quantity =  "UPDATE `".$wpdb->prefix."woocommerce_order_itemmeta`
+														SET meta_value = '".woocommerce_clean( $quantity )."'
+														WHERE order_item_id = '".$oid_value."'
+														AND meta_key = '_qty'";
+															
+							$wpdb->query( $query_update_quantity );
+											
 							$_POST['items'] = $items_string;
 							if (isset($booking[$time_name]) && $booking[$time_name] != "") {
 								$time_select = $booking[$time_name];
@@ -1721,12 +1726,6 @@
 								}
 								woocommerce_update_order_item_meta( $cart_item_key,  $time_name, $time_slot_to_display);
 							}
-							$query_update_quantity =  "UPDATE `".$wpdb->prefix."woocommerce_order_itemmeta`
-									SET meta_value = '".woocommerce_clean( $quantity )."'
-									WHERE order_item_id = '".$oid_value."'
-									AND meta_key = '_qty'";
-						
-							$wpdb->query( $query_update_quantity );
 						
 							$order_item_qty[$cart_item_key] = $quantity;
 							$_POST['order_item_qty'] = $order_item_qty;
@@ -1737,27 +1736,27 @@
 									$booking_ids = array();
 									if(array_key_exists($check_out_name,$booking)) {
 										if($date_format == 'dd/mm/y') {
-												$date_explode = explode("/",$booking[$date_name]);
-												$start_date = date('Y-m-d',mktime(0,0,0,$date_explode[1],$date_explode[0],$date_explode[2]));
-											} 
-											else {
-												$date_str = str_replace(",","",$booking[$date_name]);
-												$start_date = date('Y-m-d',strtotime($date_str));
-											}
-											if($date_format == 'dd/mm/y') {
-												$checkout_date_explode = explode("/",$booking[$check_out_name]);
-												$end_date = date('Y-m-d',mktime(0,0,0,$checkout_date_explode[1],$checkout_date_explode[0],$checkout_date_explode[2]));
-											}
-											else {
-												$checkout_date_str = str_replace(",","",$booking[$check_out_name]);
-												$end_date = date('Y-m-d',strtotime($checkout_date_str));
-											}
-											$query_result = "SELECT COUNT(*) as bookings_done FROM `".$wpdb->prefix."booking_history`
-														WHERE
-														start_date = '".$start_date."' 
-														AND end_date = '".$end_date."' 
-														AND post_id = ".$post_id;
-									
+											$date_explode = explode("/",$booking[$date_name]);
+											$start_date = date('Y-m-d',mktime(0,0,0,$date_explode[1],$date_explode[0],$date_explode[2]));
+										} 
+										else {
+											$date_str = str_replace(",","",$booking[$date_name]);
+											$start_date = date('Y-m-d',strtotime($date_str));
+										}
+										if($date_format == 'dd/mm/y') {
+											$checkout_date_explode = explode("/",$booking[$check_out_name]);
+											$end_date = date('Y-m-d',mktime(0,0,0,$checkout_date_explode[1],$checkout_date_explode[0],$checkout_date_explode[2]));
+										}
+										else {
+											$checkout_date_str = str_replace(",","",$booking[$check_out_name]);
+											$end_date = date('Y-m-d',strtotime($checkout_date_str));
+										}
+										$query_result = "SELECT COUNT(*) as bookings_done FROM `".$wpdb->prefix."booking_history`
+													WHERE
+													start_date = '".$start_date."' 
+													AND end_date = '".$end_date."' 
+													AND post_id = ".$post_id;
+								
 										$item_results_lockout = $wpdb->get_results( $query_result );
 										$lockout = "";
 										if (isset($booking_settings['booking_date_lockout'])) {
@@ -1776,8 +1775,9 @@
 											}
 											if ($order_key_exists == 'Y') {
 												if ($existing_quantity < $quantity) {
+													$quantity = $quantity - $existing_quantity;
 													if($quantity <= $booking_available) {
-														for ($i = $existing_quantity; $i < $quantity; $i++) {
+														for ($i = $existing_quantity; $i <= $quantity; $i++) {
 															$query = "INSERT INTO `".$wpdb->prefix."booking_history`
 																(post_id,weekday,start_date,end_date,from_time,to_time,total_booking,available_booking)
 																VALUES (
@@ -1791,13 +1791,13 @@
 																'0' )";
 															$wpdb->query( $query );
 															$new_booking_id = mysql_insert_id();
-															$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
-																(order_id,booking_id)
-																VALUES (
-																'".$_POST['order_id']."',
-																'".$new_booking_id."' )";
-															$wpdb->query( $order_query );
 														}
+														$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
+																		(order_id,booking_id)
+																		VALUES (
+																		'".$_POST['order_id']."',
+																		'".$new_booking_id."' )";
+														$wpdb->query( $order_query );
 													} 
 													else if($lockout != 0) {
 														$query_date = "DELETE FROM `".$wpdb->prefix."woocommerce_order_itemmeta` 
@@ -1813,7 +1813,7 @@
 															//window.history.back();
 															//return;
 														</script>');
-														//exit;
+													//	exit;
 													}
 												} 
 												elseif ($existing_quantity > $quantity) {
@@ -1821,10 +1821,10 @@
 														$query = "DELETE FROM `".$wpdb->prefix."booking_history` 
 																	WHERE id = ".$booking_ids[$i];
 														$wpdb->query( $query );
-														$order_query = "DELETE FROM `".$wpdb->prefix."booking_order_history`
+												/*		$order_query = "DELETE FROM `".$wpdb->prefix."booking_order_history`
 																		WHERE order_id = '".$_POST['order_id']."' 
 																		AND booking_id = '".$booking_ids[$i]."'";
-														$wpdb->query( $order_query );
+														$wpdb->query( $order_query );*/
 													}
 												}	
 											} 
@@ -1844,13 +1844,13 @@
 															'0' )";
 														$wpdb->query( $query );
 														$new_booking_id = mysql_insert_id();
-														$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
-														(order_id,booking_id)
-														VALUES (
-														'".$_POST['order_id']."',
-														'".$new_booking_id."' )";
-														$wpdb->query( $order_query );
 													}
+													$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
+																	(order_id,booking_id)
+																	VALUES (
+																	'".$_POST['order_id']."',
+																	'".$new_booking_id."' )";
+													$wpdb->query( $order_query );
 												} 
 												else if($lockout != 0) {
 													$query_date = "DELETE FROM `".$wpdb->prefix."woocommerce_order_itemmeta`
@@ -1865,7 +1865,7 @@
 														//window.history.back();
 														//return;
 														</script>');
-														//exit;
+													//	exit;
 													}
 												}
 											}
@@ -1952,7 +1952,7 @@
 																//window.history.back();
 																//return;
 																</script>');
-															//exit;
+														//	exit;
 														}
 													} elseif ($existing_quantity > $quantity) {
 														$qty = $existing_quantity - $quantity;
@@ -2047,7 +2047,7 @@
 															//window.history.back();
 															//return;
 														</script>');
-														//exit;
+													//	exit;
 													}
 												}
 											}
@@ -2089,7 +2089,7 @@
 															//window.history.back();
 															//return;
 															</script>');
-														//exit;
+													//	exit;
 													}
 												} else if ($existing_quantity > $quantity) {
 													$qty = $existing_quantity - $quantity;
@@ -2112,17 +2112,17 @@
 													$query_date = "DELETE FROM `".$wpdb->prefix."woocommerce_order_itemmeta` 
 															WHERE 
 															order_item_id = ".$oid_value." AND meta_key = 'Name'";
-												$wpdb->query( $query_date );
-												$post = get_post($post_id);
-													//print_r($post);
-												$title = $post->post_title;
-												print('
+													$wpdb->query( $query_date );
+													$post = get_post($post_id);
+														//print_r($post);
+													$title = $post->post_title;
+													print('
 															<script type="text/javascript">
 															alert("The item you changed the quantity for '.$title.', exceeds the quantity available for your selected date. Please reduce the quantity or remove it from your order."); 
 															//window.history.back();
 															//return;
 														</script>');
-													//exit;
+												//	exit;
 												}
 											}
 										}
@@ -2162,7 +2162,6 @@
 										}
 										if(count($item_results_lockout) > 0) {
 											$booking_available = $lockout - $item_results_lockout[0]->bookings_done;
-											
 											if($quantity <= $booking_available) {
 												for ($i = $existing_quantity; $i <= $quantity; $i++) {
 													$query = "INSERT INTO `".$wpdb->prefix."booking_history`
@@ -2178,22 +2177,22 @@
 													'0' )";
 													$wpdb->query( $query );
 													$new_booking_id = mysql_insert_id();
-													$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
-														(order_id,booking_id)
-														VALUES (
-														'".$_POST['order_id']."',
-														'".$new_booking_id."' )";
-													$wpdb->query( $order_query );
 												}
-												
-											} else if($lockout != 0) {
+												$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
+												(order_id,booking_id)
+												VALUES (
+												'".$_POST['order_id']."',
+												'".$new_booking_id."' )";
+												$wpdb->query( $order_query );
+											} 
+											else if($lockout != 0) {
 												$query_date = "DELETE FROM `".$wpdb->prefix."woocommerce_order_itemmeta`
-													WHERE
-													order_item_id = ".$oid_value." AND meta_key = 'Name'";
+																WHERE
+																order_item_id = ".$oid_value." AND meta_key = 'Name'";
 												$wpdb->query( $query_date );
-												//$wpdb->query( $query_checkout_date);
+												
 												$post = get_post($post_id);
-													//print_r($post);
+												
 												$title = $post->post_title;
 												print('
 															<script type="text/javascript">
@@ -2201,13 +2200,12 @@
 													//window.history.back();
 													//return;
 													</script>');
-												//exit;
+											//	exit;
 											}
 										}
-									} else {
+									} 
+									else {
 										if(isset($booking[$time_name]) && $booking[$time_name] != "") {
-											//echo $item_name;
-											//print_r($booking);exit;
 											$time_slot = explode("-",$booking[$time_name]);
 											$from_time = date("G:i",strtotime($time_slot[0]));
 											if(isset($time_slot[1])) {
@@ -2216,9 +2214,8 @@
 												$to_time = '';
 											}
 											$query_result = "SELECT available_booking,total_booking FROM `".$wpdb->prefix."booking_history`
-												WHERE
-												start_date = '".$date_query."' AND from_time = '".$from_time."' AND to_time = '".$to_time."' AND post_id = ".$post_id." AND total_booking > 0";
-												//echo $query_result;
+																WHERE
+																start_date = '".$date_query."' AND from_time = '".$from_time."' AND to_time = '".$to_time."' AND post_id = ".$post_id." AND total_booking > 0";
 											$item_results_lockout = $wpdb->get_results( $query_result );
 											if(count($item_results_lockout) > 0) {
 												$booking_available = $item_results_lockout[0]->available_booking;
@@ -2242,7 +2239,8 @@
 														foreach($select_results as $k => $v) {
 															$details[$post_id] = $v;
 														}
-													} else {
+													} 
+													else {
 														$query = "UPDATE `".$wpdb->prefix."booking_history`
 															SET available_booking = available_booking - ".$quantity."
 															WHERE post_id = '".$post_id."' AND
@@ -2274,119 +2272,102 @@
 															//window.history.back();
 															//return;
 														</script>');
-													//exit;
+												//	exit;
 												}
 											}
-										} else {
-											//$start_date = date("Y-m-d",strtotime($booking[$date_name]));
+											if($query_to_time != '') {
+												$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
+																		WHERE post_id = '".$post_id."' AND
+																		start_date = '".$date_query."' AND
+																		from_time = '".$query_from_time."' AND
+																		to_time = '".$query_to_time."' ";
+												$order_results = $wpdb->get_results( $order_select_query );
+											} else {
+												$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
+																		WHERE post_id = '".$post_id."' AND
+																		start_date = '".$date_query."' AND
+																		from_time = '".$query_from_time."'";
+												$order_results = $wpdb->get_results( $order_select_query );
+											}
+										} 
+										else {
 											$query_result = "SELECT available_booking,total_booking FROM `".$wpdb->prefix."booking_history`
-												WHERE
-												start_date = '".$date_query."' AND post_id = ".$post_id." AND total_booking > 0";
-											//echo $query_result;exit;
+															WHERE
+															start_date = '".$date_query."' AND post_id = ".$post_id." AND total_booking > 0";
 											$item_results_lockout = $wpdb->get_results( $query_result );
 											$booking_available = $item_results_lockout[0]->available_booking;
 											if($quantity <= $booking_available) {
 												$query = "UPDATE `".$wpdb->prefix."booking_history`
-													SET available_booking = available_booking - ".$quantity."
-													WHERE post_id = '".$post_id."' AND
-													start_date = '".$date_query."' AND
-													total_booking > 0";
-													$wpdb->query( $query );
-												} else  {
-													$query_date = "DELETE FROM `".$wpdb->prefix."woocommerce_order_itemmeta` 
-															WHERE 
-															order_item_id = ".$oid_value." AND meta_key = 'Name'";
-													$wpdb->query( $query_date );
-													$post = get_post($post_id);
-													//print_r($post);
-													$title = $post->post_title;
-													print('
-																<script type="text/javascript">
-															alert("The item you changed the quantity for '.$title.', exceeds the quantity available for your selected date. Please reduce the quantity or remove it from your order."); 
-															//window.history.back();
-															//return;
-														</script>');
-												//	exit;
-												}
+															SET available_booking = available_booking - ".$quantity."
+															WHERE post_id = '".$post_id."' AND
+															start_date = '".$date_query."' AND
+															total_booking > 0";
+												$wpdb->query( $query );
+											} 
+											else  {
+												$query_date = "DELETE FROM `".$wpdb->prefix."woocommerce_order_itemmeta` 
+														WHERE 
+														order_item_id = ".$oid_value." AND meta_key = 'Name'";
+												$wpdb->query( $query_date );
+												$post = get_post($post_id);
+												//print_r($post);
+												$title = $post->post_title;
+												print('
+															<script type="text/javascript">
+														alert("The item you changed the quantity for '.$title.', exceeds the quantity available for your selected date. Please reduce the quantity or remove it from your order."); 
+														//window.history.back();
+														//return;
+													</script>');
+											//	exit;
 											}
-										}
-										if(isset($booking[$time_name]) &&  $booking[$time_name]!= "") {
-											if($query_to_time != '') {
-												$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-												WHERE post_id = '".$post_id."' AND
-												start_date = '".$date_query."' AND
-												from_time = '".$query_from_time."' AND
-												to_time = '".$query_to_time."' ";
-												$order_results = $wpdb->get_results( $order_select_query );		
-											} else {
-												$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-												WHERE post_id = '".$post_id."' AND
-												start_date = '".$date_query."' AND
-												from_time = '".$query_from_time."'";
-												$order_results = $wpdb->get_results( $order_select_query );
-											}
-										} else {
 											$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
-											WHERE post_id = '".$post_id."' AND
-												start_date = '".$date_query."'";
+																	WHERE post_id = '".$post_id."' AND
+																	start_date = '".$date_query."'";
 											$order_results = $wpdb->get_results( $order_select_query );
 										}
 										$j = 0;
-										if (isset($booking_settings['booking_enable_multiple_day'])&& $booking_settings['booking_enable_multiple_day'] != 'on') {
-											foreach($order_results as $k => $v) {
-												$booking_id = $order_results[$j]->id;
-												$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
-												(order_id,booking_id)
-												VALUES (
-												'".$_POST['order_id']."',
-												'".$booking_id."' )";
-												$wpdb->query( $order_query );
-												$j++;
-											}
+										foreach($order_results as $k => $v) {
+											$booking_id = $order_results[$j]->id;
+											$order_query = "INSERT INTO `".$wpdb->prefix."booking_order_history`
+											(order_id,booking_id)
+											VALUES (
+											'".$_POST['order_id']."',
+											'".$booking_id."' )";
+											$wpdb->query( $order_query );
+											$j++;
 										}
-										endif;
-								}
+									}	
+								endif;
+							}
 						}
 					}
 				}
+			}
 			
-			//	}
-				//exit;
-			}
-			function bkap_seasonal_pricing_page(){
-				
-			}
 			/******************************************
-                         * This function include css files required for admin side.
-                         *****************************************/
+            * This function include css files required for admin side.
+            *****************************************/
 			function bkap_admin_booking_enqueue_scripts_css(){		
-				//if ( (isset($_GET['post_type']) && $_GET['post_type'] == 'shop_order' ) )
 				if(get_post_type() == 'shop_order') {
-					//wp_enqueue_style( 'datepick', plugins_url('/css/jquery.datepick.css', __FILE__ ) , '', '', false);
-					//wp_enqueue_style( 'woocommerce_admin_styles', plugins_url() . '/woocommerce/assets/css/admin.css' );
-					
 					$calendar_theme = json_decode(get_option('woocommerce_booking_global_settings'));
 					$calendar_theme_sel = "";
 					if (isset($calendar_theme)) {
 						$calendar_theme_sel = $calendar_theme->booking_themes;
 					}
-					if ( $calendar_theme_sel == "" ) $calendar_theme_sel = 'smoothness';
-					//wp_enqueue_style( 'jquery-ui', "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/$calendar_theme_sel/jquery-ui.css" , '', '', false);
+					if ( $calendar_theme_sel == "" ) {
+						$calendar_theme_sel = 'smoothness';
+					}
 					wp_enqueue_style( 'jquery-ui', plugins_url('/css/themes/'.$calendar_theme_sel.'/jquery-ui.css', __FILE__ ) , '', '', false);
 					
 					wp_enqueue_style( 'jquery.ui.theme', plugins_url('/css/themes/'.$calendar_theme_sel.'/jquery.ui.theme.css', __FILE__ ) , '', '', false);
 				}
 			}
 			/**********************************************
-                         * This function include JS files required for admin side.
-                         * 
-                         *********************************************/
+            * This function include JS files required for admin side.
+            ***********************************************/
 			function bkap_admin_booking_enqueue_scripts_js() {
-			
-				//echo get_post_type();
-				//if ( (isset ($_GET['post_type']) && $_GET['post_type'] == 'shop_order') || (isset ($_GET['post']) ) )
 				if(get_post_type() == 'shop_order') {
-			//		wp_register_script( 'datepick', plugins_url().'/bkap-admin-bookings/js/jquery.datepick.js');
+			
 					wp_register_script( 'datepick', plugins_url().'/woocommerce-booking/js/jquery.datepick.js');
 					wp_enqueue_script( 'datepick' );
 					
@@ -2397,27 +2378,17 @@
 							'',
 							false
 					);
-					/*wp_enqueue_script(
-							'jquery-tip',
-							plugins_url('/js/jquery.tipTip.minified.js', __FILE__),
-							'',
-							'',
-							false
-					);
-					
-					wp_register_script( 'woocommerce_admin', plugins_url() . '/woocommerce/assets/js/admin/woocommerce_admin.js', array('jquery', 'jquery-ui-widget', 'jquery-ui-core'));
-					wp_enqueue_script( 'woocommerce_admin' );*/
 					
 					if(isset($_GET['lang']) && $_GET['lang'] != '' && $_GET['lang'] != null) {
 						$curr_lang = $_GET['lang'];
-					} else {
+					} 
+					else {
 						$current_language = json_decode(get_option('woocommerce_booking_global_settings'));
 						if (isset($current_language)) {
 							$curr_lang = $current_language->booking_language;
 						} else {
-							$curr_lang = "";
+							$curr_lang = "en-GB";
 						}
-						if ( $curr_lang == "" ) $curr_lang = "en-GB";
 					}
 					wp_enqueue_script("$curr_lang", plugins_url("/js/i18n/jquery.ui.datepicker-$curr_lang.js", __FILE__), '', '', false);
 				}

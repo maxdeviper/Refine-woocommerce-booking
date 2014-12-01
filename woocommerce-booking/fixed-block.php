@@ -876,15 +876,19 @@
 				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 					if ($product_type == 'variable') {
+						if ($variation_id != '') {	
+							$price = get_post_meta( $variation_id, '_sale_price', true);
+							if(!isset($price) || $price == '' || $price == 0){
+								$price = get_post_meta( $variation_id, '_regular_price', true);
+							}
 						
-						$price = get_post_meta( $variation_id, '_sale_price', true);
-						if(!isset($price) || $price == '' || $price == 0){
-							$price = get_post_meta( $variation_id, '_regular_price', true);
+							if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
+								$price += $_POST['block_option_price'];
+							}
 						}
-					
-						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
-							$price += $_POST['block_option_price'];
-						} 
+						else {
+							$price = 0;
+						}
 					} elseif ($product_type == 'simple') {
 						if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
 							$price = $_POST['block_option_price'];
@@ -897,12 +901,24 @@
 						}
 					}
 					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
-						$_POST['price'] = $price;
+						if (isset($price) && $price != '' || $price != 0) {
+							$_POST['price'] = $price;
+						}
+						else {
+							echo "Please select an option";
+							die();
+						}
 					}
 					else {
-						$price = bkap_common::bkap_multicurrency_price($price,$currency_selected);
-						echo $price;
-						die();
+						if ($price != 0) {
+							$price = bkap_common::bkap_multicurrency_price($price,$currency_selected);
+							echo $price;
+							die();
+						}
+						else {
+							echo "Please select an option";
+							die();
+						}
 					}
 				endif;
 			}
