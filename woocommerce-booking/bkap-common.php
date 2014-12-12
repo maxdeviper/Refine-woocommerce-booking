@@ -75,6 +75,12 @@ class bkap_common{
 		return $price;
 	}
 	
+	public static function bkap_get_product_type($product_id) {
+		$product = get_product($product_id);
+		$product_type = $product->product_type;
+		return $product_type;
+	}
+	
 	public static function bkap_multicurrency_price($price,$currency_selected) {	
 		global $woocommerce_wpml;
 		if($currency_selected != '') {

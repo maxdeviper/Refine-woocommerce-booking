@@ -60,18 +60,13 @@ class bkap_checkout{
 		
 			$order_items = $order_obj->get_items();
 				
-		//	$type_of_slot = apply_filters('bkap_slot_type',$post_id);
-		//	if(is_plugin_active('bkap-tour-operators/tour_operators_addon.php')) {
+			$type_of_slot = apply_filters('bkap_slot_type',$post_id);
 			do_action('bkap_update_order',$values,$results[0]);
-		//	}
-		//	$booking_settings = get_post_meta( $post_id, 'woocommerce_booking_settings', true);
-		//	if(isset($booking_settings['booking_partial_payment_enable']) && isset($booking_settings['booking_partial_payment_radio']) && $booking_settings['booking_partial_payment_radio']!='' &&  is_plugin_active('bkap-deposits/deposits.php')) {
-		//		do_action('bkap_deposits_update_order',$values,$results[0]);
-		//	}
-		//	if($type_of_slot == 'multiple') {
-		//		do_action('bkap_update_booking_history',$values,$results[0]);
-		//	}else
-		//	{
+		
+			if($type_of_slot == 'multiple') {
+				do_action('bkap_update_booking_history',$values,$results[0]);
+			}
+			else {
 				if (isset($values['booking'])) :
 					$booking_settings = get_post_meta($post_id, 'woocommerce_booking_settings', true);
 					$details = array();
@@ -237,7 +232,7 @@ class bkap_checkout{
 														WHERE post_id = %d AND
 														start_date = %s AND
 														from_time = %s";
-								$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$post_id,$query_from_time) );
+								$order_results = $wpdb->get_results( $wpdb->prepare($order_select_query,$post_id,$date_query,$query_from_time) );
 							}
 						} else {
 							$order_select_query = "SELECT id FROM `".$wpdb->prefix."booking_history`
@@ -447,7 +442,7 @@ class bkap_checkout{
 								}
 							}
 						}
-				//	}
+					}
 				}
 			}
 			$ticket = array(apply_filters('bkap_send_ticket',$values,$order_obj));

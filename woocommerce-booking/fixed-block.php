@@ -704,8 +704,7 @@
                         /************************************
                          * This function return fixed block details when add to cart button click on front end.
                          *************************************/
-			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id, $variation_id)
-			{
+			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id, $variation_id) {
 				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):	
 					$product = get_product($product_id);
 					$product_type = $product->product_type;
@@ -743,7 +742,7 @@
 							$price = $price * $diff_days;
 						}
 					}
-					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
+					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active() || function_exists('is_bkap_multi_time_active') && is_bkap_multi_time_active()) {
 						if (isset($price) && $price != '') {
 							$_POST['price'] = $price;
 						}
@@ -900,6 +899,7 @@
 							}
 						}
 					}
+				
 					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 						if (isset($price) && $price != '' || $price != 0) {
 							$_POST['price'] = $price;

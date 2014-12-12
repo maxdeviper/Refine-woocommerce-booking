@@ -220,14 +220,37 @@ class bkap_booking_box_class{
                                                                        if(isset($_POST['booking_to_slot_hrs'][$k]) && $_POST['booking_to_slot_hrs'][$k] != 0 ) {
                                                                                $to_time = $_POST['booking_to_slot_hrs'][$k].":".$_POST['booking_to_slot_min'][$k];
                                                                        }
-
+                                                                       // Fetch the orignal lockout value set, so that the available bookings can be re-calculated
+                                                                       $query_lockout = "SELECT total_booking FROM `".$wpdb->prefix."booking_history`
+                                                                       					WHERE post_id = '".$duplicate_of."'
+                                                                       					AND weekday = '".$wkey."'
+                                                                       					AND start_date = '0000-00-00'
+                                                                       					AND from_time = '".$from_time."'
+                                                                       					AND to_time = '".$to_time."'
+                                                                       					ORDER BY id DESC LIMIT 1";
+                                                                       $lockout_results = $wpdb->get_results($query_lockout);
+                                                                       $change_in_lockout = 0;
+                                                                       if (isset($lockout_results) && count($lockout_results) > 0) {
+                                                                       		$change_in_lockout = $_POST['booking_lockout_time'][$k] - $lockout_results[0]->total_booking;
+                                                                       } 
+																		// Delete only the base record for recurring days
                                                                        $query_delete = "DELETE FROM `".$wpdb->prefix."booking_history`
                                                                                        WHERE post_id = '".$duplicate_of."'
                                                                                        AND weekday = '".$wkey."'
-                                                                                       AND from_time = ''
-                                                                                       AND to_time = ''";
+                                                                                       AND start_date = '0000-00-00'
+                                                                                       AND from_time = '".$from_time."'
+                                                                                       AND to_time = '".$to_time."'";
                                                                        $wpdb->query($query_delete);
-
+																		// Update the existing records for the dates
+																		$query_update = "UPDATE `".$wpdb->prefix."booking_history`
+																							SET total_booking = '".$_POST['booking_lockout_time'][$k]."',
+																							available_booking = available_booking + '".$change_in_lockout."'
+																							WHERE post_id = '".$duplicate_of."'
+																							AND weekday = '".$wkey."'
+																							AND from_time = '".$from_time."'
+																							AND to_time = '".$to_time."'";
+																		$wpdb->query($query_update);
+																		// Insert a new base record
                                                                        $query_insert_week = "INSERT INTO `".$wpdb->prefix."booking_history`
                                                                                                (post_id,weekday,start_date,end_date,from_time,to_time,total_booking,available_booking)
                                                                                                VALUES (
@@ -244,10 +267,32 @@ class bkap_booking_box_class{
                                                                $k++;	
                                                        }
                                                } else {
+		                                               	// Fetch the orignal lockout value set, so that the available bookings can be re-calculated
+		                                               	$query_lockout = "SELECT total_booking FROM `".$wpdb->prefix."booking_history`
+							                                               	WHERE post_id = '".$duplicate_of."'
+							                                               	AND weekday = '".$wkey."'
+							                                               	AND start_date = '0000-00-00'
+		                                               						ORDER BY id DESC LIMIT 1";
+		                                               	$lockout_results = $wpdb->get_results($query_lockout);
+		                                               	$change_in_lockout = 0;
+		                                               	if (isset($lockout_results) && count($lockout_results) > 0) {
+		                                               		$change_in_lockout = $_POST['booking_lockout_date'] - $lockout_results[0]->total_booking;
+		                                               	}
+		                                               	// Delete only the base record for recurring days
                                                        $query_delete = "DELETE FROM `".$wpdb->prefix."booking_history`
                                                                                        WHERE post_id = '".$duplicate_of."'
-                                                                                       AND weekday = '".$wkey."'";
+                                                                                       AND weekday = '".$wkey."'
+                                                       									AND start_date = '0000-00-00'";
                                                        $wpdb->query($query_delete);
+                                                       // Update the existing records for the dates
+                                                       $query_update = "UPDATE `".$wpdb->prefix."booking_history`
+					                                                       SET total_booking = '".$_POST['booking_lockout_date']."',
+					                                                       available_booking = available_booking + '".$change_in_lockout."'
+					                                                       WHERE post_id = '".$duplicate_of."'
+					                                                       AND weekday = '".$wkey."'";
+					                                                      
+                                                       $wpdb->query($query_update);
+                                                       // Insert a new base record
                                                        $query_insert_week = "INSERT INTO `".$wpdb->prefix."booking_history`
                                                                                        (post_id,weekday,start_date,end_date,from_time,to_time,total_booking,available_booking)
                                                                                        VALUES (

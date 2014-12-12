@@ -227,7 +227,9 @@ class bkap_validation{
 					$product_id = $values['product_id'];
 	
 					if (isset($booking[0]['hidden_date']) && isset($booking[0]['hidden_date_checkout'])) {
-						$dates = bkap_common::bkap_get_betweendays($booking[0]['hidden_date'], $booking[0]['hidden_date_checkout']);
+						$hidden_date = date('d-n-Y', strtotime($booking[0]['hidden_date']));
+						$hidden_date_checkout = date('d-n-Y', strtotime($booking[0]['hidden_date_checkout']));
+						$dates = bkap_common::bkap_get_betweendays($hidden_date,$hidden_date_checkout);
 					}
 					if ($product_id == $post_id) {
 	
@@ -328,7 +330,7 @@ class bkap_validation{
 	 * time slot on the cart page when quantity on 
 	 * cart page is changed.
 	*****************************************************/
-	function bkap_quantity_check(){
+	public static function bkap_quantity_check(){
 		global $woocommerce, $wpdb;
 	
 		foreach ( $woocommerce->cart->cart_contents as $key => $value ) {

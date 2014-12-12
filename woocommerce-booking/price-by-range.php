@@ -19,12 +19,18 @@ session_start();
 				// used to add new settings on the product page booking box
 				add_action('bkap_after_listing_enabled', array(&$this, 'bkap_price_range_show_field_settings'));
 				add_action('init', array(&$this, 'bkap_load_ajax_price_range'));
+				// Save the product settings for variable blocks
 				add_filter('bkap_save_product_settings', array(&$this, 'bkap_price_range_product_settings_save'), 10, 2);
+				// Display the varioable block price on the product page
 				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),5,6);
+				// Modify the prices in the cart
 				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 5, 3);
+				// Session cart
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_price_range_get_cart_item_from_session'),11,2);
 				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_price_range_booking_after_add_to_cart'));	
 				add_action('bkap_deposits_update_order', array(&$this, 'bkap_price_range_order_item_meta'), 10,2);
+				// Copy the exisiting variable blocks to the new product when the product is duplicated
+				add_action('bkap_product_addon_duplicate', array(&$this, 'price_range_product_duplicate'), 10,2);
 			
 			}
 			
@@ -46,6 +52,69 @@ session_start();
 					add_action('wp_ajax_bkap_booking_block_price_table',  array(&$this,'bkap_booking_block_price_table'));
 					add_action('wp_ajax_bkap_delete_price_block',  array(&$this,'bkap_delete_price_block'));
 					add_action('wp_ajax_bkap_delete_all_price_blocks',  array(&$this,'bkap_delete_all_price_blocks'));
+				}
+			}
+			
+			/*****************************************************
+			 * This function will ensure that when a new product 
+			 * is created as a duplicate of an existing one, then 
+			 * the variable blocks are also copied alongwith the 
+			 * other settings.
+			 ****************************************************/
+			function price_range_product_duplicate($new_id,$old_id) {
+				global $wpdb;
+				$product = get_product($old_id);
+				$product_type = $product->product_type;
+				if($product_type == 'variable') {
+					$product_attributes = get_post_meta($old_id, '_product_attributes', true);
+					$query = "SELECT * FROM `".$wpdb->prefix."booking_block_price_meta`
+								WHERE post_id = '".$old_id."'";
+					$results = $wpdb->get_results($query);
+					$var = "";
+					$i = 0;
+					foreach ($results as $key => $value) {
+						$insert_booking_block_price = "INSERT INTO {$wpdb->prefix}booking_block_price_meta
+														(post_id,minimum_number_of_days,maximum_number_of_days,price_per_day,fixed_price)
+														VALUE(
+														'{$new_id}',
+														'{$value->minimum_number_of_days}',
+														'{$value->maximum_number_of_days}',
+														'{$value->price_per_day}',
+														'{$value->fixed_price}')";
+						$wpdb->query($insert_booking_block_price);
+				
+						$query_attribute = "SELECT * FROM `".$wpdb->prefix."booking_block_price_attribute_meta`
+											WHERE post_id = '".$old_id."'
+											AND block_id = '".$value->id."'";
+						$results_attribute = $wpdb->get_results($query_attribute);
+						foreach($results_attribute as $k => $v) {
+							 $insert_booking_block_price_attribute = "INSERT INTO {$wpdb->prefix}booking_block_price_attribute_meta
+																	 (post_id,block_id,attribute_id,meta_value)
+																	 VALUE(
+																	 '{$new_id}',
+																	 '{$v->block_id}',
+																	 '{$v->attribute_id}',
+																	 '{$v->meta_value}')";
+							 $wpdb->query($insert_booking_block_price_attribute);
+						}
+					}
+				}
+				else if($product_type == 'simple') {
+					$query = "SELECT * FROM `".$wpdb->prefix."booking_block_price_meta`
+								WHERE post_id = '".$old_id."'";
+					$results = $wpdb->get_results($query);
+					
+					foreach ($results as $key => $value) {
+						$insert_booking_block_price = "INSERT INTO {$wpdb->prefix}booking_block_price_meta
+													(post_id,minimum_number_of_days,maximum_number_of_days,price_per_day,fixed_price)
+													VALUE(
+													'{$new_id}',
+													'{$value->minimum_number_of_days}',
+													'{$value->maximum_number_of_days}',
+													'{$value->price_per_day}',
+													'{$value->fixed_price}')";
+						$wpdb->query($insert_booking_block_price);
+					}
 				}
 			}
                         
@@ -163,7 +232,13 @@ session_start();
 					} else {
 						$div .= '<input type="hidden" id="table_id" name="table_id"></input><br>';
 					}
-					$div .= '<input type="hidden" id="attribute_count" name="attribute_count" value="'.count($product_attributes).'"></input></td>
+					if($product_attributes != '') {
+						$div .= '<input type="hidden" id="attribute_count" name="attribute_count" value="'.count($product_attributes).'"></input></td>';
+					}
+					else {
+						$div .= '<input type="hidden" id="attribute_count" name="attribute_count" value="0"></input></td>';
+					}
+					$div .= '</tr>
 					</tr>
 					<tr>
 						<td>
@@ -504,19 +579,21 @@ session_start();
 					$results = $wpdb->get_results($select_id);
 					$block_attribute_id = $results[0]->block_id;
 					$i = 0;
-					foreach($product_attributes as $k => $v) {
-						$attribute_id = $i+1;
-						$meta_value = $attributes[$i];
-						$insert_booking_block_price_attribute = "INSERT INTO {$wpdb->prefix}booking_block_price_attribute_meta
-							(post_id,block_id,attribute_id,meta_value)
-							VALUE(
-							'{$post_id}',
-							'{$block_attribute_id}',
-							'{$attribute_id}',
-							'{$meta_value}')";
-				
-						$wpdb->query($insert_booking_block_price_attribute);
-						$i++;
+					if($product_attributes !='') {
+						foreach($product_attributes as $k => $v)
+						{
+							$attribute_id = $i+1;
+							$meta_value = $attributes[$i];
+							$insert_booking_block_price_attribute = "INSERT INTO {$wpdb->prefix}booking_block_price_attribute_meta
+																	(post_id,block_id,attribute_id,meta_value)
+																	VALUE(
+																	'{$post_id}',
+																	'{$block_attribute_id}',
+																	'{$attribute_id}',
+																	'{$meta_value}')";
+							$wpdb->query($insert_booking_block_price_attribute);
+							$i++;
+						}
 					}
 					$this->bkap_booking_block_price_table();
 
@@ -609,13 +686,14 @@ session_start();
 								{?>
 									<th> <?php _e($v["name"], 'bkap_block_booking_price');?> </th>
 								<?php
+								}
 							}?>
 							<th> <?php _e('Minimum number of Days', 'bkap_block_booking_price');?></th>
 							<th> <?php _e('Maximum number of Days', 'bkap_block_booking_price');?> </th>
 							<th> <?php _e('Price per day', 'bkap_block_booking_price');?> </th>
 							<th> <?php _e('Fix price', 'bkap_block_booking_price');?> </th>
 							<th> <?php _e('Edit', 'bkap_block_booking_price');?> </th>
-							<?php print('<th> <a href="javascript:void(0);" id="'.$post_id.'" class="bkap_delete_all_price_blocks"> Delete All </a> </th>');	}?>  
+							<?php print('<th> <a href="javascript:void(0);" id="'.$post_id.'" class="bkap_delete_all_price_blocks"> Delete All </a> </th>');	?>  
 						</tr>
 						<?php 
 						if (isset($var)) {
@@ -680,7 +758,7 @@ session_start();
 					$price = $price * $diff_days;
 				}
 			
-				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
+				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active() || function_exists('is_bkap_multi_time_active') && is_bkap_multi_time_active()) {
 					if (isset($price) && $price != '') {
 						if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
 							$_POST['variable_blocks'] = "Y";
@@ -833,7 +911,6 @@ session_start();
                          ************************************************************/
 			public function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date,$currency_selected) {
 				$variation_id = $variation_id_to_fetch;
-				
 				$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
 				$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 				$number = floor($number_of_days/(60*60*24));
@@ -890,7 +967,6 @@ session_start();
 					$variations_selected = array();
 				}
 				$price = $this->price_range_calculate_price($product_id,$product_type,$variation_id,$number,$variations_selected);
-			
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 					if (isset($price) && $price != '' || $price != 0) {
 						$_SESSION['variable_block_price'] = $_POST['price'] = $price;

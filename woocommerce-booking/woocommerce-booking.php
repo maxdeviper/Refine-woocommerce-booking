@@ -156,8 +156,8 @@ function is_booking_active()
 				add_action('wp_ajax_bkap_remove_specific', array(&$this, 'bkap_remove_specific'));
 				add_action('wp_ajax_bkap_remove_recurring', array(&$this, 'bkap_remove_recurring'));
 				
-				add_filter('woocommerce_add_cart_item_data', array('bkap_cart', 'bkap_add_cart_item_data'), 10, 2);
-				add_filter('woocommerce_get_cart_item_from_session', array('bkap_cart', 'bkap_get_cart_item_from_session'), 10, 2);
+				add_filter('woocommerce_add_cart_item_data', array('bkap_cart', 'bkap_add_cart_item_data'), 11, 2);
+				add_filter('woocommerce_get_cart_item_from_session', array('bkap_cart', 'bkap_get_cart_item_from_session'), 11, 2);
 				add_filter( 'woocommerce_get_item_data', array('bkap_cart', 'bkap_get_item_data_booking'), 10, 2 );
 				
 				if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
@@ -232,6 +232,7 @@ function is_booking_active()
 					'".$value->total_booking."' )";
 					$wpdb->query( $query_insert );
 				}
+				do_action('bkap_product_addon_duplicate',$new_id,$old_id);
 			}
 			/***************************************************************
             *  This function is executed when the plugin is updated using 

@@ -376,7 +376,25 @@ class bkap_booking_process {
 						var dayValue = inst.selectedDay;
 						var yearValue = inst.selectedYear;
 						var current_dt = dayValue + "-" + monthValue + "-" + yearValue;
-						if(jQuery("#wapbk_same_day").val() == "on") {
+						if (jQuery("#block_option_enabled").val()=="on") {
+							var nod= parseInt(jQuery("#block_option_number_of_day").val(),10);										
+							if (current_dt != "") {
+								var num_of_day= jQuery("#block_option_number_of_day").val();
+								var split = current_dt.split("-");
+								split[1] = split[1] - 1;		
+								var minDate = new Date(split[2],split[1],split[0]);	
+								minDate.setDate(minDate.getDate() + nod ); 
+								jQuery("#inline_calendar_checkout").datepicker("setDate",minDate);
+								// Populate the hidden field for checkout
+								var dd = minDate.getDate();
+								var mm = minDate.getMonth()+1; //January is 0!
+								var yyyy = minDate.getFullYear();
+								var checkout = dd + "-" + mm + "-"+ yyyy;
+								jQuery("#wapbk_hidden_date_checkout").val(checkout);
+								bkap_calculate_price();
+							}
+						} 
+						else if(jQuery("#wapbk_same_day").val() == "on") {
 							if (current_dt != "") {
 								var split = current_dt.split("-");
 								split[1] = split[1] - 1;
@@ -608,9 +626,12 @@ class bkap_booking_process {
 						do_action('bkap_display_price_div',$post->ID);
 					}*/
 					$currency_symbol = get_woocommerce_currency_symbol();
-					$addon_price = 'var data = {
+					$addon_price = 'var quantity = jQuery("input[class=\"input-text qty text\"]").attr("value");
+									var sold_individually = jQuery("#wapbk_sold_individually").val();
+							var data = {
 							id: '.$duplicate_of.',
 							details: jQuery("#wapbk_hidden_date").val(),
+							timeslots: jQuery("#wapbk_number_of_timeslots").val(),
 							action: "bkap_call_addon_price"
 							'.$attribute_fields_str.'
 						};
@@ -621,7 +642,8 @@ class bkap_booking_process {
 							} else{
 								var price = parseFloat(amt).toFixed(2);
 							}
-							jQuery("#show_addon_price").html("'.$currency_symbol.'" + price);
+							var total_price = price * parseInt(quantity);
+							jQuery("#show_addon_price").html("'.$currency_symbol.'" + total_price);
 						});';
 					if ($product_type == 'variable') {
 						$attribute_change_single_day_var = 'jQuery(document).on("change",jQuery("#'.$on_change_attributes_str.'"),function()
@@ -632,92 +654,14 @@ class bkap_booking_process {
 					} else {
 						$attribute_change_single_day_var = '';
 					}
-					$do_slot = 'jQuery("input[name=\"bkap_timeslot[]\"]").change(function() {
-						var seasonal = jQuery("#seasonal").val();
-						if(seasonal == "yes") {
-							var adjustment = eval("["+jQuery("#adjustment").val()+"]");
-							var value = jQuery("#adjustment_amount_or_percent").val();
-							var operator = jQuery("#adjustment_operator").val();
-							var operator_array = operator.split(",");
-							var value_array = value.split(",");
-							var count_value = adjustment.length;
+					$quantity_change_var = 'jQuery("form.cart").on("change", "input.qty", function(){
+						if (jQuery("#wapbk_hidden_date").val() != "") {
+							bkap_single_day_price();
 						}
-						var length = jQuery("group1 input[type=checkbox]:checked").length;
-						var id = this.id;
-						var product_price = parseInt(jQuery("#wapbk_price").val());
-						var symbol = jQuery("#wapbk_symbol").val();
-						var price = jQuery("#show_price").html();
-							price = price.replace(symbol,"");
-						var new_price = parseInt(price);
-						var sold_individually = jQuery("#wapbk_sold_individually").val();
-						if(jQuery("input[name=\"bkap_timeslot[]\"]:checked").length > 0) {
-							jQuery( ".single_add_to_cart_button" ).show();
-							if(sold_individually == "yes") {
-								jQuery( ".quantity" ).hide();
-							} else {
-								jQuery( ".quantity" ).show();
-							}
-						} else {
-							jQuery( ".single_add_to_cart_button" ).hide();
-							jQuery( ".quantity" ).hide();
-						}
-						if ( jQuery("#"+ id).is(":checked")) {
-							if(seasonal == "yes") {
-								var price_new = new_price + product_price;
-								for(var i=0;i<count_value;i++) {
-									if(value_array[i] == "percent") {
-										adjustment[i] = adjustment[i] * product_price;
-										if(operator_array[i] == "add") {
-											price_new = price_new + adjustment[i];
-										} else if(operator_array[i] == "subtract") {
-											price_new = price_new + adjustment[i];
-										}
-									} else if(value_array[i] == "amount") {
-										if(operator_array[i] == "add") {
-											price_new = price_new + adjustment[i];
-										} else {
-											price_new = price_new + adjustment[i];
-										}								
-									} else {
-										var price_new = new_price + product_price;
-									}
-								}	
-							} else {
-								var price_new = new_price + product_price;
-							}
-						} else {
-							if(seasonal == "yes") {
-								var price_new = new_price - product_price;
-								for(var i=0;i<count_value;i++) {
-									if(value_array[i] == "percent") {
-										adjustment[i] = adjustment[i] * product_price;
-										if(operator_array[i] == "add") {
-											price_new = price_new - adjustment[i];
-										} else if(operator_array[i] == "subtract") {
-											price_new = price_new - adjustment[i];
-										}
-									} else if(value_array[i] == "amount") {
-										if(operator_array[i] == "add") {
-											price_new = price_new - adjustment[i];
-										} else {
-											price_new = price_new - adjustment[i];
-										}								
-									} else{
-										var price_new = new_price - product_price;
-									}
-								}	
-							} else {
-								var price_new = new_price - product_price;
-							}
-						}
-						jQuery("#show_price").html(symbol+" "+price_new);
-						jQuery("#wapbk_hidden_price").val(price_new);
-						});';
-					$quantity_change_var = '';
+					});';
 				} else {
 					$addon_price = "";
 					$attribute_change_single_day_var = "";
-					$do_slot = "";
 					$currency_symbol = get_woocommerce_currency_symbol();
 					print("<input type='hidden' id='wapbk_currency' name='wapbk_currency' value='".$currency_symbol."'/>");
 					$quantity_change_var =  'jQuery("form.cart").on("change", "input.qty", function(){
@@ -1040,6 +984,9 @@ class bkap_booking_process {
 									}
 								}
 								var bcc_date=jQuery( "#booking_calender_checkout").datepicker("getDate");
+								if (bcc_date == null) {
+									var bcc_date = jQuery("#inline_calendar_checkout").datepicker("getDate");
+								}
 								var dd = bcc_date.getDate();
 								var mm = bcc_date.getMonth()+1; //January is 0!
 								var yyyy = bcc_date.getFullYear();
@@ -1123,28 +1070,7 @@ class bkap_booking_process {
 							var quantity = jQuery("input[class=\"input-text qty text\"]").attr("value");
 
 							jQuery("#wapbk_hidden_date").val(current_dt);
-							/*if (jQuery("#wapbk_recurringDays").val() == "on" && jQuery("#wapbk_recurringDays").val() != "") {
-								jQuery( "#ajax_img" ).show();
-								var data = {
-									current_date: current_dt,
-									post_id: "'.$duplicate_of.'", 
-									action: "check_for_prices"
-									'.$attribute_fields_str.'
-								};
-								jQuery.post("'.get_admin_url().'/admin-ajax.php", data, function(response){
-									//	alert("Got this from the server: " + response);
-									jQuery( "#ajax_img" ).hide();
-									if(response != ""){
-										if(sold_individually == "yes"){   
-											var total_price = parseFloat(response);
-										}else {
-											var total_price = parseFloat(response) * parseInt(quantity);
-										}
-										jQuery("#show_prices").html("'.$currency_symbol.'" + total_price);
-										jQuery("#recurring_price").val(total_price);
-									}
-								});
-							}*/
+							
 							if (jQuery("#wapbk_bookingEnableTime").val() == "on" && jQuery("#wapbk_booking_times").val() == "YES") {
 								jQuery( "#ajax_img" ).show();
 								jQuery( ".single_add_to_cart_button" ).hide();	
@@ -1177,7 +1103,6 @@ class bkap_booking_process {
 											jQuery(".partial_message").hide();
 										}
 									})
-									'.$do_slot.'
 								});
 							} else {
 								if ( jQuery("#wapbk_hidden_date").val() != "" ) {
@@ -1204,8 +1129,6 @@ class bkap_booking_process {
 								}
 							}
 							bkap_single_day_price();
-						//	bkap_set_partial_payment_deposit(monthValue,dayValue,yearValue);
-							
 						}
 							
 						/*************************************************
@@ -1339,7 +1262,7 @@ class bkap_booking_process {
 									eval(response);
 							//	alert(response);
 							});
-						//	bkap_set_partial_payment_deposit(split[1],split[0],split[2]);
+					
 							split[1] = split[1] - 1;		
 							var CheckinDate = new Date(split[2],split[1],split[0]);
 						
@@ -1508,6 +1431,10 @@ class bkap_booking_process {
 		$product_id = $_POST['id'];
 		$booking_date_format = $_POST['details'];
 		$booking_date = date('Y-m-d',strtotime($booking_date_format));
+		$number_of_timeslots = 0;
+		if (isset($_POST['timeslots'])) {
+			$number_of_timeslots = $_POST['timeslots'];
+		}
 		$product = get_product($product_id);
 		$product_type = $product->product_type;
 		if ( $product_type == 'variable') {

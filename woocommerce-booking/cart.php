@@ -107,6 +107,15 @@ class bkap_cart{
 				$cart_arr['hidden_date'] = $hidden_date;
 			}
 			if ($booking_settings['booking_enable_multiple_day'] == 'on') {
+				if(is_plugin_active('woocommerce-product-addons/product-addons.php')) {
+					if(isset($cart_item_meta['addons'])) {
+						$product_addons = $cart_item_meta['addons'];
+						foreach($product_addons as $key => $val) {
+							$addon_price = $val['price'] * $diff_days;
+							$cart_item_meta['addons'][$key]['price'] = $addon_price;
+						}
+					}
+				}
 				$cart_arr['date_checkout'] = $date_disp_checkout;
 				$cart_arr['hidden_date_checkout'] = $hidden_date_checkout;
 				$cart_arr['price'] = $price;
@@ -120,9 +129,7 @@ class bkap_cart{
 			else {
 				$variation_id = '0';
 			}
-			
 			$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
-			
 			$cart_item_meta['booking'][] = $cart_arr;
 		}
 		
@@ -134,7 +141,6 @@ class bkap_cart{
 	 *  from the plugin in the cart session.
 	************************************************/
 	function bkap_get_cart_item_from_session( $cart_item, $values ) {
-	
 		global $wpdb;
 		$duplicate_of = bkap_common::bkap_get_product_id($cart_item['product_id']);
 		
@@ -147,13 +153,7 @@ class bkap_cart{
 			if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 				$cart_item = bkap_cart::bkap_add_cart_item( $cart_item );
 			}
-			$type_of_slot = apply_filters('bkap_slot_type',$cart_item['product_id']);
-			if($type_of_slot == 'multiple') {
-				$cart_item = (array) apply_filters('bkap_get_cart_item_from_session', $cart_item , $values);
-			}
-			else {
-				$cart_item = (array) apply_filters('bkap_get_cart_item_from_session', $cart_item , $values);
-			}
+			$cart_item = (array) apply_filters('bkap_get_cart_item_from_session', $cart_item , $values);
 		endif;
 		return $cart_item;
 	}
@@ -163,7 +163,6 @@ class bkap_cart{
      * details on cart page, checkout page.
     ************************************/
 	public static function bkap_get_item_data_booking( $other_data, $cart_item ) {
-
 		global $wpdb;
 			
 		if (isset($cart_item['booking'])) :
@@ -223,12 +222,7 @@ class bkap_cart{
 						);
 					}
 				}
-				$type_of_slot = apply_filters('bkap_slot_type',$cart_item['product_id']);
-				if($type_of_slot == 'multiple') {
-					$other_data = apply_filters('bkap_timeslot_get_item_data',$other_data, $cart_item);
-				}else {
-					$other_data = apply_filters('bkap_get_item_data',$other_data, $cart_item);
-				}
+				$other_data = apply_filters('bkap_get_item_data',$other_data, $cart_item);
 			endforeach;
 			
 		endif;

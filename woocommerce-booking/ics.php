@@ -12,26 +12,17 @@ class bkap_ics{
 	   
 		public static function bkap_export_to_ics($order){
 			global $woocommerce,$wpdb;
-			//exit;
+			
 			$order_obj = new WC_Order( $order->id );
 			$order_items = $order_obj->get_items();
-			//echo "order<pre>";print_r($order_items);echo "</pre>";
+		
 			$today_query = "SELECT * FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id AND a2.order_id = %d";
 			$results_date = $wpdb->get_results ( $wpdb->prepare($today_query,$order->id) );
+		
 			$c = 0;
 			if($results_date) {
 				foreach ($order_items as $item_key => $item_value) {
-					$duplicate_of = get_post_meta($item_value['product_id'], '_icl_lang_duplicate_of', true);
-					if($duplicate_of == '' && $duplicate_of == null) {
-						$post_time = get_post($item_value['product_id']);
-						$id_query = "SELECT ID FROM `".$wpdb->prefix."posts` WHERE post_date = %s ORDER BY ID LIMIT 1";
-						$results_post_id = $wpdb->get_results ($wpdb->prepare($id_query,$post_time->post_date));
-						if( isset($results_post_id) ) {
-							$duplicate_of = $results_post_id[0]->ID;
-						} else {
-							$duplicate_of = $item_value['product_id'];
-						}
-					}
+					$duplicate_of = bkap_common::bkap_get_product_id($item_value['product_id']);
 					$booking_settings = get_post_meta($item_value['product_id'], 'woocommerce_booking_settings', true);
 					if (isset($booking_settings['booking_enable_date']) && $booking_settings['booking_enable_date'] == 'on' && isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == '') {
 						$book_global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
@@ -45,18 +36,15 @@ class bkap_ics{
 									$time_start = explode(':', $results_date[$c]->from_time);
 									$time_end = explode(':', $results_date[$c]->to_time);
 								}
-								//if (isset($time_start[1])) 
-								{
-									$start_timestamp = strtotime($dt->format('Y-m-d')) + $time_start[0]*60*60 + $time_start[1]*60 + (time() - current_time('timestamp'));
-								}		
-								$end_timestamp = strtotime($dt->format('Y-m-d')) + $time_end[0]*60*60 + $time_end[1]*60 + (time() - current_time('timestamp'));
+								$start_timestamp = strtotime($dt->format('Y-m-d')) + $time_start[0]*60*60 + $time_start[1]*60 + (time() - current_time('timestamp'));
+								if (isset($time_end[0]) && isset($time_end[1])) {
+									$end_timestamp = strtotime($dt->format('Y-m-d')) + $time_end[0]*60*60 + $time_end[1]*60 + (time() - current_time('timestamp'));
+								}
 								?>
 								
 								<form method="post" action="<?php echo plugins_url("/export-ics.php", __FILE__ );?>" id="export_to_ics">
 									<input type="hidden" id="book_date_start" name="book_date_start" value="<?php echo $start_timestamp; ?>" />
 									<input type="hidden" id="book_date_end" name="book_date_end" value="<?php echo $end_timestamp; ?>" />
-									
-									<!-- <input type="hidden" id="key_no_<?php echo $date_key; ?>" name="key_no_<?php echo $date_key; ?>" value="<?php echo $date_key; ?>" /> -->
 									
 									<input type="hidden" id="current_time" name="current_time" value="<?php echo current_time('timestamp'); ?>" />
 									<input type="hidden" id="book_name" name="book_name" value="<?php echo $item_value['name']; ?>" />
