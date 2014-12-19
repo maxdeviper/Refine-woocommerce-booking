@@ -426,8 +426,13 @@ class bkap_validation{
 				}
 			} else if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 			//	print_r($value);
-				$date_checkout = date('d-n-Y', strtotime($value['booking'][0]['hidden_date_checkout']));
-				$date_cheeckin = date('d-n-Y', strtotime($value['booking'][0]['hidden_date']));
+				$date_checkout = $date_cheeckin = '';
+				if (isset($value['booking'][0]['hidden_date_checkout'])) {
+					$date_checkout = date('d-n-Y', strtotime($value['booking'][0]['hidden_date_checkout']));
+				}
+				if (isset($value['booking'][0]['hidden_date'])) {
+					$date_cheeckin = date('d-n-Y', strtotime($value['booking'][0]['hidden_date']));
+				}
 				$order_dates = bkap_common::bkap_get_betweendays($date_cheeckin, $date_checkout);
 				$todays_date = date('Y-m-d');
 	

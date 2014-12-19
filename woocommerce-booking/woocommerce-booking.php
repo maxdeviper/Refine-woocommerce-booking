@@ -189,7 +189,6 @@ function is_booking_active()
 				add_filter('add_to_cart_fragments', array('bkap_cart', 'bkap_woo_cart_widget_subtotal'));
 			}
 			
-                        
 			/***************************************************************** 
             * This function is used to load ajax functions required by plugin.
             *******************************************************************/
@@ -199,7 +198,7 @@ function is_booking_active()
 					add_action('wp_ajax_nopriv_bkap_check_for_time_slot', array('bkap_booking_process', 'bkap_check_for_time_slot'));
 					add_action('wp_ajax_bkap_nopriv_insert_date', array('bkap_booking_process', 'bkap_insert_date'));
 					add_action('wp_ajax_nopriv_bkap_call_addon_price', array('bkap_booking_process', 'bkap_call_addon_price'));
-					add_action('wp_ajax_nopriv_bkap_js', array('bkap_booking_process', 'bkap_js'));
+					add_action('wp_ajax_nopriv_bkap_js', array('bkap_booking_process', 'bkap_js'));		
 				} else{
 					add_action('wp_ajax_bkap_get_per_night_price', array('bkap_booking_process', 'bkap_get_per_night_price'));
 					add_action('wp_ajax_bkap_check_for_time_slot', array('bkap_booking_process', 'bkap_check_for_time_slot'));

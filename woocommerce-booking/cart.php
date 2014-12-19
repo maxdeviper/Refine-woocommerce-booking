@@ -73,7 +73,7 @@ class bkap_cart{
 			if(isset($_POST['wapbk_hidden_date_checkout'])) {
 				$hidden_date_checkout = $_POST['wapbk_hidden_date_checkout'];
 			}
-			$diff_days = '';
+			$diff_days = 1;
 			if(isset($_POST['wapbk_diff_days'])) {
 				$diff_days = $_POST['wapbk_diff_days'];
 			}
@@ -116,6 +116,7 @@ class bkap_cart{
 						}
 					}
 				}
+				$price = bkap_common::gf_compatibility_cart($price,$diff_days);
 				$cart_arr['date_checkout'] = $date_disp_checkout;
 				$cart_arr['hidden_date_checkout'] = $hidden_date_checkout;
 				$cart_arr['price'] = $price;
@@ -237,7 +238,7 @@ class bkap_cart{
 	public static function bkap_woo_cart_widget_subtotal( $fragments ) {
 				
 		global $woocommerce;
-			
+		
 		$price = 0;
 		foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values ) {
 			if (isset($values['booking'])) {
@@ -245,6 +246,11 @@ class bkap_cart{
 			}
 			if (isset($booking[0]['price']) && $booking[0]['price'] != 0) {
 				$price += ($booking[0]['price']) * $values['quantity'];
+				if(is_plugin_active('woocommerce-gravityforms-product-addons/gravityforms-product-addons.php')) {
+					if (isset($values['_gravity_form_lead'][3])) {
+						$price += $values['_gravity_form_lead'][3];
+					}
+				}
 			}
 			else {
 				if ($values['variation_id'] == '') {

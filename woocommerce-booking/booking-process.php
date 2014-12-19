@@ -4,6 +4,111 @@
 include_once('bkap-common.php');
 include_once('lang.php');
 //exit;
+// GF and GF product adons compatibility
+//if(is_plugin_active('woocommerce-gravityforms-product-addons/gravityforms-product-addons.php')) {
+	//Hook to update the subtotal for GF product addons
+	add_filter('woocommerce_gform_base_price', 'change_subtotal', 10,2);
+	//Hook to update the options total for GF product addons
+	add_filter('woocommerce_gform_total_price', 'change_total', 10,2);
+	// Hook to update the total for GF product addons
+	add_filter('woocommerce_gform_variation_total_price', 'change_options_total', 10,2);
+	
+	function calculate_GF_price($price_to_be_calculated) {
+		$price_pos = strpos($price_to_be_calculated,";");
+		$price_pos += 1;
+		$price_substr = substr($price_to_be_calculated,$price_pos);
+		$price_last_pos =  strpos($price_substr,"<");
+		$price = substr($price_substr,0,$price_last_pos);
+		return $price;
+	}
+	
+	function change_subtotal($subtotal_price,$product_addon){
+		$price = calculate_GF_price($subtotal_price,$product_addon->id);
+		$booking_settings = get_post_meta($product_addon->id, 'woocommerce_booking_settings', true);
+		if ($booking_settings != '' && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on' )) {
+			if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
+				if (isset($_POST['block_option_price']) && $_POST['block_option_price'] > 0) {
+					$price = $_POST['block_option_price'];
+				}
+			}
+			else if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes'){
+	 			if(isset($_SESSION['variable_block_price']) && $_SESSION['variable_block_price'] != '') {
+					$str_pos = strpos($_SESSION['variable_block_price'],'-');
+					if (isset($str_pos) && $str_pos != '') {
+						$price_type = explode("-",$_SESSION['variable_block_price']);
+						if ($price_type[1] == "per_day" || $price_type[1] == "fixed") {
+							$price = $price_type[0];		
+						}
+					}
+				}
+			}
+			else if (isset($price) && $price != 0) {
+				if (isset($_POST['diff_days']) && $_POST['diff_days'] > 1) {
+					$price = $price * $_POST['diff_days'];
+				}
+			}
+		}
+		return woocommerce_price($price);
+	}
+	
+	function change_total($gform_final_total,$product_addon){
+		$price = calculate_GF_price($gform_final_total);
+		$booking_settings = get_post_meta($product_addon->id, 'woocommerce_booking_settings', true);
+		if ($booking_settings != '' && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on' )) {
+			if (isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable']  == "yes") {
+				if (isset($_POST['block_option_price']) && $_POST['block_option_price'] > 0) {
+					// get the product price and subtract it frm the total amt
+					$product_price = bkap_common::bkap_get_price($_POST['product_id'], $_POST['variation_id'], $product_addon->product_type);
+					$price -= $product_price; 
+					// multiply the options value with the diff days
+					if (isset($_POST['diff_days']) && $_POST['diff_days'] > 1) {
+						$price = $price * $_POST['diff_days'];
+					}
+					// add the fixed block price to the total
+					$price += $_POST['block_option_price'];
+				}
+			}
+			else if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes'){
+				if(isset($_SESSION['variable_block_price']) && $_SESSION['variable_block_price'] != '') {
+					$str_pos = strpos($_SESSION['variable_block_price'],'-');
+					if (isset($str_pos) && $str_pos != '') {
+						$price_type = explode("-",$_SESSION['variable_block_price']);
+						if ($price_type[1] == "per_day" || $price_type[1] == "fixed") {
+							// get the product price and subtract it frm the total amt
+							$product_price = bkap_common::bkap_get_price($_POST['product_id'], $_POST['variation_id'], $product_addon->product_type);
+							$price -= $product_price;
+							// multiply the options value with the diff days
+							if (isset($_POST['diff_days']) && $_POST['diff_days'] > 1) {
+								$price = $price * $_POST['diff_days'];
+							}
+							// add the fixed block price to the total
+							$price += $price_type[0];
+						}
+					}
+				}
+			}
+			else if (isset($price) && $price != 0) {
+				if (isset($_POST['diff_days']) && $_POST['diff_days'] > 1) {
+					$price = $price * $_POST['diff_days'];
+				}
+			}
+		}
+		return woocommerce_price($price);
+	}
+	
+	function change_options_total($gform_options_total,$product_addon){
+		$price = calculate_GF_price($gform_options_total);
+		$booking_settings = get_post_meta($product_addon->id, 'woocommerce_booking_settings', true);
+		if ($booking_settings != '' && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on' )) {
+			if (isset($price) && $price != 0) {
+				if (isset($_POST['diff_days']) && $_POST['diff_days'] > 1) {
+					$price = $price * $_POST['diff_days'];
+				}
+			}
+		}
+		return woocommerce_price($price);
+	}
+//}
 class bkap_booking_process {
 
 	/******************************************************
@@ -22,7 +127,24 @@ class bkap_booking_process {
 					jQuery( ".payment_type" ).hide();
 					jQuery( ".quantity" ).hide();
 					jQuery(".partial_message").hide();
-				})
+				});
+				
+				jQuery(document).ajaxSend(function(event, jqXHR, ajaxOptions) {
+					
+				    if(ajaxOptions.context) {
+				    	var split_data = ajaxOptions.data.split("&");
+				    	var found = jQuery.inArray('action=get_updated_price',split_data) > -1;
+				    	if (found) {
+					    	ajaxOptions.context.data = "diff_days="+jQuery('#wapbk_diff_days').val()+"&" + "block_option_price="+jQuery('#block_option_price').val()+"&" + ajaxOptions.context.data;
+				    	}
+				    } else {
+				    	var split_data = ajaxOptions.data.split("&");
+				    	var found = jQuery.inArray('action=get_updated_price',split_data) > -1;
+				    	if (found) {
+					    	ajaxOptions.data = "diff_days="+jQuery('#wapbk_diff_days').val()+"&" + "block_option_price="+jQuery('#block_option_price').val()+"&" + ajaxOptions.data;
+				    	}
+				    }
+				});
 			</script>
 		<?php 
 		}
@@ -1415,7 +1537,11 @@ class bkap_booking_process {
 								}else {
 									jQuery( ".quantity" ).show();
 								}
-							}); 
+							});
+							// Update the GF product addons total
+							if (typeof update_dynamic_price == "function") {
+								update_dynamic_price(jQuery(".ginput_container").find(".gform_hidden").val());
+							}
 						}
 					}
 					</script>');

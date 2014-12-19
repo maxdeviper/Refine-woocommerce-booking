@@ -738,7 +738,6 @@ session_start();
 				else {
 					$product = get_product($product_id);
 					$product_type = $product->product_type;
-				
 					$diff_days = 1;
 					if(isset($_POST['wapbk_diff_days']) && $_POST['wapbk_diff_days'] != '') {
 						$diff_days = $_POST['wapbk_diff_days'];
@@ -757,7 +756,14 @@ session_start();
 					}
 					$price = $price * $diff_days;
 				}
-			
+			//	if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
+					$diff_days = 1;
+					if(isset($_POST['wapbk_diff_days']) && $_POST['wapbk_diff_days'] != '') {
+						$diff_days = $_POST['wapbk_diff_days'];
+					}
+					$price = bkap_common::gf_compatibility_cart($price,$diff_days);
+			//	}
+				
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active() || function_exists('is_bkap_multi_time_active') && is_bkap_multi_time_active()) {
 					if (isset($price) && $price != '') {
 						if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
@@ -783,16 +789,13 @@ session_start();
 				}
 				
 				//Round the price if needed
-			
 				$global_settings = json_decode(get_option('woocommerce_booking_global_settings'));
 				if (isset($global_settings->enable_rounding) && $global_settings->enable_rounding == "on" && isset($cart_arr['price'])) {
 					if (isset($cart_arr['price'])) {
 						$cart_arr['price'] = round($cart_arr['price']);
 					}
 				}
-				
 				return $cart_arr;
-			
 			}
                         
                         /***********************************
@@ -999,8 +1002,6 @@ session_start();
 				if ($product_type == 'variable') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 					if (isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == 'yes'){
-						
-				
 						$j = 1;
 						$k = 0;
 						$attribute_sub_query = '';

@@ -99,5 +99,34 @@ class bkap_common{
 		}
 		return $price;
 	}
+	
+	public static function gf_compatibility_cart($price,$diff_days) {
+		if(is_plugin_active('woocommerce-gravityforms-product-addons/gravityforms-product-addons.php')) {
+			$gravity_price = 0;
+			if (isset($_POST['gform_form_id'])) {
+				$form_meta = RGFormsModel::get_form_meta($_POST['gform_form_id']);
+				for($i=1;$i<= count($form_meta);$i++) {
+					if(isset($_POST['input_'.$i])) 	{
+						$str_pos = strpos($_SESSION['variable_block_price'],'|');
+						if (isset($str_pos) && $str_pos != '') {
+							$price_arr = explode('|',$_POST['input_'.$i]);
+							if (isset($diff_days) && $diff_days > 1) {
+								$diff_days -= 1;
+								$gravity_price = $gravity_price + ($price_arr[0] * $diff_days);
+							}
+						}
+						else {
+							if (isset($diff_days) && $diff_days > 1) {
+								$diff_days -= 1;
+								$gravity_price = $gravity_price + ($_POST['input_'.$i] * $diff_days);
+							}
+						}
+					}
+				}
+			}
+			$price = $price + $gravity_price;
+		}
+		return $price;
+	}
 }
 ?>

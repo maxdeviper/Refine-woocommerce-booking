@@ -27,7 +27,7 @@
 				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_fixed_block_booking_after_add_to_cart'));
 
 			//	add_filter('bkap_get_item_data', array(&$this, 'bkap_get_item_data'), 10, 2 );
-				add_action('bkap_deposits_update_order', array(&$this, 'bkap_fixed_block_order_item_meta'), 10,2);
+			//	add_action('bkap_deposits_update_order', array(&$this, 'bkap_fixed_block_order_item_meta'), 10,2);
 				add_action('bkap_display_price_div', array(&$this, 'bkap_fixed_block_display_price'),10,1);
 				
 				$this->days = array( 'any_days' => 'Any Days',
@@ -724,6 +724,10 @@
 					$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 	
 					$fixed_blocks_count = $this->bkap_get_fixed_blocks_count($product_id);
+					$diff_days=1;
+					if (isset($_POST['wapbk_diff_days'])) {
+						$diff_days = $_POST['wapbk_diff_days'];
+					}
 					if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && $fixed_blocks_count > 0) {
 					
                     	if($product_type == 'variable'){ //Make this chnage
@@ -735,13 +739,13 @@
                         }
 					}
 					else {
-						$diff_days=1;
-						
 						if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
-							$diff_days = $_POST['wapbk_diff_days'];
 							$price = $price * $diff_days;
 						}
 					}
+			//		if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && $fixed_blocks_count > 0) {
+						$price = bkap_common::gf_compatibility_cart($price,$diff_days);
+			//		}
 					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active() || function_exists('is_bkap_multi_time_active') && is_bkap_multi_time_active()) {
 						if (isset($price) && $price != '') {
 							$_POST['price'] = $price;
@@ -899,7 +903,6 @@
 							}
 						}
 					}
-				
 					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active()) {
 						if (isset($price) && $price != '' || $price != 0) {
 							$_POST['price'] = $price;
