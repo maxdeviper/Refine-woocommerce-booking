@@ -107,15 +107,9 @@ class bkap_cart{
 				$cart_arr['hidden_date'] = $hidden_date;
 			}
 			if ($booking_settings['booking_enable_multiple_day'] == 'on') {
-				if(is_plugin_active('woocommerce-product-addons/product-addons.php')) {
-					if(isset($cart_item_meta['addons'])) {
-						$product_addons = $cart_item_meta['addons'];
-						foreach($product_addons as $key => $val) {
-							$addon_price = $val['price'] * $diff_days;
-							$cart_item_meta['addons'][$key]['price'] = $addon_price;
-						}
-					}
-				}
+				//Woo Product Addons compatibility
+				$price = bkap_common::woo_product_addons_compatibility_cart($price,$diff_days,$cart_item_meta);
+				// GF Product addons compatibility
 				$price = bkap_common::gf_compatibility_cart($price,$diff_days);
 				$cart_arr['date_checkout'] = $date_disp_checkout;
 				$cart_arr['hidden_date_checkout'] = $hidden_date_checkout;
@@ -130,7 +124,7 @@ class bkap_cart{
 			else {
 				$variation_id = '0';
 			}
-			$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id);
+			$cart_arr = (array) apply_filters('bkap_addon_add_cart_item_data', $cart_arr, $product_id, $variation_id,$cart_item_meta);
 			$cart_item_meta['booking'][] = $cart_arr;
 		}
 		
@@ -246,11 +240,6 @@ class bkap_cart{
 			}
 			if (isset($booking[0]['price']) && $booking[0]['price'] != 0) {
 				$price += ($booking[0]['price']) * $values['quantity'];
-				if(is_plugin_active('woocommerce-gravityforms-product-addons/gravityforms-product-addons.php')) {
-					if (isset($values['_gravity_form_lead'][3])) {
-						$price += $values['_gravity_form_lead'][3];
-					}
-				}
 			}
 			else {
 				if ($values['variation_id'] == '') {
@@ -268,6 +257,18 @@ class bkap_cart{
 				
 				$price += $book_price * $values['quantity'];
 			}
+		/*	if(is_plugin_active('woocommerce-gravityforms-product-addons/gravityforms-product-addons.php')) {
+				if (isset($values['_gravity_form_lead'][3])) {
+					$price += $values['_gravity_form_lead'][3];
+				}
+			}*/
+		/*	if(is_plugin_active('woocommerce-product-addons/product-addons.php')) {
+				if (isset($values['addons']) && count($values['addons'] > 0)) {
+					foreach ($values['addons'] as $k => $v) {
+						$price += $v['price'];
+					}
+				}
+			}*/
 		}
 			
 		$saved_settings = json_decode(get_option('woocommerce_booking_global_settings'));

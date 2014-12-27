@@ -20,7 +20,7 @@
 				add_action('init', array(&$this, 'bkap_load_ajax_fixed_block'));
 				add_filter('bkap_save_product_settings', array(&$this, 'bkap_fixed_block_product_settings_save'), 10, 2);
 				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_fixed_block_show_updated_price'),5,6);
-				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_fixed_block_add_cart_item_data'), 5, 3);
+				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_fixed_block_add_cart_item_data'), 5, 4);
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_fixed_block_get_cart_item_from_session'),11,2);
 
 				add_action( 'woocommerce_before_add_to_cart_form', array(&$this, 'bkap_fixed_block_before_add_to_cart'));
@@ -704,7 +704,7 @@
                         /************************************
                          * This function return fixed block details when add to cart button click on front end.
                          *************************************/
-			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id, $variation_id) {
+			function bkap_fixed_block_add_cart_item_data($cart_arr, $product_id, $variation_id,$cart_item_meta) {
 				if (!isset($_POST['variable_blocks']) || (isset($_POST['variable_blocks']) && $_POST['variable_blocks'] != 'Y')):	
 					$product = get_product($product_id);
 					$product_type = $product->product_type;
@@ -743,9 +743,6 @@
 							$price = $price * $diff_days;
 						}
 					}
-			//		if(isset($booking_settings['booking_fixed_block_enable']) && $booking_settings['booking_fixed_block_enable'] == "yes" && $fixed_blocks_count > 0) {
-						$price = bkap_common::gf_compatibility_cart($price,$diff_days);
-			//		}
 					if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active() || function_exists('is_bkap_multi_time_active') && is_bkap_multi_time_active()) {
 						if (isset($price) && $price != '') {
 							$_POST['price'] = $price;
@@ -754,6 +751,10 @@
 					else {
 						if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
 							if (isset($price) && $price != '') {
+								//Woo Product Addons compatibility
+								$price = bkap_common::woo_product_addons_compatibility_cart($price,$diff_days,$cart_item_meta);
+								// GF Product addons compatibility
+								$price = bkap_common::gf_compatibility_cart($price,$diff_days);
 								$cart_arr['price'] = $price;
 							}
 						}

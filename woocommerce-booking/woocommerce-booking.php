@@ -156,8 +156,8 @@ function is_booking_active()
 				add_action('wp_ajax_bkap_remove_specific', array(&$this, 'bkap_remove_specific'));
 				add_action('wp_ajax_bkap_remove_recurring', array(&$this, 'bkap_remove_recurring'));
 				
-				add_filter('woocommerce_add_cart_item_data', array('bkap_cart', 'bkap_add_cart_item_data'), 11, 2);
-				add_filter('woocommerce_get_cart_item_from_session', array('bkap_cart', 'bkap_get_cart_item_from_session'), 11, 2);
+				add_filter('woocommerce_add_cart_item_data', array('bkap_cart', 'bkap_add_cart_item_data'), 21, 2);
+				add_filter('woocommerce_get_cart_item_from_session', array('bkap_cart', 'bkap_get_cart_item_from_session'), 21, 2);
 				add_filter( 'woocommerce_get_item_data', array('bkap_cart', 'bkap_get_item_data_booking'), 10, 2 );
 				
 				if (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on') {
@@ -187,6 +187,11 @@ function is_booking_active()
 				add_action('admin_init', array('bkap_license', 'bkap_edd_sample_activate_license'));	
 				add_filter('woocommerce_my_account_my_orders_actions', array('bkap_cancel_order', 'bkap_get_add_cancel_button'), 10, 3 );
 				add_filter('add_to_cart_fragments', array('bkap_cart', 'bkap_woo_cart_widget_subtotal'));
+				
+				// Woocommerce Product Addons hook
+		//		if(is_plugin_active('woocommerce-product-addons/product-addons.php')) {
+					add_action( 'wc_product_addons_end', array( 'bkap_booking_process', 'product_addon_totals' ), 15 );
+		//		}
 			}
 			
 			/***************************************************************** 

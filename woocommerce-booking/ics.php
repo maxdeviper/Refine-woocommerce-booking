@@ -122,8 +122,12 @@ class bkap_ics{
 								$time_end = explode(':', $results_date[$c]->to_time);
 							}
 							$start_timestamp = strtotime($dt->format('Y-m-d')) + $time_start[0]*60*60 + $time_start[1]*60 + (time() - current_time('timestamp'));
-							$end_timestamp = strtotime($dt->format('Y-m-d')) + $time_end[0]*60*60 + $time_end[1]*60 + (time() - current_time('timestamp'));
-							
+							if (isset($time_end) && count($time_end) > 0) {
+								$end_timestamp = strtotime($dt->format('Y-m-d')) + $time_end[0]*60*60 + $time_end[1]*60 + (time() - current_time('timestamp'));
+							}
+							else {
+								$end_timestamp = 0;
+							}
 							$icsString = "
 BEGIN:VCALENDAR
 PRODID:-//Events Calendar//iCal4j 1.0//EN

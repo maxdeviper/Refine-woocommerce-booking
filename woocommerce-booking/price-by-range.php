@@ -24,7 +24,7 @@ session_start();
 				// Display the varioable block price on the product page
 				add_action('bkap_display_multiple_day_updated_price', array(&$this, 'bkap_price_range_show_updated_price'),5,6);
 				// Modify the prices in the cart
-				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 5, 3);
+				add_filter('bkap_addon_add_cart_item_data', array(&$this, 'bkap_price_range_add_cart_item_data'), 5, 4);
 				// Session cart
 				add_filter('bkap_get_cart_item_from_session', array(&$this, 'bkap_price_range_get_cart_item_from_session'),11,2);
 				add_action( 'woocommerce_before_add_to_cart_button', array(&$this, 'bkap_price_range_booking_after_add_to_cart'));	
@@ -720,7 +720,7 @@ session_start();
                         /************************************
                          * This function return price by range of days details when add to cart button click on front end.
                          *************************************/
-			public function bkap_price_range_add_cart_item_data($cart_arr, $product_id, $variation_id) {
+			public function bkap_price_range_add_cart_item_data($cart_arr, $product_id, $variation_id,$cart_item_meta) {
 				$currency_symbol = get_woocommerce_currency_symbol();
 				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true);
 				if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {					
@@ -756,14 +756,6 @@ session_start();
 					}
 					$price = $price * $diff_days;
 				}
-			//	if(isset($booking_settings['booking_block_price_enable']) && $booking_settings['booking_block_price_enable'] == "yes") {
-					$diff_days = 1;
-					if(isset($_POST['wapbk_diff_days']) && $_POST['wapbk_diff_days'] != '') {
-						$diff_days = $_POST['wapbk_diff_days'];
-					}
-					$price = bkap_common::gf_compatibility_cart($price,$diff_days);
-			//	}
-				
 				if (function_exists('is_bkap_deposits_active') && is_bkap_deposits_active() || function_exists('is_bkap_seasonal_active') && is_bkap_seasonal_active() || function_exists('is_bkap_multi_time_active') && is_bkap_multi_time_active()) {
 					if (isset($price) && $price != '') {
 						if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
@@ -783,6 +775,14 @@ session_start();
 							if(isset($price_type[1]) && ($price_type[1] == "fixed" || $price_type[1]  == 'per_day')) {
 								$_POST['variable_blocks'] = "Y";
 							}
+							$diff_days = 1;
+							if(isset($_POST['wapbk_diff_days']) && $_POST['wapbk_diff_days'] != '') {
+								$diff_days = $_POST['wapbk_diff_days'];
+							}
+							//Woo Product Addons compatibility
+							$price = bkap_common::woo_product_addons_compatibility_cart($price,$diff_days,$cart_item_meta);
+							// GF Product addons compatibility
+							$price = bkap_common::gf_compatibility_cart($price,$diff_days);
 							$cart_arr['price'] = $price;
 						}
 					}
@@ -915,14 +915,20 @@ session_start();
 			public function bkap_price_range_show_updated_price($product_id,$product_type,$variation_id_to_fetch,$checkin_date,$checkout_date,$currency_selected) {
 				$variation_id = $variation_id_to_fetch;
 				$number_of_days =  strtotime($checkout_date) - strtotime($checkin_date);
+				
 				$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 				$number = floor($number_of_days/(60*60*24));
+				
 				if ( isset($booking_settings['booking_charge_per_day']) && $booking_settings['booking_charge_per_day'] == 'on' ){
 					$number = $number + 1;
 				}
 					
-				if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on')
+				if($number == 0 && isset($booking_settings['booking_same_day']) && $booking_settings['booking_same_day'] == 'on') {
 					$number = 1;
+				}
+				if ($number <= 0) {
+					$number = 1;
+				}
 				if ($product_type == 'variable') {
 					$variations_selected = array();
 					$string_explode = '';
@@ -997,7 +1003,7 @@ session_start();
 			
 			public static function price_range_calculate_price($product_id,$product_type,$variation_id,$number,$variations_selected) {
 				global $wpdb;
-				
+				$price = 0;
 				$results_price = array();
 				if ($product_type == 'variable') {
 					$booking_settings = get_post_meta($product_id, 'woocommerce_booking_settings', true);

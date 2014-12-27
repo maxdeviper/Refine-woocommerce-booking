@@ -55,6 +55,7 @@ class bkap_common{
 	}
 	
 	public static function bkap_get_price($product_id,$variation_id,$product_type) {
+		$price = 0;
 		if ( $product_type == 'variable'){
 			$sale_price = get_post_meta( $variation_id, '_sale_price', true);
 			if(!isset($sale_price) || $sale_price == '' || $sale_price == 0) {
@@ -107,7 +108,7 @@ class bkap_common{
 				$form_meta = RGFormsModel::get_form_meta($_POST['gform_form_id']);
 				for($i=1;$i<= count($form_meta);$i++) {
 					if(isset($_POST['input_'.$i])) 	{
-						$str_pos = strpos($_SESSION['variable_block_price'],'|');
+						$str_pos = strpos($_POST['input_'.$i],'|');
 						if (isset($str_pos) && $str_pos != '') {
 							$price_arr = explode('|',$_POST['input_'.$i]);
 							if (isset($diff_days) && $diff_days > 1) {
@@ -117,7 +118,7 @@ class bkap_common{
 						}
 						else {
 							if (isset($diff_days) && $diff_days > 1) {
-								$diff_days -= 1;
+						//		$diff_days -= 1;
 								$gravity_price = $gravity_price + ($_POST['input_'.$i] * $diff_days);
 							}
 						}
@@ -125,6 +126,25 @@ class bkap_common{
 				}
 			}
 			$price = $price + $gravity_price;
+		}
+		return $price;
+	}
+	
+	public static function woo_product_addons_compatibility_cart($price,$diff_days,$cart_item_meta) {
+		if(is_plugin_active('woocommerce-product-addons/product-addons.php')) {
+			$addons_price = $single_addon_price = 0;
+		 	if(isset($cart_item_meta['addons'])) {
+				$product_addons = $cart_item_meta['addons'];
+				foreach($product_addons as $key => $val) {
+					$single_addon_price += $val['price'];
+				}
+				if (isset($diff_days) && $diff_days > 1 && $single_addon_price > 0) {
+				//	$diff_days -= 1;
+					$single_addon_price = $single_addon_price * $diff_days;
+				}	
+				$addons_price += $single_addon_price;
+			}
+			$price += $addons_price;
 		}
 		return $price;
 	}
