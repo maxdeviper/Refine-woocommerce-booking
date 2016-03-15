@@ -1,0 +1,1093 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-07-28 10:52+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin-bookings.php:102
+msgid "Name"
+msgstr ""
+
+#: admin-bookings.php:102
+msgid "Value"
+msgstr ""
+
+#: bkap-config.php:2 fixed-block.php:33
+msgid "Sunday"
+msgstr ""
+
+#: bkap-config.php:3 fixed-block.php:34
+msgid "Monday"
+msgstr ""
+
+#: bkap-config.php:4 fixed-block.php:35
+msgid "Tuesday"
+msgstr ""
+
+#: bkap-config.php:5 fixed-block.php:36
+msgid "Wednesday"
+msgstr ""
+
+#: bkap-config.php:6 fixed-block.php:37
+msgid "Thursday"
+msgstr ""
+
+#: bkap-config.php:7 fixed-block.php:38
+msgid "Friday"
+msgstr ""
+
+#: bkap-config.php:8 fixed-block.php:39
+msgid "Saturday"
+msgstr ""
+
+#: bkap-config.php:107
+msgid "12 hour"
+msgstr ""
+
+#: bkap-config.php:108
+msgid "24 hour"
+msgstr ""
+
+#: booking-box.php:476
+msgid "Booking"
+msgstr ""
+
+#: booking-box.php:626
+msgid "Booking Options"
+msgstr ""
+
+#: booking-box.php:627 global-menu.php:15 global-menu.php:228
+msgid "Settings"
+msgstr ""
+
+#: booking-box.php:628
+msgid "Bookable Time Period"
+msgstr ""
+
+#: booking-box.php:629
+msgid "Manage Dates, Time Slots"
+msgstr ""
+
+#: booking-box.php:650
+msgid "Enable Booking Date:"
+msgstr ""
+
+#: booking-box.php:660
+msgid "Enable Booking Date on Products Page"
+msgstr ""
+
+#: booking-box.php:668
+msgid "Allow multiple day booking:"
+msgstr ""
+
+#: booking-box.php:687
+msgid "Enable Multiple day Bookings on Products Page"
+msgstr ""
+
+#: booking-box.php:707
+msgid "Minimum Day Booking For Multiple Days:"
+msgstr ""
+
+#: booking-box.php:719
+msgid ""
+"Select the checkbox if you want multiple day bookings to span for a minimum "
+"of more than 1 night always."
+msgstr ""
+
+#: booking-box.php:745
+msgid "Minimum number of days to book for multiple day bookings:"
+msgstr ""
+
+#: booking-box.php:756
+msgid ""
+"The minimum number of booking days you want to book for multiple days "
+"booking. For example, if you take minimum 2 days of booking, add 2 in the "
+"field here."
+msgstr ""
+
+#: booking-box.php:767
+msgid "Select Booking Method(s):"
+msgstr ""
+
+#: booking-box.php:783
+msgid "Current Booking Method:"
+msgstr ""
+
+#: booking-box.php:785
+msgid "None"
+msgstr ""
+
+#: booking-box.php:786
+msgid "Specific Dates, Recurring Weekdays"
+msgstr ""
+
+#: booking-box.php:787 booking-box.php:791
+msgid "Specific Dates"
+msgstr ""
+
+#: booking-box.php:788 booking-box.php:793
+msgid "Recurring Weekdays"
+msgstr ""
+
+#: booking-box.php:792
+msgid ""
+"Please enable/disable the specific booking dates and recurring weekdays "
+"using these checkboxes. Upon checking them, you shall be able to further "
+"select dates or weekdays."
+msgstr ""
+
+#: booking-box.php:826
+msgid "Booking Days:"
+msgstr ""
+
+#: booking-box.php:830
+msgid "Days:"
+msgstr ""
+
+#: booking-box.php:839
+msgid "Select Weekdays"
+msgstr ""
+
+#: booking-box.php:855
+msgid "Specific Date Booking:"
+msgstr ""
+
+#: booking-box.php:859
+msgid "Select the specific dates that you want to enable for booking"
+msgstr ""
+
+#: booking-box.php:868
+msgid "Lockout Date after X orders:"
+msgstr ""
+
+#: booking-box.php:881
+msgid ""
+"Set this field if you want to place a limit on maximum bookings on any given "
+"date. If you can manage up to 15 bookings in a day, set this value to 15. "
+"Once 15 orders have been booked, then that date will not be available for "
+"further bookings."
+msgstr ""
+
+#: booking-box.php:892
+msgid "Enable Booking Time:"
+msgstr ""
+
+#: booking-box.php:904
+msgid ""
+"Enable time (or time slots) on the product. Add any number of booking time "
+"slots once you have checked this. You can manage the Time Slots using the "
+"Manage Dates, Time Slots tab"
+msgstr ""
+
+#: booking-box.php:931
+msgid "Enter a Time Slot:"
+msgstr ""
+
+#: booking-box.php:934
+msgid "From: "
+msgstr ""
+
+#: booking-box.php:937 booking-box.php:966
+msgid "Hours"
+msgstr ""
+
+#: booking-box.php:950 booking-box.php:979
+msgid "Minutes"
+msgstr ""
+
+#: booking-box.php:963
+msgid "To: "
+msgstr ""
+
+#: booking-box.php:992
+msgid ""
+"If do not want a time range, please leave the To Hours and To Minutes set to "
+"0."
+msgstr ""
+
+#: booking-box.php:994
+msgid "Lockout time slot after X orders:"
+msgstr ""
+
+#: booking-box.php:997
+msgid ""
+"Please enter a number to limit the number of bookings for this time slot. "
+"Setting it to blanks or 0 will ensure unlimited bookings."
+msgstr ""
+
+#: booking-box.php:1000
+msgid "Make Unavailable for other products once lockout is reached"
+msgstr ""
+
+#: booking-box.php:1002
+msgid ""
+"Please select this checkbox if you want this time slot to be unavailable for "
+"all products once the lockout is reached."
+msgstr ""
+
+#: booking-box.php:1005
+msgid "Note (optional)"
+msgstr ""
+
+#: booking-box.php:1019
+msgid "Add Time Slot"
+msgstr ""
+
+#: booking-box.php:1028
+msgid "Enable Inline Calendar:"
+msgstr ""
+
+#: booking-box.php:1038
+msgid "Enable Inline Calendar on Products Page"
+msgstr ""
+
+#: booking-box.php:1046
+msgid "Purchase without choosing a date:"
+msgstr ""
+
+#: booking-box.php:1058
+msgid ""
+"Enables your customers to purchase without choosing a date. Select this "
+"option if you want the ADD TO CART button always visible on the product page."
+msgstr ""
+
+#: booking-box.php:1072 global-menu.php:457
+msgid "Select Holidays / Exclude Days / Black-out days:"
+msgstr ""
+
+#: booking-box.php:1082
+msgid ""
+"Select dates for which the booking will be completely disabled only for this "
+"product. Please click on the date in calendar to add or delete the date from "
+"the holiday list."
+msgstr ""
+
+#: booking-box.php:1094
+msgid "Booking Type:"
+msgstr ""
+
+#: booking-box.php:1108
+msgid "Fixed booking period by dates ( March 1 to October 31)"
+msgstr ""
+
+#: booking-box.php:1109
+msgid "Book all year round"
+msgstr ""
+
+#: booking-box.php:1110
+msgid ""
+"Please choose a booking type. It could be a specific date range or an all "
+"the year round booking."
+msgstr ""
+
+#: booking-box.php:1117
+msgid "Advance Booking Period (in hours):"
+msgstr ""
+
+#: booking-box.php:1127
+msgid ""
+"Enable Booking after X number of days from current date. The customer can "
+"select a booking date that is available only after the minimum days that are "
+"entered here. For example, if you need 3 days advance notice for a booking, "
+"enter 3 here."
+msgstr ""
+
+#: booking-box.php:1135
+msgid "Number of Dates to choose:"
+msgstr ""
+
+#: booking-box.php:1147
+msgid ""
+"The maximum number of booking dates you want to be available for your "
+"customers to choose from. For example, if you take only 2 months booking in "
+"advance, enter 60 here."
+msgstr ""
+
+#: booking-box.php:1154
+msgid "OR"
+msgstr ""
+
+#: booking-box.php:1159
+msgid "Bookings Start on:"
+msgstr ""
+
+#: booking-box.php:1171
+msgid ""
+"The start date of the bookable block. For e.g. if you want to take bookings "
+"for the period of March to october, then the date here should be March 1"
+msgstr ""
+
+#: booking-box.php:1179
+msgid "Bookings End on:"
+msgstr ""
+
+#: booking-box.php:1191
+msgid ""
+"The end date of the bookable block. For e.g. if you want to take bookings "
+"for the period of March to october, then the date here should be October 31."
+msgstr ""
+
+#: booking-box.php:1230
+msgid "Specific Date Time Slots"
+msgstr ""
+
+#: booking-box.php:1233 booking-box.php:1344
+msgid "Day"
+msgstr ""
+
+#: booking-box.php:1234 booking-box.php:1345
+msgid "Start Time"
+msgstr ""
+
+#: booking-box.php:1235 booking-box.php:1346
+msgid "End Time"
+msgstr ""
+
+#: booking-box.php:1236 booking-box.php:1347
+msgid "Note"
+msgstr ""
+
+#: booking-box.php:1237 booking-box.php:1348
+msgid "Maximum Bookings"
+msgstr ""
+
+#: booking-box.php:1238 booking-box.php:1349
+msgid "Global Check"
+msgstr ""
+
+#: booking-box.php:1240 booking-box.php:1351
+msgid "Delete All"
+msgstr ""
+
+#: booking-box.php:1341
+msgid "Recurring Days Time Slots"
+msgstr ""
+
+#: booking-process.php:915
+msgid ""
+"Some of the dates in the selected range are on rent. Please try another date "
+"range."
+msgstr ""
+
+#: booking-process.php:1357 booking-process.php:1362 booking-process.php:1435
+#: booking-process.php:1441
+msgid "Holiday"
+msgstr ""
+
+#: booking-process.php:1369 booking-process.php:1376 booking-process.php:1447
+msgid "Unavailable for Booking"
+msgstr ""
+
+#: booking-process.php:1429
+msgid "Booked"
+msgstr ""
+
+#: booking-process.php:1634 booking-process.php:1651 booking-process.php:1668
+#: booking-process.php:1738 booking-process.php:1756 booking-process.php:1773
+msgid ""
+"Some of the dates in the selected range are unavailable. Please try another "
+"date range."
+msgstr ""
+
+#: class-view-bookings-table.php:123
+msgid "All"
+msgstr ""
+
+#: class-view-bookings-table.php:124
+msgid "Bookings From Today Onwards"
+msgstr ""
+
+#: class-view-bookings-table.php:125
+msgid "Todays Check-ins"
+msgstr ""
+
+#: class-view-bookings-table.php:126
+msgid "Todays Check-outs"
+msgstr ""
+
+#: class-view-bookings-table.php:135 view-bookings.php:95
+msgid "Order ID"
+msgstr ""
+
+#: class-view-bookings-table.php:136 view-bookings.php:96
+msgid "Customer Name"
+msgstr ""
+
+#: class-view-bookings-table.php:137 view-bookings.php:97
+msgid "Product Name"
+msgstr ""
+
+#: class-view-bookings-table.php:138 global-menu.php:58 global-menu.php:65
+#: global-menu.php:72 view-bookings.php:98
+msgid "Check-in Date"
+msgstr ""
+
+#: class-view-bookings-table.php:139 global-menu.php:59 global-menu.php:66
+#: global-menu.php:73 view-bookings.php:99
+msgid "Check-out Date"
+msgstr ""
+
+#: class-view-bookings-table.php:140 global-menu.php:60 global-menu.php:67
+#: global-menu.php:74 lang.php:17 lang.php:34 lang.php:39
+#: view-bookings.php:100
+msgid "Booking Time"
+msgstr ""
+
+#: class-view-bookings-table.php:141 view-bookings.php:101
+msgid "Quantity"
+msgstr ""
+
+#: class-view-bookings-table.php:142 view-bookings.php:102
+msgid "Amount"
+msgstr ""
+
+#: class-view-bookings-table.php:143 view-bookings.php:103
+msgid "Order Date"
+msgstr ""
+
+#: class-view-bookings-table.php:144 fixed-block.php:625
+#: price-by-range.php:720 special-booking-price.php:169
+#: special-booking-price.php:223 special-booking-price.php:317
+#: special-booking-price.php:341
+msgid "Actions"
+msgstr ""
+
+#: class-view-bookings-table.php:169
+msgid "Search"
+msgstr ""
+
+#: fixed-block.php:32
+msgid "Any Days"
+msgstr ""
+
+#: fixed-block.php:116
+msgid "Select Period :"
+msgstr ""
+
+#: fixed-block.php:173
+msgid "Fixed Block Booking"
+msgstr ""
+
+#: fixed-block.php:187
+msgid "Enable Fixed Block Booking:"
+msgstr ""
+
+#: fixed-block.php:204
+msgid "Enable to allow Fixed Block Pricing for the product."
+msgstr ""
+
+#: fixed-block.php:221
+msgid "Add New Booking Block"
+msgstr ""
+
+#: fixed-block.php:238
+msgid "Enter a Block:"
+msgstr ""
+
+#: fixed-block.php:244
+msgid "Booking Block Name: "
+msgstr ""
+
+#: fixed-block.php:245
+msgid "Number of days: "
+msgstr ""
+
+#: fixed-block.php:246
+msgid "Start Day: "
+msgstr ""
+
+#: fixed-block.php:247
+msgid "End Day: "
+msgstr ""
+
+#: fixed-block.php:248
+msgid "Price: "
+msgstr ""
+
+#: fixed-block.php:303 special-booking-price.php:190
+msgid "Price cannot be blank."
+msgstr ""
+
+#: fixed-block.php:462 price-by-range.php:508
+msgid "Are you sure you want to delete this block?"
+msgstr ""
+
+#: fixed-block.php:477 price-by-range.php:523
+msgid "Are you sure you want to delete all the blocks?"
+msgstr ""
+
+#: fixed-block.php:616
+msgid "Booking Blocks"
+msgstr ""
+
+#: fixed-block.php:617
+msgid "Delete All Blocks"
+msgstr ""
+
+#: fixed-block.php:620
+msgid "Block Name"
+msgstr ""
+
+#: fixed-block.php:621
+msgid "Number of Days"
+msgstr ""
+
+#: fixed-block.php:622
+msgid "Start Day"
+msgstr ""
+
+#: fixed-block.php:623
+msgid "End Day"
+msgstr ""
+
+#: fixed-block.php:624 special-booking-price.php:168
+#: special-booking-price.php:223 special-booking-price.php:317
+#: special-booking-price.php:341
+msgid "Price"
+msgstr ""
+
+#: fixed-block.php:804 fixed-block.php:814
+msgid "Please select an option"
+msgstr ""
+
+#: global-menu.php:16
+msgid "View Bookings"
+msgstr ""
+
+#: global-menu.php:17 license.php:33 license.php:42
+msgid "Activate License"
+msgstr ""
+
+#: global-menu.php:48
+msgid "Global Booking Settings"
+msgstr ""
+
+#: global-menu.php:49
+msgid "Booking Labels"
+msgstr ""
+
+#: global-menu.php:50
+msgid "Email Reminders"
+msgstr ""
+
+#: global-menu.php:61
+msgid "Choose Time Text"
+msgstr ""
+
+#: global-menu.php:68
+msgid "ICS File Name"
+msgstr ""
+
+#: global-menu.php:89 global-menu.php:216
+msgid "Your settings have been saved."
+msgstr ""
+
+#: global-menu.php:98
+msgid "Labels"
+msgstr ""
+
+#: global-menu.php:102
+msgid "Labels on product page"
+msgstr ""
+
+#: global-menu.php:103
+msgid "This sets the Labels on the Product Page."
+msgstr ""
+
+#: global-menu.php:118
+msgid "Labels on order received page and in email notification"
+msgstr ""
+
+#: global-menu.php:119
+msgid "This sets the Labels on the Order Recieved and Email Notification page."
+msgstr ""
+
+#: global-menu.php:134
+msgid "Labels on Cart & Check-out Page"
+msgstr ""
+
+#: global-menu.php:135
+msgid "This sets the Label on the Cart and the Checkout page."
+msgstr ""
+
+#: global-menu.php:151 global-menu.php:610
+msgid "Save Changes"
+msgstr ""
+
+#: global-menu.php:234
+msgid "Language:"
+msgstr ""
+
+#: global-menu.php:256 global-menu.php:359
+msgid "Choose the language for your booking calendar."
+msgstr ""
+
+#: global-menu.php:262
+msgid "Date Format:"
+msgstr ""
+
+#: global-menu.php:282
+msgid ""
+"The format in which the booking date appears to the customers on the product "
+"page once the date is selected"
+msgstr ""
+
+#: global-menu.php:288
+msgid "Time Format:"
+msgstr ""
+
+#: global-menu.php:307
+msgid ""
+"The format in which booking time appears to the customers on the product "
+"page once the time / time slot is selected"
+msgstr ""
+
+#: global-menu.php:313
+msgid "Number of months to show in calendar:"
+msgstr ""
+
+#: global-menu.php:333
+msgid ""
+"The number of months to be shown on the calendar. If the booking dates spans "
+"across 2 months, then dates of 2 months can be shown simultaneously without "
+"the need to press Next or Back buttons."
+msgstr ""
+
+#: global-menu.php:338
+msgid "First Day on Calendar:"
+msgstr ""
+
+#: global-menu.php:364
+msgid "Show \"Add to Calendar\" button on Order Received page:"
+msgstr ""
+
+#: global-menu.php:375
+msgid ""
+"Shows the 'Add to Calendar' button on the Order Received page. On clicking "
+"the button, an ICS file will be downloaded."
+msgstr ""
+
+#: global-menu.php:381
+msgid "Send bookings as attachments (ICS files) in email notifications:"
+msgstr ""
+
+#: global-menu.php:392
+msgid ""
+"Allow customers to export bookings as ICS file after placing an order. Sends "
+"ICS files as attachments in email notifications."
+msgstr ""
+
+#: global-menu.php:397
+msgid "Preview Theme & Language:"
+msgstr ""
+
+#: global-menu.php:409
+msgid ""
+"Select the theme for the calendar. You can choose a theme which blends with "
+"the design of your website."
+msgstr ""
+
+#: global-menu.php:461
+msgid ""
+"Select dates for which the booking will be completely disabled for all the "
+"products in your WooCommerce store."
+msgstr ""
+
+#: global-menu.php:462
+msgid ""
+"Please click on the date in calendar to add or delete the date from the "
+"holiday list."
+msgstr ""
+
+#: global-menu.php:468
+msgid "Global Time Slot Booking:"
+msgstr ""
+
+#: global-menu.php:478
+msgid ""
+"Please select this checkbox if you want ALL time slots to be unavailable for "
+"booking in all products once the lockout for that time slot is reached for "
+"any product."
+msgstr ""
+
+#: global-menu.php:484
+msgid "Enable Rounding of Prices:"
+msgstr ""
+
+#: global-menu.php:495
+msgid "Rounds the Price to the nearest Integer value."
+msgstr ""
+
+#: global-menu.php:500
+msgid "Duplicate dates from first product in the cart to other products:"
+msgstr ""
+
+#: global-menu.php:510
+msgid ""
+"Please select this checkbox if you want to select the date globally for All "
+"products once selected for a product and added to cart."
+msgstr ""
+
+#: global-menu.php:515
+msgid "Enable Availability Display on the Product page:"
+msgstr ""
+
+#: global-menu.php:525
+msgid ""
+"Please select this checkbox if you want to display the number of bookings "
+"available for a given product on a given date and time."
+msgstr ""
+
+#: global-menu.php:531
+msgid "Charge Woocommerce product addons options on a Per Day Basis:"
+msgstr ""
+
+#: global-menu.php:542
+msgid ""
+"Please select this checkbox if you want to add the option price of "
+"woocommerce product addon addon with the number of booking days for Multiple "
+"Day Booking."
+msgstr ""
+
+#: global-menu.php:548
+msgid "Minimum Day Booking:"
+msgstr ""
+
+#: global-menu.php:560
+msgid "Enter minimum days of booking for Multiple days booking."
+msgstr ""
+
+#: global-menu.php:587
+msgid "Minimum number of days to choose:"
+msgstr ""
+
+#: global-menu.php:600
+msgid ""
+"The minimum number days you want to be booked for multiple day booking. For "
+"example, if you require minimum 2 days for booking, enter the value 2 in "
+"this field."
+msgstr ""
+
+#: ics.php:52 ics.php:72
+msgid "Add to Calendar"
+msgstr ""
+
+#: lang.php:15 lang.php:32 lang.php:37
+msgid "Start Date"
+msgstr ""
+
+#: lang.php:16 lang.php:33 lang.php:38
+msgid "End Date"
+msgstr ""
+
+#: lang.php:18
+msgid "Comments"
+msgstr ""
+
+#: lang.php:22 lang.php:43
+msgid " has only "
+msgstr ""
+
+#: lang.php:23
+msgid " tickets available for the time slot "
+msgstr ""
+
+#: lang.php:27 lang.php:48
+msgid "For "
+msgstr ""
+
+#: lang.php:28
+msgid ", the timeslot of "
+msgstr ""
+
+#: lang.php:29
+msgid " has been fully booked. Please try another time slot."
+msgstr ""
+
+#: lang.php:44
+msgid " tickets available for the date "
+msgstr ""
+
+#: lang.php:49
+msgid ", the date of "
+msgstr ""
+
+#: lang.php:50
+msgid " has been fully booked. Please try another date."
+msgstr ""
+
+#: lang.php:52 lang.php:57
+msgid "Total "
+msgstr ""
+
+#: lang.php:53
+msgid "Partial Deposit "
+msgstr ""
+
+#: lang.php:54 lang.php:59
+msgid "Amount Remaining"
+msgstr ""
+
+#: lang.php:55
+msgid "Partial Payment"
+msgstr ""
+
+#: lang.php:58
+msgid "Total Deposit "
+msgstr ""
+
+#: lang.php:60
+msgid "Total Payment"
+msgstr ""
+
+#: lang.php:62
+msgid " stock total"
+msgstr ""
+
+#: lang.php:63
+msgid " bookings are available on "
+msgstr ""
+
+#: lang.php:64
+msgid " bookings are available for the slot "
+msgstr ""
+
+#: lang.php:65
+msgid " on "
+msgstr ""
+
+#: license.php:14
+msgid "Plugin License Options"
+msgstr ""
+
+#: license.php:23
+msgid "License Key"
+msgstr ""
+
+#: license.php:27
+msgid "Enter your license key"
+msgstr ""
+
+#: license.php:37
+msgid "active"
+msgstr ""
+
+#: license.php:39
+msgid "Deactivate License"
+msgstr ""
+
+#: price-by-range.php:153
+msgid "Price by range of days"
+msgstr ""
+
+#: price-by-range.php:167
+msgid "Enable Price by range of days:"
+msgstr ""
+
+#: price-by-range.php:188
+msgid "Enable to charge by range of days."
+msgstr ""
+
+#: price-by-range.php:205
+msgid "Add New Range"
+msgstr ""
+
+#: price-by-range.php:212
+msgid "Enter a Range:"
+msgstr ""
+
+#: price-by-range.php:228
+msgid "Minimum Number of days: "
+msgstr ""
+
+#: price-by-range.php:229
+msgid "Maximum Number of days: "
+msgstr ""
+
+#: price-by-range.php:230
+msgid "Price Per Day: "
+msgstr ""
+
+#: price-by-range.php:231
+msgid "Fixed Price: "
+msgstr ""
+
+#: price-by-range.php:336
+msgid "Both Price cannot be blank."
+msgstr ""
+
+#: price-by-range.php:339
+msgid "Please enter a valid date range."
+msgstr ""
+
+#: price-by-range.php:342
+msgid "Minimum number of days should be less than the Maximum number of days."
+msgstr ""
+
+#: price-by-range.php:704
+msgid "Booking Days Range"
+msgstr ""
+
+#: price-by-range.php:716
+msgid "Minimum number of Days"
+msgstr ""
+
+#: price-by-range.php:717
+msgid "Maximum number of Days"
+msgstr ""
+
+#: price-by-range.php:718
+msgid "Price per day"
+msgstr ""
+
+#: price-by-range.php:719
+msgid "Fixed price"
+msgstr ""
+
+#: special-booking-price.php:40
+msgid "Special Pricing"
+msgstr ""
+
+#: special-booking-price.php:86
+msgid "Edit Special Booking Price"
+msgstr ""
+
+#: special-booking-price.php:87
+msgid "Delete All Special Prices"
+msgstr ""
+
+#: special-booking-price.php:97
+msgid "Select Days:"
+msgstr ""
+
+#: special-booking-price.php:122
+msgid "Select Date:"
+msgstr ""
+
+#: special-booking-price.php:126
+msgid "Price:"
+msgstr ""
+
+#: special-booking-price.php:132
+msgid "Select Weekday"
+msgstr ""
+
+#: special-booking-price.php:138
+msgid "Select Weekday to set Price for"
+msgstr ""
+
+#: special-booking-price.php:143
+msgid "Select Date to set Price for"
+msgstr ""
+
+#: special-booking-price.php:148
+msgid "Set price for the selected day / date"
+msgstr ""
+
+#: special-booking-price.php:154
+msgid "Add Special Price"
+msgstr ""
+
+#: special-booking-price.php:163
+msgid "Special Booking Prices"
+msgstr ""
+
+#: special-booking-price.php:167
+msgid "Day / Date"
+msgstr ""
+
+#: special-booking-price.php:185
+msgid "Please select weekday or date for special pricing"
+msgstr ""
+
+#: special-booking-price.php:223 special-booking-price.php:317
+#: special-booking-price.php:341
+msgid "Day/Date"
+msgstr ""
+
+#: special-booking-price.php:305
+msgid "Are you sure you want to delete this special booking?"
+msgstr ""
+
+#: special-booking-price.php:324
+msgid "Are you sure you want to delete all the special prices?"
+msgstr ""
+
+#: timeslot-price.php:29
+msgid "Price for the time slot:"
+msgstr ""
+
+#: timeslot-price.php:32
+msgid "Please enter price for the timeslot."
+msgstr ""
+
+#: timeslot-price.php:112
+msgid "Time Slot Price"
+msgstr ""
+
+#: view-bookings.php:32
+msgid "All Bookings"
+msgstr ""
+
+#: view-bookings.php:37
+msgid "Create Booking"
+msgstr ""
+
+#: view-bookings.php:41
+msgid "View Booking Listing"
+msgstr ""
+
+#: view-bookings.php:41 view-bookings.php:54
+msgid "Calendar View"
+msgstr ""
+
+#: view-bookings.php:45
+msgid "Print"
+msgstr ""
+
+#: view-bookings.php:46
+msgid "CSV"
+msgstr ""
+
+#: widget-product-search.php:11
+msgid ""
+"Allows customers to search all the products based on checkin & checkout "
+"dates."
+msgstr ""
+
+#: widget-product-search.php:13
+msgid "WooCommerce Bookings Availability Search"
+msgstr ""
+
+#: widget-product-search.php:185
+msgid "Title Label:"
+msgstr ""
+
+#: widget-product-search.php:188
+msgid "Start Date Label:"
+msgstr ""
+
+#: widget-product-search.php:190
+msgid "End Date Label:"
+msgstr ""
+
+#: widget-product-search.php:192
+msgid "Search Button Label:"
+msgstr ""
+
+#: widget-product-search.php:194
+msgid "Text (appears below Search button)"
+msgstr ""

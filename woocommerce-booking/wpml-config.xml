@@ -1,0 +1,19 @@
+<wpml-config>
+
+<admin-texts>
+	<key name="book.time-select-option"/>
+	<key name="book.time-label"/>
+	<key name="book.date-label"/>
+	<key name="checkout.date-label"/>
+
+	<key name="book.item-cart-date"/>
+	<key name="checkout.item-cart-date"/>
+	<key name="book.item-cart-time"/>
+
+	<key name="book.item-meta-date"/>
+	<key name="checkout.item-meta-date"/>
+	<key name="book.item-meta-time"/>
+	<key name="book.ics-file-name"/>
+</admin-texts>
+
+</wpml-config>

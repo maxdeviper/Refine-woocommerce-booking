@@ -1,27 +1,27 @@
 <?php
-$weekdays = array('booking_weekday_0' => 'Sunday',
-				  'booking_weekday_1' => 'Monday',
-				  'booking_weekday_2' => 'Tuesday',
-				  'booking_weekday_3' => 'Wednesday',
-				  'booking_weekday_4' => 'Thursday',
-				  'booking_weekday_5' => 'Friday',
-				  'booking_weekday_6' => 'Saturday'
-				);
+$weekdays = array('booking_weekday_0' => __( 'Sunday',      'woocommerce-booking' ),
+				  'booking_weekday_1' => __( 'Monday',      'woocommerce-booking' ),
+				  'booking_weekday_2' => __( 'Tuesday',     'woocommerce-booking' ),
+				  'booking_weekday_3' => __( 'Wednesday',   'woocommerce-booking' ),
+				  'booking_weekday_4' => __( 'Thursday',    'woocommerce-booking' ),
+				  'booking_weekday_5' => __( 'Friday',      'woocommerce-booking' ),
+				  'booking_weekday_6' => __( 'Saturday',    'woocommerce-booking' )
+				  );
 $days = array('0' => 'Sunday',
 			  '1' => 'Monday',
 			  '2' => 'Tuesday',
-						'3' => 'Wednesday',
-						'4' => 'Thursday',
-						'5' => 'Friday',
-						'6' => 'Saturday'
-				);
+			  '3' => 'Wednesday',
+			  '4' => 'Thursday',
+			  '5' => 'Friday',
+			  '6' => 'Saturday'
+			 );
 				
-				$from_slot_hrs = array();
-				$from_slot_min = array();
-				$to_slot_hrs = array();
-				$to_slot_min = array();
-				$time_note = array();
-				$lockout_time = array();
+				$from_slot_hrs  =   array();
+				$from_slot_min  =   array();
+				$to_slot_hrs    =   array();
+				$to_slot_min    =   array();
+				$time_note      =   array();
+				$lockout_time   =   array();
 				
 				$languages = array(
 							 'af' => 'Afrikaans',
@@ -77,7 +77,6 @@ $days = array('0' => 'Sunday',
 							 'sk' => 'Slovak',
 							 'sl' => 'Slovenian',
 							 'sr' => 'Serbian',
-						//	 'sr-SR' => 'Serbian',
 							 'fi' => 'Finnish',
 							 'sv' => 'Swedish',
 							 'ta' => 'Tamil',
@@ -105,41 +104,43 @@ $days = array('0' => 'Sunday',
 										  'DD, MM d, yy' => 'l, F j, Y',
 										  'D, MM d, yy' => 'D, F j, Y');
 										
-				$time_formats = array('12' => '12 hour',
-						      '24' => '24 hour');
+				$time_formats = array('12' => __( '12 hour', 'woocommerce-booking' ),
+						              '24' => __( '24 hour', 'woocommerce-booking' ) 
+						             );
 										  
-				$calendar_themes = array('smoothness' => 'Smoothness',
-						'ui-lightness' => 'UI lightness',
-						'ui-darkness' => 'UI darkness',
-						'start' => 'Start',
-						'redmond' => 'Redmond',
-						'sunny' => 'Sunny',
-						'overcast' => 'Overcast',
-						'le-frog' => 'Le Frog',
-						'flick' => 'Flick',
-						'pepper-grinder' => 'Pepper Grinder',
-						'eggplant' => 'Eggplant',
-						'dark-hive' => 'Dark Hive',
-						'cupertino' => 'Cupertino',
-						'south-street' => 'South Street',
-						'blitzer' => 'Blitzer',
-						'humanity' => 'Humanity',
-						'hot-sneaks' => 'Hot sneaks',
-						'excite-bike' => 'Excite Bike',
-						'vader' => 'Vader',
-						'dot-luv' => 'Dot Luv',
-						'mint-choc' => 'Mint Choc',
-						'black-tie' => 'Black Tie',
-						'trontastic' => 'Trontastic',
-						'swanky-purse' => 'Swanky Purse'
-				);
+										  
+				$calendar_themes    = array('smoothness' => 'Smoothness',
+                    						'ui-lightness' => 'UI lightness',
+                    						'ui-darkness' => 'UI darkness',
+                    						'start' => 'Start',
+                    						'redmond' => 'Redmond',
+                    						'sunny' => 'Sunny',
+                    						'overcast' => 'Overcast',
+                    						'le-frog' => 'Le Frog',
+                    						'flick' => 'Flick',
+                    						'pepper-grinder' => 'Pepper Grinder',
+                    						'eggplant' => 'Eggplant',
+                    						'dark-hive' => 'Dark Hive',
+                    						'cupertino' => 'Cupertino',
+                    						'south-street' => 'South Street',
+                    						'blitzer' => 'Blitzer',
+                    						'humanity' => 'Humanity',
+                    						'hot-sneaks' => 'Hot sneaks',
+                    						'excite-bike' => 'Excite Bike',
+                    						'vader' => 'Vader',
+                    						'dot-luv' => 'Dot Luv',
+                    						'mint-choc' => 'Mint Choc',
+                    						'black-tie' => 'Black Tie',
+                    						'trontastic' => 'Trontastic',
+                    						'swanky-purse' => 'Swanky Purse'
+				                            );
 
 	global $calendar_themes, $time_formats, $date_formats, $languages, $days, $weekdays;
 
-        /****************************
+         /****************************
          * This function return the array based on string passed for it.
-         *************************/
-	function bkap_get_book_arrays($str){
+         ****************************/
+	function bkap_get_book_arrays( $str ){
 		global $calendar_themes, $time_formats, $date_formats, $languages, $days, $weekdays;
 	
 		return $$str;

@@ -30,7 +30,8 @@ foreach ( $postslist as $post ) :
 	// order_info temp foreach START
   	foreach($order_info as $temp){   
   	
-  		if(($temp["meta_key"] == $booking_date_label) ) {
+  		if(($temp["meta_key"] == $booking_date_label) )
+  		{
 			$is_start_date = "true" ;
 		}
 		
@@ -100,7 +101,8 @@ foreach ( $postslist as $post ) :
 			$reminders_array = json_decode(get_post_meta( $order_id, "_emailreminders_send_id", true ));
 			
 			$emailreminders_send_id = array();
-			if ($reminders_array != null && count($reminders_array) > 0) {
+			if ($reminders_array != null && count($reminders_array) > 0)
+			{
 				$emailreminders_send_id = array_values($reminders_array);
 			}
 			
@@ -144,7 +146,8 @@ foreach ( $postslist as $post ) :
 			echo ("[time_difference=".($time_difference < $timer)."]<br/>");*/
 			
 			// Is time_difference IF START			
-			if($time_difference < $timer) {					
+			if($time_difference < $timer)
+			{					
 				
 				$to = get_post_meta( $order_id, "_billing_email", true ).",".$email;
 				
@@ -153,7 +156,8 @@ foreach ( $postslist as $post ) :
 				$message = str_replace("[last_name]",get_post_meta( $order_id, "_billing_last_name", true ),$message);
 				$message = str_replace("[date]", $start_date ,$message);
 				
-				if (isset($booking_time_start_and_end)) {
+				if (isset($booking_time_start_and_end))
+				{
 					$message = str_replace("[time]", $booking_time_start_and_end ,$message);
 				}
 				$message = str_replace("[shop_name]", get_option("blogname") ,$message);
@@ -166,7 +170,8 @@ foreach ( $postslist as $post ) :
 				$subject = str_replace("[last_name]",get_post_meta( $order_id, "_billing_last_name", true ),$subject);
 				$subject = str_replace("[date]", $start_date ,$subject);
 				
-				if (isset($booking_time_start_and_end)) {
+				if (isset($booking_time_start_and_end))
+				{
 					$subject = str_replace("[time]", $booking_time_start_and_end ,$subject);
 				}
 				
