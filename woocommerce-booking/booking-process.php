@@ -1772,13 +1772,10 @@ class bkap_booking_process {
 							    
 				                    var delay_date = jQuery("#wapbk_hidden_default_date").val();
     								var split_date = delay_date.split("-"); 
-    								var delay_days = new Date (split_date[1] + "/" + split_date[0] + "/"+ split_date[2]);
-					            
-					                // This will check if Rental Addon Same day booking option not enabled then only increase the date by +1 day.
-					                if( jQuery("#wapbk_same_day").val() != "on") { 
-        							    var delay_days_checkout = delay_days.getDate() + 1; 
-        							    delay_days = new Date ( split_date[1] + "/" + delay_days_checkout + "/"+ split_date[2]); 
-    							    }
+    								var delay_days = new Date (split_date[1] + "/" + split_date[0] + "/"+ split_date[2]); 
+ -    							    var delay_days_checkout = delay_days.getDate() + 1; 
+ -    							    delay_days = new Date ( split_date[1] + "/" + delay_days_checkout + "/"+ split_date[2]); 
+ -    							    
 					                
     							    // This Will ensure if ay week days are blocked via filter then it will populate correct date to front end.
     							    var disabled_checkout_week_days = eval("["+jQuery("#wapbk_block_checkout_weekdays").val()+"]"); 
@@ -1791,7 +1788,7 @@ class bkap_booking_process {
     							   }
     							    // check if check and checkout date are same , if it is then increase checkout date
     							    var checkin_date = jQuery("#inline_calendar").datepicker( "getDate" );
-    							    if ( delay_days.getTime() == checkin_date.getTime() && jQuery("#wapbk_same_day").val() != "on" ){
+    							    if ( delay_days.getTime() == checkin_date.getTime() ){
     							         
     							         var delay_days_checkout = delay_days.getDate() + 1; 
     							         delay_days = new Date ( split_date[1] + "/" + delay_days_checkout + "/"+ split_date[2]); 
