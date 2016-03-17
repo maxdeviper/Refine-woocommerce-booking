@@ -265,7 +265,7 @@ class bkap_common{
 	     
 	    // order date
 	    $post_data = get_post( $order_id );
-	    $booking_object->orer_date = $post_data->post_date;
+	    $booking_object->order_date = $post_data->post_date;
 	     
 	    // product ID
 	    $booking_object->product_id = wc_get_order_item_meta( $item_id, '_product_id' );

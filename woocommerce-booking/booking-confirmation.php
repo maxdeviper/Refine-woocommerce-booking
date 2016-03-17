@@ -41,7 +41,7 @@ if ( ! class_exists( 'bkap_booking_confirmation' ) ) {
             add_action( 'admin_init', array( &$this, 'load_view_booking_page' ) );
             
             // Ajax calls
-            add_action( 'init', array( &$this, 'bkap_confirmations_ajax' ) );
+            add_action( 'admin_init', array( &$this, 'bkap_confirmations_ajax' ) );
             
             // Cart Validations
             add_filter( 'bkap_validate_cart_products', array( &$this, 'bkap_validate_conflicting_products' ), 10, 2 );
