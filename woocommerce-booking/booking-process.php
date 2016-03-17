@@ -1291,7 +1291,7 @@ class bkap_booking_process {
 					
 					$hidden_date                   =   '';
 					$hidden_date_checkout          =   '';
-					global $bkap_block_booking;
+					$bkap_block_booking = new bkap_block_booking();
 					$number_of_fixed_price_blocks  =   $bkap_block_booking->bkap_get_fixed_blocks_count( $post->ID );
 
 					if ( isset( $_SESSION['start_date'] ) && $_SESSION['start_date'] != '' ) {
@@ -1413,7 +1413,7 @@ class bkap_booking_process {
 							});
 							jQuery("#ui-datepicker-div").wrap("<div class=\"hasDatepicker\"></div>");');
 				} else {
-					global $bkap_block_booking;
+					$bkap_block_booking = new bkap_block_booking();
 					$number_of_fixed_price_blocks  =   $bkap_block_booking->bkap_get_fixed_blocks_count( $post->ID );
 					
 					$hidden_date                   =   '';
