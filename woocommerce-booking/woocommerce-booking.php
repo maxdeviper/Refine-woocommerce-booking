@@ -37,27 +37,7 @@ $edd_updater = new EDD_BOOK_Plugin_Updater( EDD_SL_STORE_URL_BOOK, __FILE__, arr
 )
 );
 
-include_once('lang.php');
 include_once('bkap-config.php');
-include_once('bkap-common.php');
-include_once('availability-search.php');
-include_once('price-by-range.php');
-include_once('fixed-block.php');
-include_once('special-booking-price.php');
-include_once('admin-bookings.php');
-include_once('validation.php');
-include_once('checkout.php');
-include_once('cart.php');
-include_once('ics.php');
-include_once('cancel-order.php');
-include_once('booking-process.php');
-include_once('global-menu.php');
-include_once('booking-box.php');
-include_once('timeslot-price.php');
-include_once( 'booking-confirmation.php' );
-include_once( 'class-booking-email-manager.php' );
-include_once( 'variation-lockout.php' );
-include_once( 'attribute-lockout.php' );
 
 register_uninstall_hook( __FILE__, 'bkap_woocommerce_booking_delete' );
 
@@ -137,9 +117,14 @@ function is_booking_active() {
 		class woocommerce_booking {
 			
 			public function __construct() {
+			    
+			    add_action( 'admin_init', array( &$this, 'bkap_check_compatibility' ) );
 				
 			    define( 'BKAP_BOOKINGS_TEMPLATE_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/templates/' );
 			    
+			    add_action( 'init', array( &$this, 'bkap_include_files' ) );
+			    add_action( 'admin_init', array( &$this, 'bkap_include_files' ) );
+			     
 				// Initialize settings
 				register_activation_hook( __FILE__,                     array( &$this, 'bkap_bookings_activate' ) );
 				//Add plugin doc and forum link in description
@@ -208,6 +193,79 @@ function is_booking_active() {
 				add_filter( 'woocommerce_hidden_order_itemmeta',        array( 'bkap_checkout', 'bkap_hidden_order_itemmeta'), 10, 1 );
 			}
 			
+			/**
+			 * Check if WooCommerce is active.
+			 */
+			public static function bkap_check_woo_installed() {
+			    	
+			    if ( class_exists( 'WooCommerce' ) ) {
+			        return true;
+			    } else {
+			        return false;
+			    }
+			}
+			
+			/**
+			 * Ensure that the booking plugin is deactivated when WooCommerce
+			 * is deactivated.
+			 */
+			public static function bkap_check_compatibility() {
+			
+			    if ( ! self::bkap_check_woo_installed() ) {
+			
+			        if ( is_plugin_active( plugin_basename( __FILE__ ) ) ) {
+			            deactivate_plugins( plugin_basename( __FILE__ ) );
+			
+			            add_action( 'admin_notices', array( 'woocommerce_booking', 'bkap_disabled_notice' ) );
+			            if ( isset( $_GET['activate'] ) ) {
+			                unset( $_GET['activate'] );
+			            }
+			
+			        }
+			
+			    }
+			}
+			
+			/**
+			 * Display a notice in the admin Plugins page if the booking plugin is
+			 * activated while WooCommerce is deactivated.
+			 */
+			public static function bkap_disabled_notice() {
+			
+			    $class = 'notice notice-error';
+			    $message = __( 'WooCommerce Booking and Appointment Plugin requires WooCommerce installed and activate.', 'woocommerce-booking' );
+			
+			    printf( '<div class="%1$s"><p>%2$s</p></div>', $class, $message );
+			
+			}
+				
+			/**
+			 * Include the plugin files
+			 */
+			public static function bkap_include_files() {
+			    include_once( 'lang.php' );
+			    include_once( 'bkap-common.php' );
+			    include_once( 'availability-search.php' );
+			    include_once( 'price-by-range.php' );
+			    include_once( 'fixed-block.php' );
+			    include_once( 'special-booking-price.php' );
+			    include_once( 'admin-bookings.php' );
+			    include_once( 'validation.php' );
+			    include_once( 'checkout.php' );
+			    include_once( 'cart.php' );
+			    include_once( 'ics.php' );
+			    include_once( 'cancel-order.php' );
+			    include_once( 'booking-process.php' );
+			    include_once( 'global-menu.php' );
+			    include_once( 'booking-box.php' );
+			    include_once( 'timeslot-price.php' );
+			    include_once( 'booking-confirmation.php' );
+			    include_once( 'class-booking-email-manager.php' );
+			    include_once( 'variation-lockout.php' );
+			    include_once( 'attribute-lockout.php' );
+			    	
+			}
+				
 			/**
 			 * Show row meta on the plugin screen.
 			 *
@@ -400,6 +458,10 @@ function is_booking_active() {
              */
 			function bkap_bookings_activate() {
 				
+			    if ( ! self::bkap_check_woo_installed() ) {    
+			        return;
+			    }
+			    
 				global $wpdb;
 				
 				$table_name         =   $wpdb->prefix . "booking_history";
