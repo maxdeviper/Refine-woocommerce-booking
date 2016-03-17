@@ -5,7 +5,7 @@ if ( ! class_exists( 'bkap_booking_confirmation' ) ) {
         public function __construct() {
             
             // Add a function to include required files
-            add_action( 'init', array( &$this, 'bkap_includes' ) );
+            add_action( 'init', array( &$this, 'bkap_includes' ), 99 );
             
             // add checkbox in admin
             add_action( 'bkap_after_product_holidays', array( &$this, 'confirmation_checkbox' ), 10, 1 );
