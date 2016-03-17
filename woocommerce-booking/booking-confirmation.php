@@ -282,22 +282,13 @@ if ( ! class_exists( 'bkap_booking_confirmation' ) ) {
 		    
 		    if ( isset( $_product ) ) {
     		    $product_id = $_product->id;
-
-    		    // get the booking settings for the product
-    		    $booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true );
     		    
     		    if ( isset( $item[ 'wapbk_booking_status' ] ) ) { 
                     $_status = $item[ 'wapbk_booking_status' ];
     		    }
     		    
     		    if ( ( isset( $item[ 'type' ] ) && 'line_item' == $item[ 'type' ] ) && ( ( isset( $_status ) && '' != $_status ) || ( ! isset( $_status ) ) ) ) {
-                    
-                    // if the product has a tour operator assigned, then the tour operator should also hv the ability to approve/reject the booking
-                    if ( isset( $booking_settings[ 'booking_tour_operator' ] ) && $booking_settings[ 'booking_tour_operator' ] == get_current_user_id() ) {
-		                $args = array( 'page' => 'operator_bookings', 'item_id' => $item_id );
-		            } else {
-		                $args = array( 'page' => 'woocommerce_history_page', 'item_id' => $item_id );
-		            }    
+    		        $args = array( 'page' => 'woocommerce_history_page', 'item_id' => $item_id );
     		        ?>
     		        <td>
                         <a href="<?php echo esc_url_raw( add_query_arg( $args, admin_url() . 'admin.php' ) ); ?>"><?php _e( 'View Booking', 'woocommerce-booking' ); ?></a>
@@ -354,131 +345,52 @@ if ( ! class_exists( 'bkap_booking_confirmation' ) ) {
 		    $item_id = $_POST[ 'item_id' ];
 		    $_status = $_POST[ 'status' ];
 		    wc_update_order_item_meta( $item_id, '_wapbk_booking_status', $_status );
+		    
+		    // if the booking has been denied, release the bookings for re-allotment
+		    
+		    if ( 'cancelled' == $_status ) { 
+		    
+		        $array = array();
 		        
-	        // get the order ID
-	        $order_id = 0;
-	        $query_order_id = "SELECT order_id FROM `". $wpdb->prefix."woocommerce_order_items`
-                                WHERE order_item_id = %d";
-	        $get_order_id = $wpdb->get_results( $wpdb->prepare( $query_order_id, $item_id ) );
-	        
-	        if ( isset( $get_order_id ) && is_array( $get_order_id ) && count( $get_order_id ) > 0 ) {
-	            $order_id = $get_order_id[0]->order_id;
-	        }
-	        
-	        //create order object
-	        $order = new WC_Order( $order_id );
-	        
-	        // order details
-	        $order_data = $order->get_items();
-	        
-	        $item_value = $order_data[ $item_id ];
+		        // get the order ID
+		        $order_id = 0;
+		        $query_order_id = "SELECT order_id FROM `". $wpdb->prefix."woocommerce_order_items`
+                                    WHERE order_item_id = %d";
+		        $get_order_id = $wpdb->get_results( $wpdb->prepare( $query_order_id, $item_id ) );
 		        
-	        // if the booking has been denied, release the bookings for re-allotment
+		        if ( isset( $get_order_id ) && is_array( $get_order_id ) && count( $get_order_id ) > 0 ) {
+		            $order_id = $get_order_id[0]->order_id;
+		        }
 		        
-	        if ( 'cancelled' == $_status ) {
+		        //create order object
+		        $order = new WC_Order( $order_id );
+		        
+		        // order details
+		        $order_data = $order->get_items();
+		        
+		        $item_value = $order_data[ $item_id ];
 		        
 		        $select_query =   "SELECT booking_id FROM `".$wpdb->prefix."booking_order_history`
 						  WHERE order_id= %d";
 		        $results      =   $wpdb->get_results ( $wpdb->prepare( $select_query, $order_id ) );
 		        
-		        $booking_details = array();
-		        
-		        foreach ( $results as $key => $value ) {
-		        
-		            $select_query_post   =   "SELECT post_id,start_date, end_date, from_time, to_time FROM `".$wpdb->prefix."booking_history`
+		        foreach( $results as $k => $v ) {
+		            $b[]                 =   $v->booking_id;
+		            $select_query_post   =   "SELECT post_id,id FROM `".$wpdb->prefix."booking_history`
 								     WHERE id= %d";
-		             
-		            $results_post      =   $wpdb->get_results( $wpdb->prepare( $select_query_post, $value->booking_id ) );
-		        
-		            $booking_info = array( 'post_id' => $results_post[0]->post_id,
-		                'start_date' => $results_post[0]->start_date,
-		                'end_date' => $results_post[0]->end_date,
-		                'from_time' => $results_post[0]->from_time,
-		                'to_time' => $results_post[0]->to_time
-		            );
-		            $booking_details[ $value->booking_id ] = $booking_info;
-		        
+		            $results_post[]      =   $wpdb->get_results( $wpdb->prepare( $select_query_post, $v->booking_id ) );
+		            	
 		        }
 		        
-                foreach ( $booking_details as $booking_id => $booking_data ) {
-		            if ( $item_value[ 'product_id' ] == $booking_data['post_id'] ) {
-		                // cross check the date and time as well as the product can be added to the cart more than once with different booking details
-		                if ( $item_value[ 'wapbk_booking_date' ] == $booking_data[ 'start_date' ] ) {
-		        
-		                    $time = $booking_data[ 'from_time' ] . ' - ' . $booking_data[ 'to_time' ];
-		                    if ( isset( $item_value[ 'wapbk_checkout_date' ] ) && ( $item_value[ 'wapbk_checkout_date' ] == $booking_data[ 'end_date' ] ) ) {
-		                        $item_booking_id = $booking_id;
-		                        break;
-		                    } else if( isset( $item_value[ 'wapbk_time_slot' ] ) && ( $item_value[ 'wapbk_time_slot'] == $time ) ) {
-		                        $item_booking_id = $booking_id;
-		                        break;
-		                    } else {
-		                        $item_booking_id = $booking_id;
-		                        break;
-		                    }
-		                }
+		        if ( isset( $results_post ) && count( $results_post ) > 0 && $results_post != false ) {
+		            	
+		            foreach( $results_post as $k => $v ) {
+		                if ( isset( $v[0]->id ) ) $a[ $v[0]->post_id ][] = $v[0]->id;
 		            }
 		        }
 		        
-		        bkap_cancel_order::bkap_reallot_item( $item_value, $item_booking_id, $order_id );
-		        
-	        } else if ( 'confirmed' == $_status ) {
-	        
-	            require_once plugin_dir_path( __FILE__ ) . '/includes/class.gcal.php';
-	            // add event in GCal if sync is set to autmated
-	            $gcal = new BKAP_Gcal();
-	        
-	            if( $gcal->get_api_mode() == "directly" ) {
-	        
-	                $event_details = array();
-	        
-	                $event_details[ 'hidden_booking_date' ] = $item_value[ 'wapbk_booking_date' ];
-	        
-	                if ( isset( $item_value[ 'wapbk_checkout_date' ] ) && $item_value[ 'wapbk_checkout_date' ] != '' ) {
-	                    $event_details[ 'hidden_checkout_date' ] = $item_value[ 'wapbk_checkout_date' ];
-	                }
-	        
-	                if ( isset( $item_value[ 'wapbk_time_slot' ] ) && $item_value[ 'wapbk_time_slot' ] != '' ) {
-	                    $event_details[ 'time_slot' ] = $item_value[ 'wapbk_time_slot' ];
-	                }
-	        
-	                $event_details[ 'billing_email' ] = $order->billing_email;
-	                $event_details[ 'billing_first_name' ] = $order->billing_first_name;
-	                $event_details[ 'billing_last_name' ] = $order->billing_last_name;
-	                $event_details[ 'billing_address_1' ] = $order->billing_address_1;
-	                $event_details[ 'billing_address_2' ] = $order->$billing_address_2;
-	                $event_details[ 'billing_city' ] = $order->billing_city;
-	        
-	                $event_details[ 'billing_phone' ] = $order->billing_phone;
-	                $event_details[ 'order_comments' ] = $order->customer_note;
-	                $event_details[ 'order_id' ] = $order_id;
-	        
-	        
-	                if ( isset( $order->shipping_first_name ) && $order->shipping_first_name != '' ) {
-	                    $event_details[ 'shipping_first_name' ] = $order->shipping_first_name;
-	                }
-	                if ( isset( $order->shipping_last_name ) && $order->shipping_last_name != '' ) {
-	                    $event_details[ 'shipping_last_name' ] = $order->shipping_last_name;
-	                }
-	                if( isset( $order->shipping_address_1 ) && $order->shipping_address_1 != '' ) {
-	                    $event_details[ 'shipping_address_1' ] = $order->shipping_address_1;
-	                }
-	                if ( isset( $order->shipping_address_2 ) && $order->shipping_address_2 != '' ) {
-	                    $event_details[ 'shipping_address_2' ] = $order->shipping_address_2;
-	                }
-	                if ( isset( $order->shipping_city ) && $order->shipping_city != '' ) {
-	                    $event_details[ 'shipping_city' ] = $order->shipping_city;
-	                }
-	        
-	                $_product = wc_get_product( $item_value[ 'product_id' ] );
-	                $event_details[ 'product_name' ] = $_product->get_title();
-	                $event_details[ 'product_qty' ] = $item_value[ 'quantity' ];
-	        
-	                $event_details[ 'product_total' ] = $item_value[ 'line_total' ];
-	        
-	                $gcal->insert_event( $event_details, $item_id, false );
-	            }
-	        }
+		        bkap_cancel_order::bkap_reallot_item( $item_value, $array, $a, $b, $order_id );
+		    }
 
 		    // create an instance of the WC_Emails class , so emails are sent out to customers
             new WC_Emails();

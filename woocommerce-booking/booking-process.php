@@ -640,7 +640,7 @@ class bkap_booking_process {
 		if ( isset( $booking_settings['booking_enable_date'] ) && $booking_settings['booking_enable_date'] == 'on' ) {
 			// Display the stock div above the dates			
 			if ( isset( $global_settings->booking_availability_display ) && $global_settings->booking_availability_display == 'on' ) { 
-				$available_stock = __( 'Unlimited ', 'woocommerce-booking' );
+				$available_stock = "Unlimited";
 				
 				if ( $booking_settings['booking_date_lockout'] > 0 ) {
 					$available_stock = $booking_settings['booking_date_lockout'];
@@ -719,16 +719,9 @@ class bkap_booking_process {
                             						jQuery("#wapbk_hidden_date").val(current_dt); 
 							    
                                                     var variation_id = 0;
-							                        
-							                         // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-							                        // So this fix ensure that if class property does not find then look for the NAME property.
-							                        var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                                                    
-							                        if ( jQuery( ".variation_id" ).length > 0 ) {
+                                                    if ( jQuery( ".variation_id" ).length > 0 ) {
                                                         variation_id = jQuery( ".variation_id" ).val();
-                                                    }else if( variation_by_name > 0 ){
-                    		                             variation_id = document.getElementsByName("variation_id")[0].value; 
-                    		                        }
+                                                    }
                                                         
                                                     var field_name = "#wapbk_bookings_placed_" + variation_id;
                                                     var bookings_placed = "";
@@ -846,16 +839,9 @@ class bkap_booking_process {
                             							}
                             							    
                         							    var variation_id = 0;
-                            							// On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                                                        // So this fix ensure that if class property does not find then look for the NAME property.
-                                                        
-                                                        var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                                                                                    							    
                                                         if ( jQuery( ".variation_id" ).length > 0 ) {
                                                             variation_id = jQuery( ".variation_id" ).val();
-                                                        }else if( variation_by_name > 0 ){
-                    		                                  variation_id = document.getElementsByName("variation_id")[0].value; 
-                    		                            }
+                                                        }
                                                             
                                                         var field_name = "#wapbk_bookings_placed_" + variation_id;
                                                         var bookings_placed = "";
@@ -954,14 +940,11 @@ class bkap_booking_process {
 					foreach ( $bkap_attributes as $attr_key => $attr_value ) {
 					    $attribute_name_list .= urldecode( $attr_key ) . ',';
 					}
-
-					$variation_price_list = '';
 					
 					foreach ( $variations as $var_key => $var_val ) {
 						
-					    $variation_price_list .= $var_val[ 'variation_id' ] . '=>' . $var_val[ 'display_price' ] . ',';
 					    foreach ( $var_val['attributes'] as $a_key => $a_val ) {
-						
+							
 					        if ( !in_array( $a_key, $attribute_fields ) ) {
 								$attribute_fields[]         =   $a_key;
 								$a_key                      = urldecode ( $a_key );
@@ -998,7 +981,6 @@ class bkap_booking_process {
 					print("<input type='hidden' id='wapbk_hidden_booked_dates' name='wapbk_hidden_booked_dates'/>");					
 					print("<input type='hidden' id='wapbk_hidden_booked_dates_checkout' name='wapbk_hidden_booked_dates_checkout'/>");
 					print("<input type='hidden' id='wapbk_attribute_list' name='wapbk_attribute_list' value='" . $attribute_name_list . "' />");
-					print( "<input type='hidden' id='wapbk_var_price_list' name='wapbk_var_price_list' value='" . $variation_price_list . "' />" );
 					
 				}
 				
@@ -1099,17 +1081,9 @@ class bkap_booking_process {
                 						    /**************************************/
                     						// Variation Lockout Booked
                     						var variation_id_selected = 0;
-                    						
-                    						 // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                                            // So this fix ensure that if class property does not find then look for the NAME property.
-                                            
-                                            var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                                            
                                             if ( jQuery( ".variation_id" ).length > 0 ) {
                                                 variation_id_selected = jQuery( ".variation_id" ).val();
-                                            }else if( variation_by_name > 0 ){
-            		                             variation_id = document.getElementsByName("variation_id")[0].value; 
-            		                        }
+                                            }
                     						var field_name = "#wapbk_lockout_checkout_" + variation_id_selected;
                     						var variation_lockoutdates = eval("["+jQuery(field_name).val()+"]");
                     						var date = new_end = new Date(CheckinDate);
@@ -1132,16 +1106,9 @@ class bkap_booking_process {
                     						}';
 				}
 						
-				$product_price = '';
-				if ( isset( $product_type ) && 'simple' == $product_type ) {
-				    if ( $booking_settings != '' && ( isset( $booking_settings['booking_enable_date'] ) && $booking_settings['booking_enable_date'] == 'on') && ( isset( $booking_settings['booking_purchase_without_date'] ) && $booking_settings['booking_purchase_without_date'] == 'on') ) {
-				        $variation_id = 0;
-				        $product_price = bkap_common::bkap_get_price( $post->ID, $variation_id, $product_type);
-				    }
-				}
 				print ('<div id="show_time_slot" name="show_time_slot" class="show_time_slot"> </div>
-						<input type="hidden" id="total_price_calculated" name="total_price_calculated" value="' . $product_price . '" />
-				        <input type="hidden" id="bkap_price_charged" name="bkap_price_charged" value="' . $product_price . '" />
+						<input type="hidden" id="total_price_calculated" name="total_price_calculated"/>
+				        <input type="hidden" id="bkap_price_charged" name="bkap_price_charged" />
 				        <input type="hidden" id="bkap_gf_options_total" name="bkap_gf_options_total" value="0" />
 						<input type="hidden" id="wapbk_multiple_day_booking" name="wapbk_multiple_day_booking" value="'.$booking_settings['booking_enable_multiple_day'].'"/>');
 				
@@ -1195,17 +1162,9 @@ class bkap_booking_process {
         									}
                             // for variable products
 						    var variation_id = 0;
-				            
-				             // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                            // So this fix ensure that if class property does not find then look for the NAME property.
-                            
-                            var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                                            
 						    if ( jQuery( ".variation_id" ).length > 0 ) {
                                 variation_id = jQuery( ".variation_id" ).val();
-						    }else if( variation_by_name > 0 ){
-	                             variation_id = document.getElementsByName("variation_id")[0].value; 
-	                        }
+						    }
         							var data = {
         							id: '.$duplicate_of.',
         						    post_id: '.$post->ID.',
@@ -1263,21 +1222,13 @@ class bkap_booking_process {
                                                                     if ( jQuery( "#inline_calendar" ).length > 0 ) {
                                                                         jQuery( "#inline_calendar" ).datepicker( "refresh" );
                                                                     }
-                                                                    var variation_id_selected = 0;
-    										        
-    										                        // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                                                                    // So this fix ensure that if class property does not find then look for the NAME property.
-                                                                    
-                                                                    var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                                                                      
-                                                                    if ( jQuery( ".variation_id" ).length > 0 ) {
-                                                                        variation_id_selected = jQuery( ".variation_id" ).val();
-                                                                    }else if( variation_by_name > 0 ){
-                                    		                             variation_id = document.getElementsByName("variation_id")[0].value; 
-                                    		                        }
 																	if (jQuery("#wapbk_hidden_date").val() != "")  {
 																		// if variation lockout is set the date fields should be reset if the date selected is blocked for thew new variation selected
-					                                                   var recalculate = "YES";
+					                                                   
+                					                                   var variation_id_selected = 0;
+                                                                        if ( jQuery( ".variation_id" ).length > 0 ) {
+                                                                            variation_id_selected = jQuery( ".variation_id" ).val();
+                                                                        }
                 					    
                                                                         var field_name = "#wapbk_lockout_" + variation_id_selected;
                                                                         var variation_lockoutdates = jQuery( field_name ).val();
@@ -1285,33 +1236,18 @@ class bkap_booking_process {
                 					                                   var date_booked = jQuery( "#wapbk_hidden_date" ).val();
                 					    
                 					                                   if ( typeof variation_lockoutdates != "undefined" ) {
-                    					                                   if ( variation_lockoutdates.indexOf( date_booked ) > -1 ) {
-                                                                                recalculate = "NO";     										                               										                                  
+                    					                                   if ( variation_lockoutdates.indexOf( date_booked ) > -1 ) {    										                                  
                     					                                       jQuery( "#wapbk_hidden_date" ).val( "" );
                     									                       jQuery( "#booking_calender" ).val( "" );
                     					                                       jQuery( ".single_add_to_cart_button" ).hide();
                                                                                jQuery( ".quantity" ).hide();
                     					                                   } 
                 					                                   }
-    										        
-    										                           if ( "YES" == recalculate ) {    
-    										                              bkap_process_date( jQuery( "#wapbk_hidden_date" ).val() ); 
-                                        								    '.$addon_price.'
-            					                                       } else {
-                                                                            jQuery("#show_stock_status").html("");
-            					                                       }
+					    
+    										                           bkap_process_date( jQuery( "#wapbk_hidden_date" ).val() ); 
+                                        								'.$addon_price.'
 																		
-                                                                    } else if ( variation_id_selected > 0 ) {
-            					                                       var variation_list = jQuery( "#wapbk_var_price_list" ).val().split( "," );
-            					                                       for( i=0; i < variation_list.length; i++ ) {
-            					                                           var price_list = variation_list[i].split( "=>" );
-            					                                           if ( price_list[0] == variation_id_selected ) {
-            					                                               jQuery( "#total_price_calculated" ).val( price_list[1] );
-            					                                               jQuery( "#bkap_price_charged" ).val( price_list[1] );
-            					                                           }
-            					                                       }
-                                                                    }
-                                                                });';
+                                    							}});';
 						
 					} else {
 						$attribute_change_single_day_var  =   '';
@@ -1392,35 +1328,6 @@ class bkap_booking_process {
 							break;
 						}
 					}
-					
-					print("<input type='hidden' id='display_date' name='display_date' val=''/>");
-					$booking_date = '' ;
-						
-					//this fix is for fixed block with inline calender pre-populated dates accourding to selected block.
-					?>
-					<script type="text/javascript">
-					function test_bkap_init_inline() {
-						
-						var checkin_date = jQuery("#booking_calender").val();
-						var days = jQuery("#block_option_number_of_day").val();
-						var data = {
-								current_date: checkin_date,
-								add_days    : days,
-								action: 'bkap_get_fixed_block_inline_date'
-							};
-						    jQuery( "#ajax_img" ).show();
-							jQuery.post( '<?php echo get_admin_url() . 'admin-ajax.php'; ?>', data, function( response ) {
-								jQuery( "#ajax_img" ).hide();
-
-								var res = response.substring(0, 10);
-							    var split = res.split("-");
-								var Checkout_date_test = new Date(split[0], split[1] - 1, split[2]);
-								jQuery("#inline_calendar_checkout").datepicker("setDate",Checkout_date_test);
-							});
-					}
-					window.onload = test_bkap_init_inline;
-					</script>
-					<?php
 					
 					print('<input type="hidden" id="wapbk_hidden_date" name="wapbk_hidden_date" value="'.$hidden_date.'"/>
 						<input type="hidden" id="wapbk_hidden_date_checkout" name="wapbk_hidden_date_checkout" value="'.$hidden_date_checkout.'"/>
@@ -1566,35 +1473,7 @@ class bkap_booking_process {
     					                window.onload = bkap_init;				                
     					                </script>
     			                   <?php
-    					        }else if( isset( $booking_settings['booking_fixed_block_enable'] ) && $booking_settings['booking_fixed_block_enable']  == "yes" ){	// fix of auto populating wrong dates when fixed block booking is enabled for the product 	        
-    					           
-    					            ?>
-	            					<script type="text/javascript">
-	            					function test_bkap_init() { 
-	            						var checkin_date = jQuery("#booking_calender").val();
-	            						var days = jQuery("#block_option_number_of_day").val();
-	            						var data = {
-	            								current_date: checkin_date,
-	            								add_days    : days,
-	            								action: 'bkap_get_fixed_block_inline_date'
-	            							};
-	            						    jQuery( "#ajax_img" ).show();
-	            							jQuery.post( '<?php echo get_admin_url() . 'admin-ajax.php'; ?>', data, function( response ) {
-	            								jQuery( "#ajax_img" ).hide();
-	            								var res = response.substring(0, 10);
-	            							    var split = res.split("-");
-	            								var Checkout_date_test = new Date(split[0], split[1] - 1, split[2]); //alert(Checkout_date_test);
-	            								jQuery("#wapbk_hidden_date_checkout").val(Checkout_date_test);
-	            							    jQuery("#booking_calender_checkout").datepicker("setDate",Checkout_date_test);
-	                                          //jQuery("#inline_calendar_checkout").datepicker("option", "minDate", delay_days);
-	            							    bkap_calculate_price();
-	            							});
-	            					}
-	            					window.onload = test_bkap_init;
-	            					</script>
-	            					<?php
-	            					
-    					        } else {
+    					        }else{
     					          $hidden_date_checkout = date( 'j-n-Y', strtotime( $_SESSION[ 'end_date' ] ) );
     					        }
 						    }
@@ -1773,16 +1652,16 @@ class bkap_booking_process {
 				                    var delay_date = jQuery("#wapbk_hidden_default_date").val();
     								var split_date = delay_date.split("-"); 
     								var delay_days = new Date (split_date[1] + "/" + split_date[0] + "/"+ split_date[2]); 
- -    							    var delay_days_checkout = delay_days.getDate() + 1; 
- -    							    delay_days = new Date ( split_date[1] + "/" + delay_days_checkout + "/"+ split_date[2]); 
- -    							    
-					                
+    							    var delay_days_checkout = delay_days.getDate() + 1; 
+    							    delay_days = new Date ( split_date[1] + "/" + delay_days_checkout + "/"+ split_date[2]); 
+    							    
     							    // This Will ensure if ay week days are blocked via filter then it will populate correct date to front end.
     							    var disabled_checkout_week_days = eval("["+jQuery("#wapbk_block_checkout_weekdays").val()+"]"); 
     							    for ( jjj = 0; jjj < disabled_checkout_week_days.length; jjj++) {
             							
     							    if( jQuery.inArray( delay_days.getDay(), disabled_checkout_week_days) != -1 ) {
             								var delay_days_checkout = delay_days.getDate() + 1; // james fix
+    							            
     							            delay_days = new Date ( split_date[1] + "/" + delay_days_checkout + "/"+ split_date[2]); 
             							}
     							   }
@@ -1987,17 +1866,9 @@ class bkap_booking_process {
 					    
                             /****** Variation Lockout start *******/
                             var variation_id_selected = 0;
-					    
-					        // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                            // So this fix ensure that if class property does not find then look for the NAME property.
-                            
-                            var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                             
                             if ( jQuery( ".variation_id" ).length > 0 ) {
 						            variation_id_selected = jQuery( ".variation_id" ).val();
-					        }else if( variation_by_name > 0 ){
-	                             variation_id = document.getElementsByName("variation_id")[0].value; 
-	                        }
+					        }
 							var field_name = "#wapbk_lockout_" + variation_id_selected;
 							var lockoutdates = eval("["+jQuery(field_name).val()+"]");
 							var dt = new Date();
@@ -2123,17 +1994,9 @@ class bkap_booking_process {
 					    }
                             /****** Variation Lockout start *******/
                             var variation_id_selected = 0;
-					        
-					        // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                            // So this fix ensure that if class property does not find then look for the NAME property.
-                            
-                            var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                            					    
                             if ( jQuery( ".variation_id" ).length > 0 ) {
 						            variation_id_selected = jQuery( ".variation_id" ).val();
-					        }else if( variation_by_name > 0 ){
-	                             variation_id = document.getElementsByName("variation_id")[0].value; 
-	                        }
+					        }
 							var field_name = "#wapbk_lockout_" + variation_id_selected;
 							var lockoutdates = eval("["+jQuery(field_name).val()+"]");
 							var dt = new Date();
@@ -2211,17 +2074,9 @@ class bkap_booking_process {
 							}
 							
                             var variation_id = 0;
-					    
-					        // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                            // So this fix ensure that if class property does not find then look for the NAME property.
-                            
-                            var variation_by_name = document.getElementsByName( "variation_id" ).length;
-                            
                             if ( jQuery( ".variation_id" ).length > 0 ) {
                                 variation_id = jQuery( ".variation_id" ).val();
-                            }else if( variation_by_name > 0 ){
-	                             variation_id = document.getElementsByName("variation_id")[0].value; 
-	                        }
+                            }
                                 
                             var field_name = "#wapbk_bookings_placed_" + variation_id;
                             var bookings_placed = "";
@@ -2351,17 +2206,9 @@ class bkap_booking_process {
 								if (typeof time_slot_value != "undefined" && jQuery("#wapbk_availability_display").val() == "yes") {
 					    
                                     var variation_id = 0;
-					    
-					                // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                                    // So this fix ensure that if class property does not find then look for the NAME property.
-                                    
-                                    var variation_by_name = document.getElementsByName( "variation_id" ).length;
-					    
                                     if ( jQuery( ".variation_id" ).length > 0 ) {
                                         variation_id = jQuery( ".variation_id" ).val();
-                                    }else if( variation_by_name > 0 ){
-    		                             variation_id = document.getElementsByName("variation_id")[0].value; 
-    		                        }
+                                    }
                                     var field_name = "#wapbk_bookings_placed_" + variation_id;
                                     var time_slot_bookings_placed = "";
                                     if ( jQuery( field_name ).length > 0 ) {
@@ -2573,16 +2420,9 @@ class bkap_booking_process {
                             }
 
 							var variation_id_selected = 0;
-					    
-					        // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                            // So this fix ensure that if class property does not find then look for the NAME property.
-                            
-                            var variation_by_name = document.getElementsByName( "variation_id" ).length;
                             if ( jQuery( ".variation_id" ).length > 0 ) {
                                 variation_id_selected = jQuery( ".variation_id" ).val();
-                            }else if( variation_by_name > 0 ){
-	                             variation_id = document.getElementsByName("variation_id")[0].value; 
-	                        }
+                            }
 	
                             var field_name = "#wapbk_lockout_" + variation_id_selected;
                             var variation_lockoutdates = jQuery( field_name ).val();
@@ -2659,16 +2499,9 @@ class bkap_booking_process {
 								}
                                 // for variable products
 						        var variation_id = 0;
-					    
-					            // On some client site the hidden field for the varaition id is not populated using CLASS method. Instead of that it is populating with the NAME.
-                                // So this fix ensure that if class property does not find then look for the NAME property.
-                                
-                                var variation_by_name = document.getElementsByName( "variation_id" ).length;
 						        if ( jQuery( ".variation_id" ).length > 0 ) {
 						            variation_id = jQuery( ".variation_id" ).val();
-						        }else if( variation_by_name > 0 ){
-		                             variation_id = document.getElementsByName("variation_id")[0].value; 
-		                        }
+						        }
 								jQuery( "#ajax_img" ).show();
 								var data = {
 									booking_date: jQuery("#wapbk_hidden_date").val(),
@@ -2778,8 +2611,11 @@ class bkap_booking_process {
 	 * date for all types of bookings
 	 ***********************************************************/
 	public static function bkap_get_date_lockout() {
+		global $wpdb, $woocommerce;
 		
 		$product_id               =   $_POST['post_id'];		
+		// Booking settings		
+		$booking_settings         =   get_post_meta( $product_id , 'woocommerce_booking_settings' , true );   
 		// Checkin/Booking Date		
 		$date_formats             =   bkap_get_book_arrays( 'date_formats' ); 
 		// get the global settings to find the date formats
@@ -2790,10 +2626,263 @@ class bkap_booking_process {
 		$check_in_date            =   date( $date_format_set, $date );    		
 		$date_check_in            =   date( 'Y-m-d', $date );
 	
+		$available_tickets        =   0;
+		$unlimited                =   'YES';
+
 		$variation_id             =   $_POST[ 'variation_id' ];
 		$bookings_placed          =   $_POST[ 'bookings_placed' ];
+		
+		// assuming that variation lockout is not set
+		$check_availability = 'YES';
+		
+		// if it's a variable product and bookings placed field passed is non blanks
+		if ( isset( $variation_id ) && $variation_id > 0 ) {
+		
+		    $variation_lockout = get_post_meta( $variation_id, '_booking_lockout_field', true );
+		
+		    if ( isset( $variation_lockout ) && $variation_lockout > 0 ) {
+		        $check_availability = 'NO'; //set it to NO, so availability is not re calculated at the product level
+		        $variation_lockout_set = 'YES';
+		        $available_tickets = $variation_lockout;
+		        $date_check_in = date( 'j-n-Y', strtotime( $date_check_in ) );
+		
+		        // First we will check if lockout is set at the variation level
+		        if ( $booking_settings != '' && ( isset( $booking_settings[ 'booking_enable_time' ] ) && 'on' == $booking_settings[ 'booking_enable_time'] ) ) {
+		
+		            $number_of_slots = bkap_common::bkap_get_number_of_slots( $product_id, $date_check_in );
+		
+		            if ( isset( $number_of_slots ) && $number_of_slots > 0 ) {
+		        		      $available_tickets *= $number_of_slots;
+		            }
+		            // create an array of dates for which orders have already been placed and the qty for each date
+		            if ( isset( $bookings_placed ) && $bookings_placed != '' ) {
+		                // create an array of the dates
+		                $list_dates = explode( ",", $bookings_placed );
+		                foreach ($list_dates as $list_key => $list_value ) {
+		                    // separate the qty for each date & time slot
+		                    $explode_date = explode( '=>', $list_value );
+		
+		                    if ( isset( $explode_date[2]) && $explode_date[2] != '' ) {
+		                        $date = substr( $explode_date[0], 2, -2 );
+		                        $date_array[ $date ][ $explode_date[1] ] = $explode_date[ 2 ];
+		                    }
+		                }
+		            }
+		
+		            $orders_placed = 0;
+		            if ( isset( $date_array ) && is_array( $date_array ) && count( $date_array ) > 0 ) {
+		
+		                if ( array_key_exists( $date_check_in, $date_array ) ) {
+		                    foreach ( $date_array[ $date_check_in ] as $date_key => $date_value ) {
+		                        $orders_placed += $date_value;
+		                    }
+		                    $available_tickets = $available_tickets - $orders_placed;
+		                }
+		            }
+		
+		        } else {
+		
+		            if ( isset( $bookings_placed ) && $bookings_placed != '' ) {
+		                $list_dates = explode( ",", $bookings_placed );
+		
+		                foreach ($list_dates as $list_key => $list_value ) {
+		
+		                    $explode_date = explode( '=>', $list_value );
+		
+		                    if ( isset( $explode_date[1]) && $explode_date[1] != '' ) {
+		                        $date = substr( $explode_date[0], 2, -2 );
+		                        $date_array[$date] = $explode_date[1];
+		                    }
+		                }
+		            }
+		
+		            if ( isset( $date_array ) && is_array( $date_array ) && count( $date_array ) > 0 ) {
+		                if ( array_key_exists( $date_check_in, $date_array ) ) {
+		                    $orders_placed = $date_array[ $date_check_in ];
+		                    $available_tickets = $available_tickets - $orders_placed;
+		                }
+		            }
+		        }
+		
+		    } else { // if attribute lockout is set
+		
+		        $attributes           = get_post_meta( $product_id, '_product_attributes', true );
+		        // Product Attributes - Booking Settings
+		        $attribute_booking_data = get_post_meta( $product_id, '_bkap_attribute_settings', true );
+		
+		        if ( is_array( $attribute_booking_data ) && count( $attribute_booking_data ) > 0 ) {
+		
+		            $message = '';
+		            foreach ( $attribute_booking_data as $attr_name => $attr_settings ) {
+		                $attr_post_name = 'attribute_' . $attr_name;
+		
+		                if ( isset( $attr_settings[ 'booking_lockout_as_value' ] ) && 'on' == $attr_settings[ 'booking_lockout_as_value' ] && isset( $attr_settings[ 'booking_lockout' ] ) && $attr_settings[ 'booking_lockout' ] > 0 ) {
+		                    $attribute_lockout_set = 'YES';
+		                    $bookings_placed = $_POST[ 'attr_bookings_placed' ];
+		                    $check_availability = 'NO';
+		                    $available_tickets = $attr_settings[ 'booking_lockout' ];
+		
+		                    $date_check_in = date( 'j-n-Y', strtotime( $date_check_in ) );
+		
+		                    $number_of_slots = bkap_common::bkap_get_number_of_slots( $product_id, $date_check_in );
+		
+		                    if ( isset( $number_of_slots ) && $number_of_slots > 0 ) {
+		                        $available_tickets *= $number_of_slots;
+		                    }
+		
+		                    if ( isset( $bookings_placed ) && $bookings_placed != '' ) {
+		
+		                        $attribute_list = explode( ';', $bookings_placed );
+		
+		                        foreach ( $attribute_list as $attr_key => $attr_value ) {
+		
+		                            $attr_array = explode( ',', $attr_value );
+		
+		                            if ( $attr_name == $attr_array[ 0 ] ) {
+		
+		                                for ( $i = 1; $i < count( $attr_array ); $i++ ) {
+		                                    $explode_dates = explode( '=>', $attr_array[ $i] );
+		
+		                                    if ( isset( $explode_dates[0] ) && $explode_dates[0] != '' ) {
+		
+		                                        $date = substr( $explode_dates[0], 2, -2 );
+		
+		                                        if ( isset( $explode_dates[2] ) ) {
+		                                            $date_array[ $date ][ $explode_dates[1] ] = $explode_dates[2];
+		                                        } else {
+		                                            $date_array[ $date ] = $explode_dates[1];
+		                                        }
+		                                    }
+		                                }
+		                            }
+		                        }
+		
+		                        // check the availability for this attribute
+		                        $orders_placed = 0;
+		                        if ( isset( $date_array ) && is_array( $date_array ) && count( $date_array ) > 0 ) {
+		
+		                            if ( array_key_exists( $date_check_in, $date_array ) ) {
+		
+		                                if ( is_array( $date_array[ $date_check_in ] ) && count( $date_array[ $date_check_in ] ) > 0 ) {
+		                                    foreach ( $date_array[ $date_check_in ] as $date_key => $date_value ) {
+		                                        $orders_placed += $date_value;
+		                                    }
+		                                } else {
+		                                    $orders_placed = $date_array[ $date_check_in ];
+		                                }
+		
+		                                $available_tickets -= $orders_placed;
+		                            }
+		                        }
+		
+		                        $message    .=   $available_tickets . " " . $attributes[ $attr_name ][ 'name' ] . " " . bkap_get_book_t('book.available-stock') . " $check_in_date <br>";
+		                    }
+		                }
+		            }
+		        }
+		
+		    }
+		}
+		
+		if ( $check_availability == 'YES' ) {
+		
+    		// if multiple day booking is enabled then calculate the availability based on the total lockout in the settings
+    		if ($booking_settings != '' && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on' )) {
+    			// Set the default availability to the total lockout value
+    			$available_tickets   =   $booking_settings['booking_date_lockout']; 
+    			
+    			// Now fetch all the records for the product that have a date range which includes the start date
+    			$date_query          =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history` 
+    							         WHERE post_id = %d
+    							         AND start_date <= %s
+    							         AND end_date > %s";
+    			$results_date        =   $wpdb->get_results( $wpdb->prepare( $date_query, $product_id, $date_check_in, $date_check_in ) );
+    			
+    			// If records are found then the availability needs to be subtracted from the total lockout value
+    			if ($booking_settings['booking_date_lockout'] > 0) {
+    				$unlimited          =   'NO'; 
+    				$available_tickets  =   $booking_settings['booking_date_lockout'] - count( $results_date );
+    			}
+    		} else {
+    			// Fetch the record for that date from the Booking history table
+    			$date_query      =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
+            						 WHERE post_id = %d
+            						 AND start_date = %s
+            						 AND status = ''";
+    			$results_date    =   $wpdb->get_results($wpdb->prepare($date_query,$product_id,$date_check_in));
+    			
+    			if ( isset( $results_date ) && count( $results_date ) > 0 ) {
+    				
+    				// If records are found then the total available will be the total available for each time slot for that date
+    				// If its only day bookings, then only 1 record will be present, so this will work 
+    				foreach ( $results_date as $key => $value ) {
+    					
+    				    if ( $value->available_booking > 0 ) {
+    						$unlimited            =   'NO';
+    						$available_tickets   +=   $value->available_booking;
+    					}
+    				}
+    			}else { // if no record found and multiple day bookings r not enabled then get the base record for that weekday
+    				$weekday            =   date( 'w', strtotime( $date_check_in ) );
+    				$booking_weekday    =   'booking_weekday_' . $weekday;
+    				$base_query         =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
+            								WHERE post_id = %d
+            								AND weekday = %s
+            								AND start_date = '0000-00-00'
+            								AND status = ''";
+    				$results_base       =   $wpdb->get_results( $wpdb->prepare( $base_query, $product_id, $booking_weekday ) );
+    				
+    				if ( isset( $results_base ) && count( $results_base ) > 0 ) {
+    					
+    				    foreach ( $results_base as $key => $value ) {
+    						
+    				        if ( $value->available_booking > 0 ) {
+    							$unlimited           =   'NO';
+    							$available_tickets  +=   $value->available_booking;
+    						}
+    					}
+    				}	
+                }
+    		}
+		}
+	
+		// Check if the same product is already present in the cart
+		foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values ) {
+			$product_id_cart = $values['product_id'];
 			
-		$available_tickets = bkap_booking_process::bkap_get_date_availability( $product_id, $variation_id, $date_check_in, $check_in_date, $bookings_placed, $_POST[ 'attr_bookings_placed' ], '', true );
+			if ( $product_id_cart == $product_id ) {
+				
+			    $check_lockout = 'YES';
+			     
+			    if ( isset( $variation_lockout_set ) && 'YES' == $variation_lockout_set ) {
+			         
+			        if ( $variation_id != $values[ 'variation_id' ] ) {
+			            $check_lockout = 'NO';
+			        }
+			    } else if( isset( $attribute_lockout_set ) && 'YES' == $attribute_lockout_set ) {
+			        $check_lockout = 'NO';
+			    }
+			    if ( 'YES' == $check_lockout ) {
+    			    if ( isset( $values['bkap_booking'] ) ) {
+    					$booking = $values['bkap_booking'];
+    				}
+    				
+    				$quantity = $values['quantity'];
+    				
+    				if ( $booking[0]['hidden_date'] == $check_in_date ) {
+    					
+    				    if ( $available_tickets > 0 ) {
+    						$unlimited            =   'NO';
+    						$available_tickets   -=   $quantity;
+    					} 	
+    				}
+			    }
+			}
+		}
+		
+		if ( $available_tickets == 0 && $unlimited == 'YES' ) {
+			$available_tickets = "Unlimited ";
+		}
 		
 		if (  ! isset( $message ) || ( isset( $message ) && '' == $message ) ) {
     	    if ( isset( $_POST['checkin_date'] ) && $_POST['checkin_date'] != '' ){
@@ -2807,289 +2896,6 @@ class bkap_booking_process {
 		die();			
 	}
 	
-	public function bkap_get_date_availability( $product_id, $variation_id, $hidden_date, $check_in_date, $bookings_placed, $attr_bookings_placed, $hidden_checkout_date = '', $cart_check = true ) {
-	    
-	    global $wpdb;
-	    
-	    // Booking settings
-	    $booking_settings         =   get_post_meta( $product_id , 'woocommerce_booking_settings' , true );
-	    
-	    $available_tickets        =   0;
-	    $unlimited                =   'YES';
-	    
-	    // assuming that variation lockout is not set
-	    $check_availability = 'YES';
-	    
-	    // if it's a variable product and bookings placed field passed is non blanks
-	    if ( isset( $variation_id ) && $variation_id > 0 ) {
-	    
-	        $variation_lockout = get_post_meta( $variation_id, '_booking_lockout_field', true );
-	    
-	        if ( isset( $variation_lockout ) && $variation_lockout > 0 ) {
-	            $check_availability = 'NO'; //set it to NO, so availability is not re calculated at the product level
-	            $variation_lockout_set = 'YES';
-	            $available_tickets = $variation_lockout;
-	            $hidden_date = date( 'j-n-Y', strtotime( $hidden_date ) );
-	    
-	            // First we will check if lockout is set at the variation level
-	            if ( $booking_settings != '' && ( isset( $booking_settings[ 'booking_enable_time' ] ) && 'on' == $booking_settings[ 'booking_enable_time'] ) ) {
-	    
-	                $number_of_slots = bkap_common::bkap_get_number_of_slots( $product_id, $hidden_date );
-	    
-	                if ( isset( $number_of_slots ) && $number_of_slots > 0 ) {
-	                    $available_tickets *= $number_of_slots;
-	                }
-	                // create an array of dates for which orders have already been placed and the qty for each date
-	                if ( isset( $bookings_placed ) && $bookings_placed != '' ) {
-	                    // create an array of the dates
-	                    $list_dates = explode( ",", $bookings_placed );
-	                    foreach ($list_dates as $list_key => $list_value ) {
-	                        // separate the qty for each date & time slot
-	                        $explode_date = explode( '=>', $list_value );
-	    
-	                        if ( isset( $explode_date[2]) && $explode_date[2] != '' ) {
-	                            $date = substr( $explode_date[0], 2, -2 );
-	                            $date_array[ $date ][ $explode_date[1] ] = $explode_date[ 2 ];
-	                        }
-	                    }
-	                }
-	    
-	                $orders_placed = 0;
-	                if ( isset( $date_array ) && is_array( $date_array ) && count( $date_array ) > 0 ) {
-	    
-	                    if ( array_key_exists( $hidden_date, $date_array ) ) {
-	                        foreach ( $date_array[ $hidden_date ] as $date_key => $date_value ) {
-	                            $orders_placed += $date_value;
-	                        }
-	                        $available_tickets = $available_tickets - $orders_placed;
-	                    }
-	                }
-	    
-	            } else {
-	    
-	                if ( isset( $bookings_placed ) && $bookings_placed != '' ) {
-	                    $list_dates = explode( ",", $bookings_placed );
-	    
-	                    foreach ($list_dates as $list_key => $list_value ) {
-	    
-	                        $explode_date = explode( '=>', $list_value );
-	    
-	                        if ( isset( $explode_date[1]) && $explode_date[1] != '' ) {
-	                            $date = substr( $explode_date[0], 2, -2 );
-	                            $date_array[$date] = $explode_date[1];
-	                        }
-	                    }
-	                }
-	    
-	                if ( isset( $date_array ) && is_array( $date_array ) && count( $date_array ) > 0 ) {
-	                    if ( array_key_exists( $hidden_date, $date_array ) ) {
-	                        $orders_placed = $date_array[ $hidden_date ];
-	                        $available_tickets = $available_tickets - $orders_placed;
-	                    }
-	                }
-	            }
-	    
-	        } else { // if attribute lockout is set
-	    
-	            $attributes           = get_post_meta( $product_id, '_product_attributes', true );
-	            // Product Attributes - Booking Settings
-	            $attribute_booking_data = get_post_meta( $product_id, '_bkap_attribute_settings', true );
-	    
-	            if ( is_array( $attribute_booking_data ) && count( $attribute_booking_data ) > 0 ) {
-	    
-	                $message = '';
-	                foreach ( $attribute_booking_data as $attr_name => $attr_settings ) {
-	                    $attr_post_name = 'attribute_' . $attr_name;
-	    
-	                    if ( isset( $attr_settings[ 'booking_lockout_as_value' ] ) && 'on' == $attr_settings[ 'booking_lockout_as_value' ] && isset( $attr_settings[ 'booking_lockout' ] ) && $attr_settings[ 'booking_lockout' ] > 0 ) {
-	                        $attribute_lockout_set = 'YES';
-	                        $bookings_placed = $attr_bookings_placed;
-	                        $check_availability = 'NO';
-	                        $available_tickets = $attr_settings[ 'booking_lockout' ];
-	    
-	                        $hidden_date = date( 'j-n-Y', strtotime( $hidden_date ) );
-	    
-	                        $number_of_slots = bkap_common::bkap_get_number_of_slots( $product_id, $hidden_date );
-	    
-	                        if ( isset( $number_of_slots ) && $number_of_slots > 0 ) {
-	                            $available_tickets *= $number_of_slots;
-	                        }
-	    
-	                        if ( isset( $bookings_placed ) && $bookings_placed != '' ) {
-	    
-	                            $attribute_list = explode( ';', $bookings_placed );
-	    
-	                            foreach ( $attribute_list as $attr_key => $attr_value ) {
-	    
-	                                $attr_array = explode( ',', $attr_value );
-	    
-	                                if ( $attr_name == $attr_array[ 0 ] ) {
-	    
-	                                    for ( $i = 1; $i < count( $attr_array ); $i++ ) {
-	                                        $explode_dates = explode( '=>', $attr_array[ $i] );
-	    
-	                                        if ( isset( $explode_dates[0] ) && $explode_dates[0] != '' ) {
-	    
-	                                            $date = substr( $explode_dates[0], 2, -2 );
-	    
-	                                            if ( isset( $explode_dates[2] ) ) {
-	                                                $date_array[ $date ][ $explode_dates[1] ] = $explode_dates[2];
-	                                            } else {
-	                                                $date_array[ $date ] = $explode_dates[1];
-	                                            }
-	                                        }
-	                                    }
-	                                }
-	                            }
-	    
-	                            // check the availability for this attribute
-	                            $orders_placed = 0;
-	                            if ( isset( $date_array ) && is_array( $date_array ) && count( $date_array ) > 0 ) {
-	    
-	                                if ( array_key_exists( $hidden_date, $date_array ) ) {
-	    
-	                                    if ( is_array( $date_array[ $hidden_date ] ) && count( $date_array[ $hidden_date ] ) > 0 ) {
-	                                        foreach ( $date_array[ $hidden_date ] as $date_key => $date_value ) {
-	                                            $orders_placed += $date_value;
-	                                        }
-	                                    } else {
-	                                        $orders_placed = $date_array[ $hidden_date ];
-	                                    }
-	    
-	                                    $available_tickets -= $orders_placed;
-	                                }
-	                            }
-	    
-	                            $message    .=   $available_tickets . " " . $attributes[ $attr_name ][ 'name' ] . " " . bkap_get_book_t('book.available-stock') . " $check_in_date <br>";
-	                        }
-	                    }
-	                }
-	            }
-	    
-	        }
-	    }
-	    
-	    if ( $check_availability == 'YES' ) {
-	    
-	        // if multiple day booking is enabled then calculate the availability based on the total lockout in the settings
-	        if ($booking_settings != '' && (isset($booking_settings['booking_enable_multiple_day']) && $booking_settings['booking_enable_multiple_day'] == 'on' )) {
-	            // Set the default availability to the total lockout value
-	            $available_tickets   =   $booking_settings['booking_date_lockout'];
-	             
-	            if ( $cart_check ) { // if cart_check = true it means this has been called from front end product page
-    	            // Now fetch all the records for the product that have a date range which includes the start date
-    	            $date_query          =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
-        							         WHERE post_id = %d
-        							         AND start_date <= %s
-        							         AND end_date > %s";
-    	            $results_date        =   $wpdb->get_results( $wpdb->prepare( $date_query, $product_id, $hidden_date, $hidden_date ) );
-    	             
-    	            // If records are found then the availability needs to be subtracted from the total lockout value
-    	            if ($booking_settings['booking_date_lockout'] > 0) {
-    	                $unlimited          =   'NO';
-    	                $available_tickets  =   $booking_settings['booking_date_lockout'] - count( $results_date );
-    	            }
-	            } else if ( false === $cart_check && $hidden_checkout_date != '' ) { // this means it's been called for importing hence we need to check for the entire range
-	                
-	                // Now fetch all the records for the product that have a date range which includes the start date
-	                $date_query          =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
-        							         WHERE post_id = %d
-        							         AND start_date <= %s
-        							         AND end_date > %s";
-	                $results_date        =   $wpdb->get_results( $wpdb->prepare( $date_query, $product_id, $hidden_date, $hidden_checkout_date ) );
-	                
-	                // If records are found then the availability needs to be subtracted from the total lockout value
-	                if ($booking_settings['booking_date_lockout'] > 0) {
-	                    $unlimited          =   'NO';
-	                    $available_tickets  =   $booking_settings['booking_date_lockout'] - count( $results_date );
-	                }
-	            }
-	        } else {
-	            // Fetch the record for that date from the Booking history table
-	            $date_query      =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
-            						 WHERE post_id = %d
-            						 AND start_date = %s
-            						 AND status = ''";
-	            $results_date    =   $wpdb->get_results( $wpdb->prepare( $date_query, $product_id, $hidden_date ) );
-	             
-	            if ( isset( $results_date ) && count( $results_date ) > 0 ) {
-	    
-	                // If records are found then the total available will be the total available for each time slot for that date
-	                // If its only day bookings, then only 1 record will be present, so this will work
-	                foreach ( $results_date as $key => $value ) {
-	                    	
-	                    if ( $value->available_booking > 0 ) {
-	                        $unlimited            =   'NO';
-	                        $available_tickets   +=   $value->available_booking;
-	                    }
-	                }
-	            }else { // if no record found and multiple day bookings r not enabled then get the base record for that weekday
-	                $weekday            =   date( 'w', strtotime( $hidden_date ) );
-	                $booking_weekday    =   'booking_weekday_' . $weekday;
-	                $base_query         =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
-            								WHERE post_id = %d
-            								AND weekday = %s
-            								AND start_date = '0000-00-00'
-            								AND status = ''";
-	                $results_base       =   $wpdb->get_results( $wpdb->prepare( $base_query, $product_id, $booking_weekday ) );
-	    
-	                if ( isset( $results_base ) && count( $results_base ) > 0 ) {
-	                    	
-	                    foreach ( $results_base as $key => $value ) {
-	    
-	                        if ( $value->available_booking > 0 ) {
-	                            $unlimited           =   'NO';
-	                            $available_tickets  +=   $value->available_booking;
-	                        }
-	                    }
-	                } else {
-	                    $unlimited = 'NO'; // this will ensure that availability is not displayed as 'Unlimited' when no record is found. This might happen when importing bookings
-	                }
-	            }
-	        }
-	    }
-	    
-	    if ( $cart_check ) {
-    	    // Check if the same product is already present in the cart
-    	    foreach ( WC()->cart->get_cart() as $cart_item_key => $values ) {
-    	        $product_id_cart = $values['product_id'];
-    	        	
-    	        if ( $product_id_cart == $product_id ) {
-    	    
-    	            $check_lockout = 'YES';
-    	    
-    	            if ( isset( $variation_lockout_set ) && 'YES' == $variation_lockout_set ) {
-    	    
-    	                if ( $variation_id != $values[ 'variation_id' ] ) {
-    	                    $check_lockout = 'NO';
-    	                }
-    	            } else if( isset( $attribute_lockout_set ) && 'YES' == $attribute_lockout_set ) {
-    	                $check_lockout = 'NO';
-    	            }
-    	            if ( 'YES' == $check_lockout ) {
-    	                if ( isset( $values['bkap_booking'] ) ) {
-    	                    $booking = $values['bkap_booking'];
-    	                }
-    	    
-    	                $quantity = $values['quantity'];
-    	    
-    	                if ( $booking[0]['hidden_date'] == $check_in_date ) {
-    	                    	
-    	                    if ( $available_tickets > 0 ) {
-    	                        $unlimited            =   'NO';
-    	                        $available_tickets   -=   $quantity;
-    	                    }
-    	                }
-    	            }
-    	        }
-    	    }
-	    }
-	    
-	    if ( $available_tickets == 0 && $unlimited == 'YES' ) {
-	        $available_tickets = __( 'Unlimited ', 'woocommerce-booking' );
-	    }
-	    return $available_tickets;
-	}
 	/********************************************************************
 	 * This function displays the available bookings for a give time slot
 	 *******************************************************************/
@@ -3228,7 +3034,42 @@ class bkap_booking_process {
 				}
 				
 				if ( 'YES' == $check_availability ) {
-				    $available_tickets = bkap_booking_process::bkap_get_time_availability($product_id, $booking_date, $from_hrs, $to_hrs, 'YES' );
+    				$time_query     =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
+        								WHERE post_id = %d
+        								AND start_date = %s
+        								AND from_time = %s
+        								AND to_time = %s
+        								AND status = ''";
+    				$results_time   =   $wpdb->get_results( $wpdb->prepare( $time_query, $product_id, $booking_date, $from_hrs, $to_hrs ) );
+    				
+    				// If record is found then simply display the available bookings
+    				if ( isset( $results_time ) && count( $results_time ) > 0 ) {
+    					
+    				    if ( $results_time[0]->available_booking > 0 ) {
+    						$unlimited            =   'NO';
+    						$available_tickets    =   $results_time[0]->available_booking;
+    					}
+    				}
+    				// Else get the base record and the availability for that weekday
+    				else {
+    					$weekday           =   date( 'w', strtotime( $booking_date ) );
+    					$booking_weekday   =   'booking_weekday_' . $weekday;
+    					$base_query        =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
+            									WHERE post_id = %d
+            									AND weekday = %s
+            									AND from_time = %s
+            									AND to_time = %s
+            									ANd status = ''";
+    					$results_base      =   $wpdb->get_results( $wpdb->prepare( $base_query, $product_id, $booking_weekday, $from_hrs,$to_hrs ) );
+    					
+    					if ( isset( $results_base ) && count( $results_base ) > 0 ) { 
+    						
+    					    if ( $results_base[0]->available_booking > 0 ) {
+    							$unlimited           =   'NO';
+    							$available_tickets   =   $results_base[0]->available_booking;
+    						}
+    					}
+    				}
 				} else {
 				
 				    $booking_time = $from_hrs . ' - ' . $to_hrs;
@@ -3303,7 +3144,7 @@ class bkap_booking_process {
 				}
 				
 				if ( $available_tickets == 0 && $unlimited == 'YES' ) {
-					$available_tickets = __( 'Unlimited ', 'woocommerce-booking' );
+					$available_tickets = "Unlimited ";
 				}
 				if ( $attr_lockout_set !='YES' ) {
 				    $message .= $available_tickets . bkap_get_book_t('book.available-stock-time-msg1') . $time_slot_array[ $i ] . bkap_get_book_t('book.available-stock-time-msg2') . $booking_date_disply . "<br>";
@@ -3313,85 +3154,6 @@ class bkap_booking_process {
 		echo $message;
 		die();
 	}
-	
-	public static function bkap_get_time_availability( $product_id, $booking_date, $from_hrs, $to_hrs, $check_availability ) {
-	     
-	    global $wpdb;
-	     
-	    $available_tickets = 0;
-	    $unlimited = 'YES';
-	     
-	    if ( 'YES' == $check_availability ) {
-	        $time_query     =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
-            								WHERE post_id = %d
-            								AND start_date = %s
-            								AND from_time = %s
-            								AND to_time = %s
-            								AND status = ''";
-	        $results_time   =   $wpdb->get_results( $wpdb->prepare( $time_query, $product_id, $booking_date, $from_hrs, $to_hrs ) );
-	        	
-	        // If record is found then simply display the available bookings
-	        if ( isset( $results_time ) && count( $results_time ) > 0 ) {
-	
-	            if ( $results_time[0]->available_booking > 0 ) {
-	                $unlimited            =   'NO';
-	                $available_tickets    =   $results_time[0]->available_booking;
-	            }
-	        }
-	        // Else get the base record and the availability for that weekday
-	        else {
-	            $weekday           =   date( 'w', strtotime( $booking_date ) );
-	            $booking_weekday   =   'booking_weekday_' . $weekday;
-	            $base_query        =   "SELECT available_booking FROM `".$wpdb->prefix."booking_history`
-                									WHERE post_id = %d
-                									AND weekday = %s
-                									AND from_time = %s
-                									AND to_time = %s
-                									ANd status = ''";
-	            $results_base      =   $wpdb->get_results( $wpdb->prepare( $base_query, $product_id, $booking_weekday, $from_hrs,$to_hrs ) );
-	
-	            if ( isset( $results_base ) && count( $results_base ) > 0 ) {
-	                	
-	                if ( $results_base[0]->available_booking > 0 ) {
-	                    $unlimited           =   'NO';
-	                    $available_tickets   =   $results_base[0]->available_booking;
-	                }
-	            } else {
-	                $unlimited = 'NO'; // this will ensure that availability is not displayed as 'Unlimited' when no record is found. This might happen when importing bookings
-	            }
-	        }
-	    }
-	     
-	    if ( $available_tickets == 0 && $unlimited == 'YES' ) {
-	        $available_tickets = "Unlimited ";
-	    }
-	    return $available_tickets;
-	}
-	
-	public static function bkap_get_fixed_block_inline_date(){
-	     
-	   
-	    $add_days = $_POST['add_days'];
-	    // strtotime does not support all date formats. hence it is suggested to use the "DateTime date_create_from_format" fn
-	    $date_formats    =   bkap_get_book_arrays( 'date_formats' );
-	     
-	    // get the global settings to find the date formats
-	    $global_settings =   json_decode( get_option( 'woocommerce_booking_global_settings' ) );
-	    $date_format_set =   $date_formats[ $global_settings->booking_date_format ];
-	    $date_formatted  =   date_create_from_format( $date_format_set, $_POST['current_date'] );
-	    if ( isset( $date_formatted ) && $date_formatted != '' ) {
-	        $date = date_format( $date_formatted, 'Y-m-d' );
-	    }
-	    $date = strtotime($date);
-	    $date_timestamp_added_days = strtotime("+".$add_days ."day", $date);
-	    $date_final_checkout = date( 'Y-m-d', $date_timestamp_added_days );
-	    echo $date_final_checkout;
-	    
-	    die();
-	}
-	
-	
-	
 	/**********************************
 	* This function displays the price calculated on the frontend product page for Multiple day booking feature.
     ******************************************/

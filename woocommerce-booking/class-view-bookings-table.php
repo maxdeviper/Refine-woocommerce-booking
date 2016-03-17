@@ -69,10 +69,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 	 */
 	public $unpaid;
 	/**
-	* Total number of Bookings Imported from GCal
-	*/
-	public $gcal_reserved;
-	/**
 	 * Get things started
 	 *
 	 * @see WP_List_Table::__construct()
@@ -119,9 +115,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 			case 'unpaid':
 			    $total_items = $this->unpaid;
 			    break;
-		    case 'gcal_reserved':
-		        $total_items = $this->gcal_reserved;
-		        break;
 			default:
 				$total_items = $this->total_count;
 		}
@@ -146,7 +139,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 		$today_checkout_count     = '&nbsp;<span class="count">(' . $this->today_checkout_count   . ')</span>';
 		$unpaid                   = '&nbsp;<span class="count">(' . $this->unpaid   . ')</span>';
 		$pending_confirmation     = '&nbsp;<span class="count">(' . $this->pending_confirmation   . ')</span>';
-		$reserved_by_gcal         = '&nbsp;<span calss="count">(' . $this->gcal_reserved  . ')</span>';
 		
 		$views = array(
 				'all'		=> sprintf( '<a href="%s"%s>%s</a>', remove_query_arg( array( 'status', 'paged' ) ), $current === 'all' || $current == '' ? ' class="current"' : '', __( 'All', 'woocommerce-booking' ) . $total_count ),
@@ -154,8 +146,7 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 				'today_checkin'	=> sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'status' => 'today_checkin', 'paged' => FALSE ) ), $current === 'today_checkin' ? ' class="current"' : '', __( 'Todays Check-ins', 'woocommerce-booking' ) . $today_checkin_count ),
 				'today_checkout'	=> sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'status' => 'today_checkout', 'paged' => FALSE ) ), $current === 'today_checkout' ? ' class="current"' : '', __( 'Todays Check-outs', 'woocommerce-booking' ) . $today_checkout_count ),
                 'unpaid'	=> sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'status' => 'unpaid', 'paged' => FALSE ) ), $current === 'unpaid' ? ' class="current"' : '', __( 'Unpaid', 'woocommerce-booking' ) . $unpaid ),
-                'pending_confirmation'	=> sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'status' => 'pending_confirmation', 'paged' => FALSE ) ), $current === 'pending_confirmation' ? ' class="current"' : '', __( 'Pending Confirmation', 'woocommerce-booking' ) . $pending_confirmation ),
-                'gcal_reservations'	=> sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'status' => 'gcal_reservations', 'paged' => FALSE ) ), $current === 'gcal_reservations' ? ' class="current"' : '', __( 'Reserved By GCal', 'woocommerce-booking' ) . $reserved_by_gcal )
+                'pending_confirmation'	=> sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'status' => 'pending_confirmation', 'paged' => FALSE ) ), $current === 'pending_confirmation' ? ' class="current"' : '', __( 'Pending Confirmation', 'woocommerce-booking' ) . $pending_confirmation )
 		);
 	
 		return apply_filters( 'bkap_bookings_table_views', $views );
@@ -253,8 +244,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 		$this->today_checkout_count   = $bookings_count['today_checkout_count'];
 		$this->unpaid                 = $bookings_count[ 'unpaid' ];
 		$this->pending_confirmation   = $bookings_count[ 'pending_confirmation' ];
-		$this->gcal_reserved          = $bookings_count[ 'gcal_reservations' ];
-		
 	}
 	
 	public function bkap_count_bookings( $args ) {
@@ -266,8 +255,7 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 				'today_checkin_count' => 0,
 				'today_checkout_count' => 0,
                 'unpaid' => 0,
-                'pending_confirmation' => 0,
-                'gcal_reservations' => 0
+                'pending_confirmation' => 0
 				);
 		
 		//Today's date
@@ -300,8 +288,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 				
 				// Order details
 				$order   =   new WC_Order( $value->order_id );
-				$created_via = get_post_meta( $value->order_id, '_created_via', true );
-				
 				$get_items = $order->get_items();
 				
 				foreach( $get_items as $item_id => $item_values ) {
@@ -336,9 +322,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 				                }
 				                
 				            }
-				            if ( isset( $created_via ) && $created_via == 'GCal' ) {
-				                $bookings_count[ 'gcal_reservations' ] += 1;
-				            }
 				        }
 				    }
 				}
@@ -353,13 +336,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 		global $wpdb;
 		
 		$return_bookings  = array();
-		
-		if ( isset( $_GET[ 'paged' ] ) && $_GET[ 'paged' ] > 1 ) {
-		    $page_number = $_GET[ 'paged' ] - 1;
-		} else {
-		    $page_number = 0;
-		}
-		
 		$per_page         = $this->per_page;
 		
 		$results          = array();
@@ -379,11 +355,7 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 			$query_results         = $wpdb->get_results( $booking_query );
 		} else {
 			$booking_query   = "SELECT *,a2.order_id FROM `".$wpdb->prefix."booking_history` AS a1,`".$wpdb->prefix."booking_order_history` AS a2 WHERE a1.id = a2.booking_id ORDER BY a2.order_id DESC";
-			$query_results   = $wpdb->get_results( $booking_query );
-		}
-		if( count( $query_results ) > $per_page ) {
-    		$query_results = array_chunk( $query_results, $per_page );
-    		$query_results = $query_results[ $page_number ];
+			$query_results         = $wpdb->get_results( $booking_query );
 		}
 		
 		$results = array();
@@ -409,9 +381,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 		    case 'today_checkin':
 		        $_status = 'paid';
 		        break;
-	        case 'gcal_reservations':
-	            $_status = 'GCal';
-	            break;
 		    default:
 		        $_status = '';
 		        break;
@@ -422,8 +391,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 		    $order   =   new WC_Order( $value->order_id );
 		    $get_items = $order->get_items();
 		
-		    $created_via = get_post_meta( $value->order_id, '_created_via', true );
-		    
 		    foreach( $get_items as $item_id => $item_values ) {
 		        $booking_status = '';
 		        if ( $value->post_id == $item_values[ 'product_id' ] ) {
@@ -437,8 +404,6 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 		                } else if ( ( $booking_status != 'confirmed' && $booking_status != 'pending-confirmation' ) && ( 'paid' == $_status ) ) {
 		                    $results[] = $query_results[ $key ];
 		                } else if( $booking_status != 'cancelled' && '' == $_status ) {
-		                    $results[] = $query_results[ $key ];
-		                } else if( 'GCal' == $_status && ( $_status == $created_via ) ) {
 		                    $results[] = $query_results[ $key ];
 		                }
 		            }
@@ -659,7 +624,25 @@ class WAPBK_View_Bookings_Table extends WP_List_Table {
 			}	
 		}
 		
-		return apply_filters( 'bkap_bookings_table_data', $return_bookings );
+		if ( isset( $_GET['paged'] ) && $_GET['paged'] > 1 ) {
+			$page_number     = $_GET['paged'] - 1;
+			$k               = $per_page * $page_number;
+		}else {
+			$k = 0;
+		}
+		
+		$return_booking_display = array();
+		
+		for ( $j = $k; $j < ( $k+$per_page ); $j++ ) {
+			
+		    if ( isset( $return_bookings[ $j ] ) ) {
+				$return_booking_display[ $j ] = $return_bookings[ $j ];
+			}else {
+				break;
+			}
+		}
+		
+		return apply_filters( 'bkap_bookings_table_data', $return_booking_display );
 	}
 	
 	function bkap_class_order_id_asc ( $value1, $value2 ) {

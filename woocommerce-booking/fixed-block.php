@@ -94,26 +94,17 @@
              */
 			
 			function bkap_fixed_block_booking_after_add_to_cart(){	
-				global $post, $wpdb, $woocommerce, $woocommerce_wpml;
-				
-				if ( defined('ICL_LANGUAGE_CODE') ){
-				     
-				    if( ICL_LANGUAGE_CODE == 'en' ) {
-				        $curr_lang = "en";
-				    } else{
-				        $curr_lang = ICL_LANGUAGE_CODE;
-				    }
-				}				
+				global $post, $wpdb, $woocommerce;
  				
-				$duplicate_of     =   bkap_common::bkap_get_product_id( $post->ID );
-				$booking_settings = get_post_meta( $duplicate_of, 'woocommerce_booking_settings', true );
+				$booking_settings = get_post_meta( $post->ID, 'woocommerce_booking_settings', true );
 
  				 if ( ( isset( $booking_settings['booking_enable_multiple_day'] ) && $booking_settings['booking_enable_multiple_day'] == 'on' ) && ( isset( $booking_settings['booking_fixed_block_enable'] ) && $booking_settings['booking_fixed_block_enable'] == 'yes' ) ) {
  				 	
- 				 	$results = $this->bkap_get_fixed_blocks( $duplicate_of );
+ 				 	$results = $this->bkap_get_fixed_blocks( $post->ID );
 					
 					foreach ( $woocommerce->cart->get_cart() as $cart_item_key => $values ) {
-									
+								//print_r($values);exit;
+								
 					       if( array_key_exists( 'bkap_booking', $values ) ) {
 									$booking       = $values['bkap_booking'];
 									$hidden_date   = $booking[0]['hidden_date'];
@@ -123,6 +114,7 @@
 									}
 							}
 								break;
+								//print_r($hidden_date_checkout);
 					}
  				 	
 					if ( count( $results ) > 0) {
@@ -131,12 +123,7 @@
 
 						<label>'. __( "Select Period :", "woocommerce-booking" ).' </label><select name="block_option" id="block_option" >');
 						foreach ( $results as $key => $value ) {
-						    
-						    $name_msg     = 'bkap_fixed_' . $value->id . '_block_name';
-						    $block_name   = $value->block_name;
-						    $block_name   = $this->bkap_get_translated_texts( $name_msg, $block_name, $curr_lang );
-						    
-							printf('<option value=%s&%s&%s>%s</option>', $value->start_day, $value->number_of_days, $value->price, $block_name );
+							printf('<option value=%s&%s&%s>%s</option>', $value->start_day, $value->number_of_days, $value->price, $value->block_name );
 						} 
 						printf ('</select> <br/> <br/>');
 						?>
@@ -155,8 +142,7 @@
 								jQuery("#show_time_slot").html("");
 								jQuery("#booking_calender").datepicker("setDate");
 								jQuery("#booking_calender_checkout").datepicker("setDate");
-								test_bkap_init_inline();
-								bkap_calculate_price();
+								
 							}
 						});
 	
@@ -183,11 +169,8 @@
             */
 			
 			function bkap_fixed_block_display_price( $product_id ) {
-			    global $post;
-			    
-			    $duplicate_of     =   bkap_common::bkap_get_product_id( $post->ID );
-			    $booking_settings = get_post_meta( $duplicate_of, 'woocommerce_booking_settings', true );
-			    
+				$booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true );
+				
 				if ( isset( $_POST['booking_fixed_block_enable'] ) && $_POST['booking_partial_payment_radio'] != '' ):
 					$currency_symbol   = get_woocommerce_currency_symbol();
         			if( has_filter( 'bkap_show_addon_price' ) ) {
@@ -220,12 +203,8 @@
 							<label for="booking_fixed_block"><?php _e( 'Enable Fixed Block Booking:', 'woocommerce-booking' );?></label>
 						</th>
 						<td>
-							<?php
-
-							$duplicate_of     =   bkap_common::bkap_get_product_id( $post->ID );
-							$booking_settings = get_post_meta( $duplicate_of, 'woocommerce_booking_settings', true );
-							
-							
+							<?php 
+							$booking_settings            = get_post_meta($product_id, 'woocommerce_booking_settings', true);
 							$enabled_fixed_blocks        = "";
 							$fixed_block_button_status   = "disabled";
 							
@@ -333,9 +312,6 @@
 
 				<?php
 				$currency_symbol = get_woocommerce_currency_symbol();
-				$duplicate_of     =   bkap_common::bkap_get_product_id( $post->ID );
-				$booking_settings = get_post_meta( $duplicate_of, 'woocommerce_booking_settings', true );
-				
 				print('<script type="text/javascript">
                                 //************************************
                                 // This function will save the created fixed block on the admin product page.
@@ -356,7 +332,7 @@
 					days["6"] = "Saturday";
 						
 					var data = {
-							post_id: "'.$duplicate_of.'", 
+							post_id: "'.$post->ID.'", 
 							booking_block_name: jQuery("#booking_block_name").val(),
 							start_day: jQuery("#start_day").val(),
 							end_day: jQuery("#end_day").val(),
@@ -638,8 +614,8 @@
 			function bkap_booking_block_table(){
  				global $post, $wpdb;
  				$post_id = '';
- 				$duplicate_of     =   bkap_common::bkap_get_product_id( $post->ID );
- 				if ( isset( $duplicate_of ) ) $post_id = $duplicate_of;
+ 				
+ 				if ( isset( $post->ID ) ) $post_id = $post->ID;
 				/* AJAX check  */
 				
 				if( !empty( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && strtolower( $_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) {
@@ -732,10 +708,7 @@
 			function bkap_fixed_block_show_updated_price( $product_id, $product_type, $variation_id, $checkin_date, $checkout_date, $currency_selected ) {
 				if ( !isset( $_POST['variable_blocks'] ) || ( isset( $_POST['variable_blocks'] ) && $_POST['variable_blocks'] != 'Y' ) ) {
 					
-				    $duplicate_of     =   bkap_common::bkap_get_product_id( $post->ID );
-				    $booking_settings =   get_post_meta( $duplicate_of, 'woocommerce_booking_settings', true );
-				    
-				   // $booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true );
+				    $booking_settings = get_post_meta( $product_id, 'woocommerce_booking_settings', true );
 					
 					if ( $product_type == 'variable' ) {
 						
@@ -814,43 +787,6 @@
 			
 				return $results;
 			}
-			
-			/**
-			 * This function will return translated string.
-			 */			
-			function bkap_get_translated_texts ( $get_translated_text, $message, $language ) {
-			    
-			        if (function_exists('icl_register_string')) {
-    			        if ( $language == 'en' ) {
-    			            return $message;
-    			        } else {
-    			            global $wpdb;
-    			            $context = 'BKAP';
-    			            $translated = '';
-    			            $results = $wpdb->get_results($wpdb->prepare("
-    			                SELECT s.name, s.value, t.value AS translation_value, t.status
-    			                FROM  {$wpdb->prefix}icl_strings s
-    			                LEFT JOIN {$wpdb->prefix}icl_string_translations t ON s.id = t.string_id
-    			                WHERE s.context = %s
-    			                AND (t.language = %s OR t.language IS NULL)
-    			                ", $context, $language), ARRAY_A);
-    			            
-    			                foreach ($results as $each_entry) {
-            			                if ($each_entry['name'] == $get_translated_text) {
-                			                if ($each_entry['translation_value']) {
-                			                    $translated = $each_entry['translation_value'];
-                			                } else {
-                			                    $translated = $each_entry['value'];
-                			                }
-            			                }
-    			                }
-    			                return $translated;
-    			         }
-			          }else {
-			              return $message;
-			          }
-		  }
-			
 		}
 	}
 	$bkap_block_booking = new bkap_block_booking();

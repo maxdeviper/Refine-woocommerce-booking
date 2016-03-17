@@ -2277,31 +2277,27 @@
 							     }
 							}
 							else {
-							    if ( isset( $items['wapbk_admin_hidden_date_'.$oid_value] ) ) {
-							         $hidden_date = $items['wapbk_admin_hidden_date_'.$oid_value];
+							    $hidden_date = $items['wapbk_admin_hidden_date_'.$oid_value];
+							    
+							    if( $date_format == 'dd/mm/y' ) {
+							        $date_explode    =   explode( "-", $hidden_date );
+							        $hidden_date     =   date( 'Y-m-d', mktime( 0, 0, 0, $date_explode[1], $date_explode[0], $date_explode[2] ) );
+							    }
+							    else {
+							        $date_str    =   str_replace(",", "", $hidden_date );
+							        $hidden_date =   date( 'Y-m-d', strtotime( $date_str ) );
 							    }
 							    
-							    if ( isset( $hidden_date ) && $hidden_date != '' ) {
-    							    if( $date_format == 'dd/mm/y' ) {
-    							        $date_explode    =   explode( "-", $hidden_date );
-    							        $hidden_date     =   date( 'Y-m-d', mktime( 0, 0, 0, $date_explode[1], $date_explode[0], $date_explode[2] ) );
-    							    }
-    							    else {
-    							        $date_str    =   str_replace(",", "", $hidden_date );
-    							        $hidden_date =   date( 'Y-m-d', strtotime( $date_str ) );
-    							    }
-    							    
-    							    if( isset( $booking[ $time_name ] ) && $booking[ $time_name ] != "" ) {
-    							        $time_slot       =   explode( "-", $booking[ $time_name ] );
-    							        $query_from_time =   date( "G:i", strtotime( $time_slot[0] ) );
-    
-    							        if( isset( $time_slot[1] ) ) {
-    							            $query_to_time   =   date( "G:i", strtotime( $time_slot[1] ) );
-    							        } else {
-    							            $query_to_time   =   '';
-    							        }
-    							        
-    							    }
+							    if( isset( $booking[ $time_name ] ) && $booking[ $time_name ] != "" ) {
+							        $time_slot       =   explode( "-", $booking[ $time_name ] );
+							        $query_from_time =   date( "G:i", strtotime( $time_slot[0] ) );
+
+							        if( isset( $time_slot[1] ) ) {
+							            $query_to_time   =   date( "G:i", strtotime( $time_slot[1] ) );
+							        } else {
+							            $query_to_time   =   '';
+							        }
+							        
 							    }
 							}
 							$book_global_settings    =   json_decode( get_option('woocommerce_booking_global_settings') );

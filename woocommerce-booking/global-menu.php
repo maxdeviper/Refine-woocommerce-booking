@@ -2,9 +2,6 @@
 
 include_once('view-bookings.php');
 include_once('license.php');
-include_once( 'includes/bkap-calendar-sync-settings.php' );
-include_once( 'import-bookings.php' );
-
 
 class global_menu{
     
@@ -15,7 +12,6 @@ class global_menu{
     public static function bkap_woocommerce_booking_admin_menu(){
     	add_menu_page( 'Booking', 'Booking', 'manage_woocommerce', 'booking_settings', array( 'global_menu', 'bkap_woocommerce_booking_page' ) );
     	$page = add_submenu_page( 'booking_settings', __( 'View Bookings',     'woocommerce-booking' ), __( 'View Bookings',       'woocommerce-booking' ), 'manage_woocommerce', 'woocommerce_history_page',  array( 'view_bookings', 'bkap_woocommerce_history_page' ) );
-    	$page = add_submenu_page( 'booking_settings', __( 'Import Bookings',   'woocommerce-booking' ), __( 'Import Bookings',     'woocommerce-booking' ), 'manage_woocommerce', 'woocommerce_import_page',   array( 'import_bookings', 'bkap_woocommerce_import_page' ) );
     	$page = add_submenu_page( 'booking_settings', __( 'Settings',          'woocommerce-booking' ), __( 'Settings',            'woocommerce-booking' ), 'manage_woocommerce', 'woocommerce_booking_page',  array( 'global_menu',   'bkap_woocommerce_booking_page' ) );
     	$page = add_submenu_page( 'booking_settings', __( 'Activate License',  'woocommerce-booking' ), __( 'Activate License',    'woocommerce-booking' ), 'manage_woocommerce', 'booking_license_page',      array( 'bkap_license',  'bkap_get_edd_sample_license_page' ) );
     	remove_submenu_page( 'booking_settings', 'booking_settings' );
@@ -33,27 +29,22 @@ class global_menu{
                 $action = '';
         }
         
-        $active_settings = '';
-        $active_labels = '';
-        $addon_settings = '';
-        $cal_sync_settings = '';
-        
-        switch ( $action ) {
-            case 'settings':
+        if ( $action == 'settings' || $action == '' ) {
                 $active_settings = "nav-tab-active";
-                break;
-            case 'labels':
+        } else {
+                $active_settings = '';
+        }
+
+        if ( $action == 'labels' ) {
                 $active_labels = "nav-tab-active";
-                break;
-            case 'addon_settings':
-                $addon_settings = "nav-tab-active";
-                break;
-            case 'calendar_sync_settings':
-                $cal_sync_settings = "nav-tab-active";
-                break;
-            default:
-                $active_settings = "nav-tab-active";
-                break;
+        } else {
+                $active_labels = '';
+        }
+
+        if ( $action == 'addon_settings' ) {
+        	$addon_settings = "nav-tab-active";
+        } else {
+        	$addon_settings = '';
         }
         ?>
 
@@ -62,8 +53,6 @@ class global_menu{
         <a href="admin.php?page=woocommerce_booking_page&action=labels" class="nav-tab <?php echo $active_labels; ?>"> <?php _e( 'Booking Labels', 'woocommerce-booking' );?> </a>
 <!-- 	<a href="admin.php?page=woocommerce_booking_page&action=reminders_settings" class="nav-tab <?php echo $active_reminders_settings; ?>"> <?php _e( 'Email Reminders', 'woocommerce-booking' );?> </a> -->
         <a href="admin.php?page=woocommerce_booking_page&action=addon_settings" class="nav-tab <?php echo $addon_settings; ?>"> <?php _e( 'Addon Settings', 'woocommerce-booking' );?> </a>
-        <a href="admin.php?page=woocommerce_booking_page&action=calendar_sync_settings" class="nav-tab <?php echo $cal_sync_settings; ?>"> <?php _e( 'Google Calendar Sync', 'woocommerce-booking' );?> </a>
-        
         <?php
         do_action( 'bkap_add_global_settings_tab' );
         ?>
@@ -84,17 +73,7 @@ class global_menu{
         	}
         }
 
-        if ( 'calendar_sync_settings' ==  $action ) {
-            print( '<div id="content">
-                    <form method="post" action="options.php">' );
-            settings_fields( "bkap_gcal_sync_settings" );
-            do_settings_sections( "bkap_gcal_sync_settings_page" );
-            submit_button ( __( 'Save Settings', 'woocommerce-booking' ), 'primary', 'save', true );
-            print('</form>
-		              </div>');
-        }
-        
-        if( $action == 'labels'){
+                if( $action == 'labels'){
 
                 $labels_product_page = array(
                         'book.date-label'         => __( 'Check-in Date', 'woocommerce-booking' ),
@@ -717,252 +696,6 @@ class global_menu{
 
                 <?php 
         }
-   }
-   
-   public static function bkap_gcal_settings() {
-        
-       // First, we register a section. This is necessary since all future options must belong to one.
-       add_settings_section(
-       'bkap_gcal_sync_general_settings_section',		// ID used to identify this section and with which to register options
-       __( 'General Settings', 'woocommerce-booking' ),		// Title to be displayed on the administration page
-       array( 'bkap_gcal_sync_settings', 'bkap_gcal_sync_general_settings_callback' ),		// Callback used to render the description of the section
-       'bkap_gcal_sync_settings_page'				// Page on which to add this section of options
-       );
-   
-       add_settings_field(
-       'bkap_calendar_event_location',
-       __( 'Event Location', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_event_location_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_gcal_sync_general_settings_section',
-       array ( __( '<br>Enter the text that will be used as location field in event of the Calendar. If left empty, website description is sent instead. <br><i>Note: You can use ADDRESS and CITY placeholders which will be replaced by their real values.</i>', 'woocommerce-booking' ) )
-       );
-   
-       add_settings_field(
-       'bkap_calendar_event_summary',
-       __( 'Event summary (name)', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_event_summary_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_gcal_sync_general_settings_section'
-           );
-   
-       add_settings_field(
-       'bkap_calendar_event_description',
-       __( 'Event Description', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_event_description_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_gcal_sync_general_settings_section',
-       array( '<br>For the above 2 fields, you can use the following placeholders which will be replaced by their real values:&nbsp;SITE_NAME, CLIENT, PRODUCT_NAME, PRODUCT_WITH_QTY, ORDER_DATE_TIME, ORDER_DATE, ORDER_NUMBER, PRICE, PHONE, NOTE, ADDRESS, EMAIL (Client\'s email)	', 'woocommerce-booking' )
-       );
-   
-       add_settings_section(
-       'bkap_calendar_sync_customer_settings_section',
-       __( 'Customer Add to Calendar button Settings', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_sync_customer_settings_callback' ),
-       'bkap_gcal_sync_settings_page'
-           );
-   
-       add_settings_field(
-       'bkap_add_to_calendar_order_received_page',
-       __( 'Show Add to Calendar button on Order received page', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_add_to_calendar_order_received_page_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_customer_settings_section',
-       array ( __( 'Show Add to Calendar button on the Order Received page for the customers.', 'woocommerce-booking' ) )
-       );
-   
-       add_settings_field(
-       'bkap_add_to_calendar_customer_email',
-       __( 'Show Add to Calendar button in the Customer notification email', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_add_to_calendar_customer_email_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_customer_settings_section',
-       array ( __( 'Show Add to Calendar button in the Customer notification email.', 'woocommerce-booking' ) )
-       );
-   
-       add_settings_field(
-       'bkap_add_to_calendar_my_account_page',
-       __( 'Show Add to Calendar button on My account', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_add_to_calendar_my_account_page_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_customer_settings_section',
-       array ( __( 'Show Add to Calendar button on My account page for the customers.', 'woocommerce-booking' ) )
-       );
-   
-       add_settings_field(
-       'bkap_calendar_in_same_window',
-       __( 'Open Calendar in Same Window', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_in_same_window_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_customer_settings_section',
-       array ( __( 'As default, the Calendar is opened in a new tab or window. If you check this option, user will be redirected to the Calendar from the same page, without opening a new tab or window.', 'woocommerce-booking' ) )
-       );
-   
-       add_settings_section(
-       'bkap_calendar_sync_admin_settings_section',
-       __( 'Admin Calendar Sync Settings', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_sync_admin_settings_section_callback' ),
-       'bkap_gcal_sync_settings_page'
-           );
-   
-       add_settings_field(
-       'bkap_calendar_sync_integration_mode',
-       __( 'Integration Mode', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_sync_integration_mode_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section',
-       array ( __( '<br>Select method of integration. "Sync Automatically" will add the booking events to the Google calendar, which is set in the "Calendar to be used" field, automatically when a customer places an order. <br>"Sync Manually" will add an "Add to Calendar" button in emails received by admin on New customer order and on the View Booking Calendar page.<br>"Disabled" will disable the integration with Google Calendar.<br>Note: Import of the events will work manually using .ics link.', 'woocommerce-booking' ) )
-       );
-   
-       add_settings_field(
-       'bkap_sync_calendar_instructions',
-       __( 'Instructions', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_sync_calendar_instructions_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section'
-           );
-   
-   
-       add_settings_field(
-       'bkap_calendar_key_file_name',
-       __( 'Key file name', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_key_file_name_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section',
-       array( '<br>Enter key file name here without extention, e.g. ab12345678901234567890-privatekey.', 'woocommerce-booking' )
-       );
-   
-       add_settings_field(
-       'bkap_calendar_service_acc_email_address',
-       __( 'Service account email address', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_service_acc_email_address_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section',
-       array( '<br>Enter Service account email address here, e.g. 1234567890@developer.gserviceaccount.com.', 'woocommerce-booking' )
-       );
-   
-       add_settings_field(
-       'bkap_calendar_id',
-       __( 'Calendar to be used', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_id_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section',
-       array( '<br>Enter the ID of the calendar in which your deliveries will be saved, e.g. abcdefg1234567890@group.calendar.google.com.', 'woocommerce-booking' )
-       );
-   
-       add_settings_field(
-       'bkap_calendar_test_connection',
-       '',
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_test_connection_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section'
-           );
-   
-       add_settings_field(
-       'bkap_admin_add_to_calendar_view_booking',
-       __( 'Show Add to Calendar button on View Bookings page', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_admin_add_to_calendar_view_booking_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section',
-       array( 'Show "Add to Calendar" button on the Booking -> View Bookings page.<br><i>Note: This button can be used to export the already placed orders with future bookings from the current date to the calendar used above.</i>', 'woocommerce-booking' )
-       );
-   
-       add_settings_field(
-       'bkap_admin_add_to_calendar_email_notification',
-       __( 'Show Add to Calendar button in New Order email notification', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_admin_add_to_calendar_email_notification_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_sync_admin_settings_section',
-       array( 'Show "Add to Calendar" button in the New Order email notification.', 'woocommerce-booking' )
-       );
-   
-       add_settings_section(
-       'bkap_calendar_import_ics_feeds_section',
-       __( 'Import Events', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_calendar_import_ics_feeds_section_callback' ),
-       'bkap_gcal_sync_settings_page'
-           );
-   
-       add_settings_field(
-       'bkap_ics_feed_url_instructions',
-       __( 'Instructions', 'woocommerce-booking'  ),
-       array( 'bkap_gcal_sync_settings', 'bkap_ics_feed_url_instructions_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_import_ics_feeds_section'
-           );
-   
-       add_settings_field(
-       'bkap_ics_feed_url',
-       __( 'iCalendar/.ics Feed URL', 'woocommerce-booking' ),
-       array( 'bkap_gcal_sync_settings', 'bkap_ics_feed_url_callback' ),
-       'bkap_gcal_sync_settings_page',
-       'bkap_calendar_import_ics_feeds_section'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_calendar_event_location'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_calendar_event_summary'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_calendar_event_description'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_add_to_calendar_order_received_page'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_add_to_calendar_customer_email'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_add_to_calendar_my_account_page'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_calendar_in_same_window'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_calendar_sync_integration_mode'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_calendar_details_1'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_admin_add_to_calendar_view_booking'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_admin_add_to_calendar_email_notification'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_ics_feed_url_instructions'
-           );
-   
-       register_setting(
-       'bkap_gcal_sync_settings',
-       'bkap_ics_feed_url'
-           );
    }
 }// End of the class
 

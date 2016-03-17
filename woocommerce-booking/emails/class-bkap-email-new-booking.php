@@ -63,15 +63,6 @@ class BKAP_Email_New_Booking extends WC_Email {
                 $this->find[]    = '{product_title}';
                 $this->replace[] = $this->object->product_title;
         
-                $booking_settings = get_post_meta( $this->object->product_id, 'woocommerce_booking_settings', true );
-                // if the product has a tour operator assigned, then the approval email needs to be sent to the operator
-                if ( isset( $booking_settings[ 'booking_tour_operator' ] ) && '' != $booking_settings[ 'booking_tour_operator' ] ) {
-                    $user_info = get_userdata( $booking_settings[ 'booking_tour_operator' ] );
-                    $user_email = $user_info->user_email;
-                    $this->recipient = $user_email;
-                
-                }
-                
                 if ( $this->object->order_id ) {
                     
                     $this->find[]    = '{order_date}';

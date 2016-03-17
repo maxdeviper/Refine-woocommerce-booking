@@ -25,7 +25,6 @@ if ( !class_exists( 'bkap_approve_booking' ) ) {
 			$this->type    = isset( $args[ 'type' ] ) ? $args[ 'type' ] : 'page';
 
 			add_action( 'booking_page_woocommerce_history_page', array( &$this, 'create_virtual_page' ) );
-			add_action( 'booking_page_operator_bookings', array( &$this, 'create_virtual_page' ) );
 		}
 
 		// filter to create virtual page content for Tell a Friend page

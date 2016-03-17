@@ -58,7 +58,6 @@ include_once( 'booking-confirmation.php' );
 include_once( 'class-booking-email-manager.php' );
 include_once( 'variation-lockout.php' );
 include_once( 'attribute-lockout.php' );
-include_once( 'bkap-calendar-sync.php' );
 
 register_uninstall_hook( __FILE__, 'bkap_woocommerce_booking_delete' );
 
@@ -207,10 +206,6 @@ function is_booking_active() {
 				add_filter( 'add_to_cart_fragments',                    array( 'bkap_cart', 'bkap_woo_cart_widget_subtotal' ) );
 				// Hide the hardcoded item meta records frm being displayed on the admin orders page
 				add_filter( 'woocommerce_hidden_order_itemmeta',        array( 'bkap_checkout', 'bkap_hidden_order_itemmeta'), 10, 1 );
-				// Translating Block name of Fixed Block booking.
-				add_action('admin_init',                                array( &$this, 'bkap_register_fixed_block_string_for_wpml') );
-				// Gcal Settings tab
-				add_action( 'admin_init',                               array( 'global_menu', 'bkap_gcal_settings' ), 10 );
 			}
 			
 			/**
@@ -250,7 +245,6 @@ function is_booking_active() {
 					add_action( 'wp_ajax_nopriv_bkap_get_time_lockout',            array( 'bkap_booking_process', 'bkap_get_time_lockout' ) );
 					add_action( 'wp_ajax_nopriv_save_widget_dates',                array( 'Custom_WooCommerce_Widget_Product_Search', 'save_widget_dates' ) );
 					add_action( 'wp_ajax_nopriv_bkap_booking_calender_content',    array( &$this, 'bkap_booking_calender_content' ) );
-					add_action( 'wp_ajax_nopriv_bkap_get_fixed_block_inline_date', array( 'bkap_booking_process', 'bkap_get_fixed_block_inline_date' ) );
 				} else{
 					add_action( 'wp_ajax_bkap_get_per_night_price',                array( 'bkap_booking_process', 'bkap_get_per_night_price' ) );
 					add_action( 'wp_ajax_bkap_check_for_time_slot',                array( 'bkap_booking_process', 'bkap_check_for_time_slot' ) );
@@ -262,9 +256,6 @@ function is_booking_active() {
 					add_action( 'wp_ajax_save_widget_dates',                       array( 'Custom_WooCommerce_Widget_Product_Search', 'save_widget_dates' ) );
 					add_action( 'wp_ajax_bkap_booking_calender_content',           array( &$this, 'bkap_booking_calender_content' ) );
 					add_action( 'wp_ajax_bkap_save_attribute_data',                array( 'bkap_attributes', 'bkap_save_attribute_data' ) );
-					add_action( 'wp_ajax_bkap_get_fixed_block_inline_date', array( 'bkap_booking_process', 'bkap_get_fixed_block_inline_date' ) );
-					add_action( 'wp_ajax_bkap_discard_imported_event',             array( 'import_bookings', 'bkap_discard_imported_event' ) );
-					add_action( 'wp_ajax_bkap_map_imported_event',                 array( 'import_bookings', 'bkap_map_imported_event' ) );
 				}
 			}
                         
@@ -538,11 +529,10 @@ function is_booking_active() {
              */
 			function bkap_my_enqueue_scripts_css() {
 			
-			    $plugin_version_number = get_option( 'woocommerce_booking_db_version' );
-			    
 				if ( get_post_type() == 'product'  || ( isset( $_GET['page'] ) && $_GET['page'] == 'woocommerce_booking_page' ) || 
 					( isset( $_GET['page'] ) && $_GET['page'] == 'woocommerce_history_page' ) || ( isset( $_GET['page'] ) && $_GET['page'] == 'operator_bookings' ) || ( isset($_GET['page'] ) && $_GET['page'] == 'woocommerce_availability_page' ) ) {
 					
+					$plugin_version_number = get_option( 'woocommerce_booking_db_version' );
                     wp_enqueue_style( 'bkap-booking', plugins_url('/css/booking.css', __FILE__ ) , '', $plugin_version_number , false );
 					wp_enqueue_style( 'bkap-datepick', plugins_url('/css/jquery.datepick.css', __FILE__ ) , '', $plugin_version_number, false );
 					
@@ -553,8 +543,7 @@ function is_booking_active() {
 				}
 				
 				if ( ( isset( $_GET['page'] ) && $_GET['page'] == 'woocommerce_booking_page' ) ||
-						( isset( $_GET['page'] ) && $_GET['page'] == 'woocommerce_history_page' ) ||
-				        ( isset( $_GET['page'] ) && $_GET['page'] == 'woocommerce_import_page' ) ) {
+						( isset( $_GET['page'] ) && $_GET['page'] == 'woocommerce_history_page' ) ) {
 					wp_enqueue_style( 'bkap-data', plugins_url('/css/view.booking.style.css', __FILE__ ) , '', $plugin_version_number, false );
 					
 					wp_enqueue_style( 'bkap-fullcalendar-css', plugins_url().'/woocommerce-booking/js/fullcalendar/fullcalendar.css' );
@@ -1003,32 +992,6 @@ function is_booking_active() {
 				update_post_meta( $details, 'woocommerce_booking_settings', $book_details );
 				}
 			
-			}
-			/*
-			 * This function used to register Fixed block booking's Block name string to WPML
-			 * Like : Body, subject, Wc header text
-			 *
-			 * Since : 2.5.3
-			 */
-			function bkap_register_fixed_block_string_for_wpml() {
-			
-			    if ( function_exists('icl_register_string') ) {
-			
-			        global $wpdb;
-			        $context             = 'BKAP';
-			        $fixed_block_table   = $wpdb->prefix . 'booking_fixed_blocks';
-			        $result              = $wpdb->get_results("SELECT * FROM $fixed_block_table");
-			        
-			        foreach ($result as $each_block) {
-			            
-			            $name_msg = 'bkap_fixed_' . $each_block->id . '_block_name';
-			            $value_msg = $each_block->block_name;
-			            			            
-			            icl_register_string( $context, $name_msg, $value_msg ); //for registering message
-			
-
-			       }
-			    }
 			}
                   
 		}		
