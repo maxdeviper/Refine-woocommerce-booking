@@ -1,21 +1,21 @@
 <?php 
 /*
-Plugin Name: WooCommerce Booking & Appointment Plugin
+Plugin Name: Booking & Appointment Plugin for WooCommerce
 Plugin URI: http://www.tychesoftwares.com/store/premium-plugins/woocommerce-booking-plugin
 Description: This plugin lets you capture the Booking Date & Booking Time for each product thereby allowing your WooCommerce store to effectively function as a Booking system. It allows you to add different time slots for different days, set maximum bookings per time slot, set maximum bookings per day, set global & product specific holidays and much more.
-Version: 2.5.3
+Version: 2.5.4
 Author: Tyche Softwares
 Author URI: http://www.tychesoftwares.com/
 */
 
 global $BookUpdateChecker;
-$BookUpdateChecker = '2.5.3';
+$BookUpdateChecker = '2.5.4';
 
 // this is the URL our updater / license checker pings. This should be the URL of the site with EDD installed
 define( 'EDD_SL_STORE_URL_BOOK', 'http://www.tychesoftwares.com/' ); // IMPORTANT: change the name of this constant to something unique to prevent conflicts with other plugins using this system
 
 // the name of your product. This is the title of your product in EDD and should match the download title in EDD exactly
-define( 'EDD_SL_ITEM_NAME_BOOK', 'Woocommerce Booking & Appointment Plugin' ); // IMPORTANT: change the name of this constant to something unique to prevent conflicts with other plugins using this system
+define( 'EDD_SL_ITEM_NAME_BOOK', 'Booking & Appointment Plugin for WooCommerce' ); // IMPORTANT: change the name of this constant to something unique to prevent conflicts with other plugins using this system
 
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -30,7 +30,7 @@ $license_key = trim( get_option( 'edd_sample_license_key' ) );
 
 // setup the updater
 $edd_updater = new EDD_BOOK_Plugin_Updater( EDD_SL_STORE_URL_BOOK, __FILE__, array(
-		'version' 	=> '2.5.3', 		// current version number
+		'version' 	=> '2.5.4', 		// current version number
 		'license' 	=> $license_key, 	// license key (used get_option above to retrieve from DB)
 		'item_name' => EDD_SL_ITEM_NAME_BOOK, 	// name of this plugin
 		'author' 	=> 'Ashok Rane'  // author of this plugin
@@ -380,7 +380,7 @@ function is_booking_active() {
 						$wpdb->get_results ( $alter_table_query );
 					}
 					
-					update_option( 'woocommerce_booking_db_version', '2.5.3' );
+					update_option( 'woocommerce_booking_db_version', '2.5.4' );
 					// Add an option to change the "Choose a Time" text in the time slot dropdown
 					add_option( 'book.time-select-option', 'Choose a Time' );
 					// Add an option to change ICS file name
@@ -533,7 +533,7 @@ function is_booking_active() {
 				dbDelta( $sql_price );
 				dbDelta( $sql_meta );
 				dbDelta( $blocks_sql );
-				update_option( 'woocommerce_booking_db_version', '2.5.3' );
+				update_option( 'woocommerce_booking_db_version', '2.5.4' );
 				update_option( 'woocommerce_booking_abp_hrs', 'HOURS' );
 				$check_table_query = "SHOW COLUMNS FROM $table_name LIKE 'end_date'";
 				

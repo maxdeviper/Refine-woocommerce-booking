@@ -7,12 +7,12 @@
  * Allows plugins to use their own update API.
  *
  * @author Ashok Rane
- * @version 2.5.3
+ * @version 2.5.4
  */
 class EDD_BOOK_Plugin_Updater {
 	private $api_url  = 'http://www.tychesoftwares.com/';
 	private $api_data = array();
-	private $name     = 'Woocommerce Booking & Appointment Plugin';
+	private $name     = 'Booking & Appointment Plugin for WooCommerce';
 	private $slug     = 'woocommerce-booking';
 
 	/**
