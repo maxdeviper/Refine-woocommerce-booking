@@ -7,7 +7,7 @@
  * Allows plugins to use their own update API.
  *
  * @author Ashok Rane
- * @version 2.5.4
+ * @version 2.5.5
  */
 class EDD_BOOK_Plugin_Updater {
 	private $api_url  = 'http://www.tychesoftwares.com/';
