@@ -18,7 +18,7 @@
 				// used to add new settings on the product page booking box
 				add_action( 'bkap_after_listing_enabled',               array( &$this, 'bkap_fixed_block_show_field_settings' ), 5, 1 );
 				add_action( 'bkap_add_tabs',                            array( &$this, 'fixed_block_tab' ), 5, 1 );
-				add_action( 'init',                                     array( &$this, 'bkap_load_ajax_fixed_block' ) );
+				add_action( 'admin_init',                               array( &$this, 'bkap_load_ajax_fixed_block' ) );
 				add_filter( 'bkap_save_product_settings',               array( &$this, 'bkap_fixed_block_product_settings_save'), 10, 2 );
 				add_action( 'bkap_display_multiple_day_updated_price',  array( &$this, 'bkap_fixed_block_show_updated_price'), 6, 6 );
 	

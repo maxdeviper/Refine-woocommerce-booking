@@ -22,6 +22,7 @@ if( session_id() === '' ){
 				// used to add new settings on the product page booking box
 				add_action( 'bkap_after_listing_enabled',               array( &$this, 'bkap_price_range_show_field_settings' ),        10, 1 );
 				add_action( 'bkap_add_tabs',                            array( &$this, 'price_by_range_tab' ),                          10, 1 );
+				add_action( 'admin_init',                               array( &$this, 'bkap_load_ajax_price_range_admin' ) );
 				add_action( 'init',                                     array( &$this, 'bkap_load_ajax_price_range' ) );
 				// Save the product settings for variable blocks
 				add_filter( 'bkap_save_product_settings',               array( &$this, 'bkap_price_range_product_settings_save' ),      10, 2 );
@@ -37,21 +38,20 @@ if( session_id() === '' ){
             *  This function is used to load ajax functions 
             *  required by price by range of days booking.
             */
+			
+			function bkap_load_ajax_price_range_admin() {
+			    add_action( 'wp_ajax_bkap_save_booking_block_price',           array( &$this, 'bkap_save_booking_block_price' ) );
+			    add_action( 'wp_ajax_bkap_delete_price_block',                 array( &$this, 'bkap_delete_price_block' ) );
+			    add_action( 'wp_ajax_bkap_delete_all_price_blocks',            array( &$this, 'bkap_delete_all_price_blocks' ) );
+			}
+			
 			function bkap_load_ajax_price_range() {
 				
-			    if ( !is_user_logged_in() ) {
-					add_action( 'wp_ajax_nopriv_bkap_save_booking_block_price',    array( &$this, 'bkap_save_booking_block_price' ) );
+			    if ( !is_user_logged_in() ) {	
 					add_action( 'wp_ajax_nopriv_bkap_show_price_div',              array( &$this, 'bkap_show_price_div' ) );
-					
-					add_action( 'wp_ajax_nopriv_bkap_delete_price_block',          array( &$this, 'bkap_delete_price_block' ) );
-					add_action( 'wp_ajax_nopriv_bkap_delete_all_price_blocks',     array( &$this, 'bkap_delete_all_price_blocks' ) );
 				}  
 				else {
-					add_action( 'wp_ajax_bkap_save_booking_block_price',           array( &$this, 'bkap_save_booking_block_price' ) );
 					add_action( 'wp_ajax_bkap_show_price_div',                     array( &$this, 'bkap_show_price_div' ) );
-					
-					add_action( 'wp_ajax_bkap_delete_price_block',                 array( &$this, 'bkap_delete_price_block' ) );
-					add_action( 'wp_ajax_bkap_delete_all_price_blocks',            array( &$this, 'bkap_delete_all_price_blocks' ) );
 				}
 			}
 			
