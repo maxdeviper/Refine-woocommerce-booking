@@ -133,6 +133,8 @@ function is_booking_active() {
 				add_action( 'admin_init',                               array( &$this, 'bkap_bookings_update_db_check' ) );				
 				// Ajax calls
 				add_action( 'init',                                     array( &$this, 'bkap_book_load_ajax' ) );
+				// ajax calls for admin pages
+				add_action( 'admin_init',                               array( &$this, 'bkap_book_load_ajax_admin' ) );
 				// WordPress Administration Menu
 				add_action( 'admin_menu',                               array('global_menu', 'bkap_woocommerce_booking_admin_menu' ) );				
 				// Display Booking Box on Add/Edit Products Page
@@ -313,10 +315,13 @@ function is_booking_active() {
 					add_action( 'wp_ajax_bkap_get_time_lockout',                   array( 'bkap_booking_process', 'bkap_get_time_lockout' ) );
 					add_action( 'wp_ajax_save_widget_dates',                       array( 'Custom_WooCommerce_Widget_Product_Search', 'save_widget_dates' ) );
 					add_action( 'wp_ajax_bkap_booking_calender_content',           array( &$this, 'bkap_booking_calender_content' ) );
-					add_action( 'wp_ajax_bkap_save_attribute_data',                array( 'bkap_attributes', 'bkap_save_attribute_data' ) );
 				}
 			}
                         
+			function bkap_book_load_ajax_admin() {
+			    add_action( 'wp_ajax_bkap_save_attribute_data',                array( 'bkap_attributes', 'bkap_save_attribute_data' ) );
+			}
+			
             /**
              * This function duplicates the booking settings 
              * of the original product to the new product.
