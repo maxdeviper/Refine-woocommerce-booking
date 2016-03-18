@@ -37,7 +37,8 @@ $edd_updater = new EDD_BOOK_Plugin_Updater( EDD_SL_STORE_URL_BOOK, __FILE__, arr
 )
 );
 
-include_once('bkap-config.php');
+include_once( 'bkap-config.php' );
+include_once( 'availability-search.php' );
 
 register_uninstall_hook( __FILE__, 'bkap_woocommerce_booking_delete' );
 
@@ -245,7 +246,6 @@ function is_booking_active() {
 			public static function bkap_include_files() {
 			    include_once( 'lang.php' );
 			    include_once( 'bkap-common.php' );
-			    include_once( 'availability-search.php' );
 			    include_once( 'price-by-range.php' );
 			    include_once( 'fixed-block.php' );
 			    include_once( 'special-booking-price.php' );
