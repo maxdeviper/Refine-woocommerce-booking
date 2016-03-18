@@ -1,4 +1,5 @@
-<?php 
+<?php
+if ( class_exists( 'WP_Widget' ) ) { 
 class Custom_WooCommerce_Widget_Product_Search extends WP_Widget {
  
 /**
@@ -266,4 +267,5 @@ function form( $instance ) {
 		      $_SESSION['end_date'] = $_POST['checkout_date'];
 		}
 	}
+}
 }
