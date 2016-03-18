@@ -17,7 +17,7 @@
 			public function __construct() {
 				add_action( 'bkap_after_listing_enabled',               array( &$this, 'bkap_special_booking_price_show_field_settings' ), 4, 1 );
 				add_action( 'bkap_add_tabs',                            array( &$this, 'bkap_special_booking_price_tab' ), 4, 1 );
-				add_action( 'init',                                     array( &$this, 'bkap_load_ajax_special_booking_price_block' ) );
+				add_action( 'admin_init',                               array( &$this, 'bkap_load_ajax_special_booking_price_block' ) );
 				    
 				// Display updated price on the product page
 				add_action( 'bkap_display_updated_addon_price',         array( &$this, 'special_booking_display_updated_price' ), 2, 3 );
@@ -40,15 +40,11 @@
 			 *   This function is used to load ajax functions required by weekday block booking.
 			 */
 			function bkap_load_ajax_special_booking_price_block() {
-				if ( !is_user_logged_in() ) {
-					add_action( 'wp_ajax_nopriv_bkap_save_special_booking_price',  array( &$this, 'bkap_save_special_booking_price' ) );
-					add_action( 'wp_ajax_nopriv_bkap_delete_special_booking',      array( &$this, 'bkap_delete_special_booking' ) );
-					add_action( 'wp_ajax_nopriv_bkap_delete_all_special_booking',  array( &$this, 'bkap_delete_all_special_booking' ) );
-				} else {
-					add_action( 'wp_ajax_bkap_save_special_booking_price',         array( &$this, 'bkap_save_special_booking_price' ) );
-					add_action( 'wp_ajax_bkap_delete_special_booking',             array( &$this, 'bkap_delete_special_booking' ) );
-					add_action( 'wp_ajax_bkap_delete_all_special_booking',         array( &$this, 'bkap_delete_all_special_booking' ) );
-				}
+				
+				add_action( 'wp_ajax_bkap_save_special_booking_price',         array( &$this, 'bkap_save_special_booking_price' ) );
+				add_action( 'wp_ajax_bkap_delete_special_booking',             array( &$this, 'bkap_delete_special_booking' ) );
+				add_action( 'wp_ajax_bkap_delete_all_special_booking',         array( &$this, 'bkap_delete_all_special_booking' ) );
+				
 			}
 						
 		   /**
