@@ -5,7 +5,7 @@ if ( ! class_exists( 'bkap_booking_confirmation' ) ) {
         public function __construct() {
             
             // Add a function to include required files
-            add_action( 'init', array( &$this, 'bkap_includes' ), 99 );
+            add_action( 'wp_loaded', array( &$this, 'bkap_includes' ), 99 );
             
             // add checkbox in admin
             add_action( 'bkap_after_product_holidays', array( &$this, 'confirmation_checkbox' ), 10, 1 );
@@ -19,7 +19,7 @@ if ( ! class_exists( 'bkap_booking_confirmation' ) ) {
             // add to cart validations
             
             // Load payment gateway name.
-            add_filter( 'woocommerce_payment_gateways', array( &$this, 'bkap_include_gateway' ) );
+            add_filter( 'woocommerce_payment_gateways', array( &$this, 'bkap_include_gateway' ), 99 );
             
             // Check if Cart contains any product that requires confirmation
             add_filter( 'woocommerce_cart_needs_payment', array( &$this, 'bkap_cart_requires_confirmation' ), 10, 2 );
